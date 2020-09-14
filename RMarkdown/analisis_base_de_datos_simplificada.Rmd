@@ -5,23 +5,29 @@ date: "13/9/2020"
 output: html_document
 ---
 
-```{r setup, include = FALSE, echo = FALSE}
+```{r, include = FALSE}
 # Bibliotecas
 library(knitr)
 library(readxl)
-
-# Opciones de chunk
-opts_chunk$set(echo = FALSE)
-opts_knit$set(root.dir = "./..")
+library(dplyr)
 ```
 
+```{r setup, include = FALSE, cache = FALSE}
+opts_chunk$set(echo = FALSE)
+opts_knit$set(root.dir = "../")
+```
+
+```{r, include = FALSE}
+# Funciones utiles
+source("./R/Utils.R")
+```
 
 ## Análisis de Datos
 
 Las variables que vamos a utilizar son
 
 |Nombre Variable (viejo)|Nombre Variable (nuevo)|Significado|Tipo Variable|
-|:---------------------:|:---------------------:|:----------|:-----------:|
+|:------:|:------------:|:--------------------|:-----------:|
 |ROW_ID|id|Es el identificador de fila|-|
 |age|edad|Edad del paciente|Discreta|
 |EdadR|?|?|Discreta|
@@ -39,5 +45,41 @@ Primero cargamos los datos, luego observamos como los trata R.
 ```{r}
 datos_crudos <- read_excel("./data/bd_acotada.xlsx")
 str(datos_crudos)
+```
+
+Los problemas que encontramos son:
+
+* **Diagnostico** no es un factor.
+* **M_POINT** no es un factor.
+* **SEX** no es un factor.
+* Además le cambiamos lo nombres a las variables para que sea más manejable.
+
+```{r}
+datos_it0 <- datos_crudos %>%
+  rename(id = ROW_ID, edad = age, diagnostico = DIAGNOSTICO, sexo = SEX, m_point = M_POINT) %>% 
+  mutate(diagnostico = as.factor(diagnostico), m_point = as.factor(m_point), sexo = as.factor(sexo))
+
+str(datos_it0)
+```
+
+Ahora las variables se tratan correctamente. Calculamos las medidas resumen para las variables cuantitativas y creamos tablas de frecuencia para variables cualitativas
+
+```{r}
+# Para variables cualtiativas
+df_aux <- datos_it0 %>% 
+  select(where(is.numeric)) %>% 
+  mutate(id = NULL)
+
+lista_aux <- list(data = df_aux, nombre_var = names(df_aux))
+
+kable(pmap_dfr(lista_aux, medidas_resumen))
+
+# Para variables cuantitativas
+kable(table(datos_it0$diagnostico))
+kable(table(datos_it0$m_point))
+kable(table(datos_it0$sexo))
+
+rm(df_aux,lista_aux)
+  
 ```
 

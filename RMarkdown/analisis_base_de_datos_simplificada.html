@@ -374,10 +374,10 @@ summary {
 <p>Las variables que vamos a utilizar son</p>
 <table>
 <colgroup>
-<col width="32%"></col>
-<col width="32%"></col>
-<col width="15%"></col>
-<col width="18%"></col>
+<col width="14%"></col>
+<col width="25%"></col>
+<col width="37%"></col>
+<col width="23%"></col>
 </colgroup>
 <thead>
 <tr class="header">
@@ -469,6 +469,166 @@ summary {
 ##  $ d3         : num [1:2218] 0.375 0.38 0.36 0.326 0.271 ...
 ##  $ d4         : num [1:2218] 0.0966 0.1159 0.1094 0.1032 0.1028 ...
 ##  $ d5         : num [1:2218] 0.03211 0.02492 0.05817 0.06926 0.00582 ...</code></pre>
+<p>Los problemas que encontramos son:</p>
+<ul>
+<li><strong>Diagnostico</strong> no es un factor.</li>
+<li><strong>M_POINT</strong> no es un factor.</li>
+<li><strong>SEX</strong> no es un factor.</li>
+<li>Además le cambiamos lo nombres a las variables para que sea más manejable.</li>
+</ul>
+<pre><code>## tibble [2,218 x 11] (S3: tbl_df/tbl/data.frame)
+##  $ id         : num [1:2218] 24665 21472 25155 22829 24848 ...
+##  $ edad       : num [1:2218] 71 48 73 50 57 51 56 52 64 36 ...
+##  $ EdadR      : num [1:2218] 70 45 70 50 55 50 55 50 60 35 ...
+##  $ diagnostico: Factor w/ 2 levels &quot;0&quot;,&quot;1&quot;: 2 1 2 2 2 2 2 2 2 1 ...
+##  $ m_point    : Factor w/ 4 levels &quot;0&quot;,&quot;1&quot;,&quot;2&quot;,&quot;3&quot;: 2 1 2 1 2 4 NA 3 2 1 ...
+##  $ sexo       : Factor w/ 2 levels &quot;1&quot;,&quot;2&quot;: 1 2 2 2 1 2 1 1 2 1 ...
+##  $ d1         : num [1:2218] 35.2 35.1 53.8 31.2 36.3 ...
+##  $ d2         : num [1:2218] -179 -177 -179 -197 -118 ...
+##  $ d3         : num [1:2218] 0.375 0.38 0.36 0.326 0.271 ...
+##  $ d4         : num [1:2218] 0.0966 0.1159 0.1094 0.1032 0.1028 ...
+##  $ d5         : num [1:2218] 0.03211 0.02492 0.05817 0.06926 0.00582 ...</code></pre>
+<p>Ahora las variables se tratan correctamente. Calculamos las medidas resumen para las variables cuantitativas y creamos tablas de frecuencia para variables cualitativas</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Variable</th>
+<th align="right">Media</th>
+<th align="right">Mediana</th>
+<th align="right">Primer_Cuartil</th>
+<th align="right">Tercer_Cuartil</th>
+<th align="right">Desvio</th>
+<th align="right">NAs</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">edad</td>
+<td align="right">53.6248873</td>
+<td align="right">53.0000000</td>
+<td align="right">43.0000000</td>
+<td align="right">63.0000000</td>
+<td align="right">12.3163076</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">EdadR</td>
+<td align="right">51.7335437</td>
+<td align="right">50.0000000</td>
+<td align="right">40.0000000</td>
+<td align="right">60.0000000</td>
+<td align="right">12.2669438</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">d1</td>
+<td align="right">27.5911286</td>
+<td align="right">26.5423300</td>
+<td align="right">23.8980225</td>
+<td align="right">30.9442275</td>
+<td align="right">5.0348308</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">d2</td>
+<td align="right">-12.5927314</td>
+<td align="right">-5.9796315</td>
+<td align="right">-16.8696925</td>
+<td align="right">1.3972347</td>
+<td align="right">26.3564481</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">d3</td>
+<td align="right">0.2291587</td>
+<td align="right">0.2140395</td>
+<td align="right">0.1173868</td>
+<td align="right">0.3300710</td>
+<td align="right">0.1340449</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">d4</td>
+<td align="right">0.0876227</td>
+<td align="right">0.0881300</td>
+<td align="right">0.0731908</td>
+<td align="right">0.1024220</td>
+<td align="right">0.0222837</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">d5</td>
+<td align="right">0.0178797</td>
+<td align="right">0.0102170</td>
+<td align="right">0.0059705</td>
+<td align="right">0.0212127</td>
+<td align="right">0.0199257</td>
+<td align="right">0</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Var1</th>
+<th align="right">Freq</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">0</td>
+<td align="right">1278</td>
+</tr>
+<tr class="even">
+<td align="left">1</td>
+<td align="right">940</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Var1</th>
+<th align="right">Freq</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">0</td>
+<td align="right">1343</td>
+</tr>
+<tr class="even">
+<td align="left">1</td>
+<td align="right">209</td>
+</tr>
+<tr class="odd">
+<td align="left">2</td>
+<td align="right">394</td>
+</tr>
+<tr class="even">
+<td align="left">3</td>
+<td align="right">255</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Var1</th>
+<th align="right">Freq</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">1</td>
+<td align="right">574</td>
+</tr>
+<tr class="even">
+<td align="left">2</td>
+<td align="right">1641</td>
+</tr>
+</tbody>
+</table>
 </div>
 
 
