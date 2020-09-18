@@ -371,264 +371,240 @@ summary {
 
 <div id="análisis-de-datos" class="section level2">
 <h2>Análisis de Datos</h2>
-<p>Las variables que vamos a utilizar son</p>
+<p>Las variables con las que se va a trabajar son:</p>
 <table>
 <colgroup>
-<col width="14%"></col>
-<col width="25%"></col>
-<col width="37%"></col>
-<col width="23%"></col>
+<col width="21%"></col>
+<col width="21%"></col>
+<col width="35%"></col>
+<col width="21%"></col>
 </colgroup>
 <thead>
 <tr class="header">
-<th align="center">Nombre Variable (viejo)</th>
-<th align="center">Nombre Variable (nuevo)</th>
+<th align="left">Nombre Variable Original</th>
+<th align="left">Nombre Variable Nuevo</th>
 <th align="left">Significado</th>
 <th align="center">Tipo Variable</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="center">ROW_ID</td>
-<td align="center">id</td>
+<td align="left">ROW_ID</td>
+<td align="left">id</td>
 <td align="left">Es el identificador de fila</td>
 <td align="center">-</td>
 </tr>
 <tr class="even">
-<td align="center">age</td>
-<td align="center">edad</td>
-<td align="left">Edad del paciente</td>
-<td align="center">Discreta</td>
-</tr>
-<tr class="odd">
-<td align="center">EdadR</td>
-<td align="center">?</td>
-<td align="left">?</td>
-<td align="center">Discreta</td>
-</tr>
-<tr class="even">
-<td align="center">DIAGNOSTICO</td>
-<td align="center">diagnostico</td>
-<td align="left">Resultado del diagnóstico. 1 = Enfermo 0 = No enfermo</td>
+<td align="left">DIAGNOSTICO</td>
+<td align="left">diagnostico</td>
+<td align="left">Resultado del diagnóstico</td>
 <td align="center">Categórica</td>
 </tr>
 <tr class="odd">
-<td align="center">M_POINT</td>
-<td align="center">?</td>
-<td align="left">?</td>
-<td align="center">Categórica</td>
-</tr>
-<tr class="even">
-<td align="center">Sex</td>
-<td align="center">sexo</td>
-<td align="left">Sexo del paciente</td>
-<td align="center">-</td>
-</tr>
-<tr class="odd">
-<td align="center">d1</td>
-<td align="center">d1</td>
+<td align="left">d1</td>
+<td align="left">d1</td>
 <td align="left">Mean of logarithmic F0 on a semitone frequency scale</td>
 <td align="center">Continua</td>
 </tr>
 <tr class="even">
-<td align="center">d2</td>
-<td align="center">d2</td>
+<td align="left">d2</td>
+<td align="left">d2</td>
 <td align="left">Mean of the ratio of the energy of the spectral harmonic peak at the first formant’s center frequency to the energy of the spectral peak at F0 in voiced regions</td>
 <td align="center">Continua</td>
 </tr>
 <tr class="odd">
-<td align="center">d3</td>
-<td align="center">d3</td>
+<td align="left">d3</td>
+<td align="left">d3</td>
 <td align="left">Coefficient of variation of the ratio of the energy of the spectral harmonic peak at the first formant’s center frequency to the energy of the spectral peak at F0 in voiced regions</td>
 <td align="center">Continua</td>
 </tr>
 <tr class="even">
-<td align="center">d4</td>
-<td align="center">d4</td>
+<td align="left">d4</td>
+<td align="left">d4</td>
 <td align="left">Mean of linear regression slope of the logarithmic power spectrum within 0–500 Hz band entropy.</td>
 <td align="center">Continua</td>
 </tr>
 <tr class="odd">
-<td align="center">d5</td>
-<td align="center">d5</td>
+<td align="left">d5</td>
+<td align="left">d5</td>
 <td align="left">Mean Jitter of the deviations in individual consecutive F0 period lengths.</td>
 <td align="center">Continua</td>
+</tr>
+<tr class="even">
+<td align="left">medTimePoint</td>
+<td align="left">punto_medicacion</td>
+<td align="left">Punto de toma de medicación</td>
+<td align="center">Cualitativa</td>
+</tr>
+<tr class="odd">
+<td align="left">age</td>
+<td align="left">edad</td>
+<td align="left">Edad del paciente</td>
+<td align="center">Discreta</td>
+</tr>
+<tr class="even">
+<td align="left">are-caretaker</td>
+<td align="left">cuidado</td>
+<td align="left">Esta con cuidado</td>
+<td align="center">Cualitativa</td>
+</tr>
+<tr class="odd">
+<td align="left">deep-brain-stimulation</td>
+<td align="left">estimulacion_cerebral</td>
+<td align="left">Presenta estimulacion cerebral</td>
+<td align="center">Cualitativa</td>
+</tr>
+<tr class="even">
+<td align="left">diagnosis-year</td>
+<td align="left">anio_diagnostico</td>
+<td align="left">Año en que le diagnosticaron la enfermedad</td>
+<td align="center">Discreta</td>
+</tr>
+<tr class="odd">
+<td align="left">education</td>
+<td align="left">educacion</td>
+<td align="left">Nivel de educacion</td>
+<td align="center">Cualitativa</td>
+</tr>
+<tr class="even">
+<td align="left">employment</td>
+<td align="left">trabajo</td>
+<td align="left">Trabajo del paciente</td>
+<td align="center">Cualitativa</td>
+</tr>
+<tr class="odd">
+<td align="left">gender</td>
+<td align="left">genero</td>
+<td align="left">Genero del paciente</td>
+<td align="center">Cualitativa</td>
+</tr>
+<tr class="even">
+<td align="left">maritalStatus</td>
+<td align="left">estado_civil</td>
+<td align="left">Estado civil</td>
+<td align="center">Cualitativa</td>
+</tr>
+<tr class="odd">
+<td align="left">medication-start-year</td>
+<td align="left">anio_medicacion</td>
+<td align="left">Año en que comenzo a medicarse</td>
+<td align="center">Discreta</td>
+</tr>
+<tr class="even">
+<td align="left">onset-year</td>
+<td align="left">anio_enfermedad</td>
+<td align="left">Año en que se manifesto la enfermedad</td>
+<td align="center">Discreta</td>
+</tr>
+<tr class="odd">
+<td align="left">race</td>
+<td align="left">raza</td>
+<td align="left">Raza del paciente</td>
+<td align="center">Cualitativa</td>
+</tr>
+<tr class="even">
+<td align="left">smoked</td>
+<td align="left">fumo</td>
+<td align="left">Si fumo</td>
+<td align="center">Cualitativa</td>
+</tr>
+<tr class="odd">
+<td align="left">surgery</td>
+<td align="left">cirugias</td>
+<td align="left">Si presenta cirugías</td>
+<td align="center">Cualitativa</td>
+</tr>
+<tr class="even">
+<td align="left">years-smoking</td>
+<td align="left">anios_fumo</td>
+<td align="left">Cantidad de años que fumo</td>
+<td align="center">Discreta</td>
 </tr>
 </tbody>
 </table>
 <p>Primero cargamos los datos, luego observamos como los trata R.</p>
-<pre><code>## tibble [2,218 x 11] (S3: tbl_df/tbl/data.frame)
-##  $ ROW_ID     : num [1:2218] 24665 21472 25155 22829 24848 ...
-##  $ age        : num [1:2218] 71 48 73 50 57 51 56 52 64 36 ...
-##  $ EdadR      : num [1:2218] 70 45 70 50 55 50 55 50 60 35 ...
-##  $ DIAGNOSTICO: num [1:2218] 1 0 1 1 1 1 1 1 1 0 ...
-##  $ M_POINT    : num [1:2218] 1 0 1 0 1 3 NA 2 1 0 ...
-##  $ SEX        : num [1:2218] 1 2 2 2 1 2 1 1 2 1 ...
-##  $ d1         : num [1:2218] 35.2 35.1 53.8 31.2 36.3 ...
-##  $ d2         : num [1:2218] -179 -177 -179 -197 -118 ...
-##  $ d3         : num [1:2218] 0.375 0.38 0.36 0.326 0.271 ...
-##  $ d4         : num [1:2218] 0.0966 0.1159 0.1094 0.1032 0.1028 ...
-##  $ d5         : num [1:2218] 0.03211 0.02492 0.05817 0.06926 0.00582 ...</code></pre>
+<pre><code>## tibble [2,218 x 22] (S3: tbl_df/tbl/data.frame)
+##  $ ROW_ID                : num [1:2218] 24665 21472 25155 22829 24848 ...
+##  $ DIAGNOSTICO           : num [1:2218] 1 0 1 1 1 1 1 1 1 0 ...
+##  $ d1                    : num [1:2218] 35.2 35.1 53.8 31.2 36.3 ...
+##  $ d2                    : num [1:2218] -179 -177 -179 -197 -118 ...
+##  $ d3                    : num [1:2218] 0.375 0.38 0.36 0.326 0.271 ...
+##  $ d4                    : num [1:2218] 0.0966 0.1159 0.1094 0.1032 0.1028 ...
+##  $ d5                    : num [1:2218] 0.03211 0.02492 0.05817 0.06926 0.00582 ...
+##  $ medTimepoint          : chr [1:2218] &quot;Immediately before Parkinson medication&quot; &quot;I don&#39;t take Parkinson medications&quot; &quot;Immediately before Parkinson medication&quot; &quot;I don&#39;t take Parkinson medications&quot; ...
+##  $ age                   : num [1:2218] 71 48 73 50 57 51 56 52 64 36 ...
+##  $ are-caretaker         : chr [1:2218] &quot;true&quot; &quot;false&quot; &quot;false&quot; &quot;false&quot; ...
+##  $ deep-brain-stimulation: chr [1:2218] &quot;false&quot; &quot;NULL&quot; &quot;false&quot; &quot;false&quot; ...
+##  $ diagnosis-year        : chr [1:2218] &quot;2011&quot; &quot;NULL&quot; &quot;2005&quot; &quot;2014&quot; ...
+##  $ education             : chr [1:2218] &quot;High School Diploma/GED&quot; &quot;Some college&quot; &quot;Some college&quot; &quot;High School Diploma/GED&quot; ...
+##  $ employment            : chr [1:2218] &quot;Retired&quot; &quot;Employment for wages&quot; &quot;Retired&quot; &quot;Self-employed&quot; ...
+##  $ gender                : chr [1:2218] &quot;Female&quot; &quot;Male&quot; &quot;Male&quot; &quot;Male&quot; ...
+##  $ maritalStatus         : chr [1:2218] &quot;Married or domestic partnership&quot; &quot;Married or domestic partnership&quot; &quot;Married or domestic partnership&quot; &quot;Married or domestic partnership&quot; ...
+##  $ medication-start-year : chr [1:2218] &quot;2011&quot; &quot;NULL&quot; &quot;2005&quot; &quot;0&quot; ...
+##  $ onset-year            : chr [1:2218] &quot;2011&quot; &quot;NULL&quot; &quot;2005&quot; &quot;2012&quot; ...
+##  $ race                  : chr [1:2218] &quot;White or Caucasian&quot; &quot;White or Caucasian&quot; &quot;White or Caucasian&quot; &quot;White or Caucasian&quot; ...
+##  $ smoked                : chr [1:2218] &quot;false&quot; &quot;false&quot; &quot;true&quot; &quot;false&quot; ...
+##  $ surgery               : chr [1:2218] &quot;false&quot; &quot;NULL&quot; &quot;false&quot; &quot;false&quot; ...
+##  $ years-smoking         : chr [1:2218] &quot;NULL&quot; &quot;NULL&quot; &quot;4&quot; &quot;NULL&quot; ...</code></pre>
 <p>Los problemas que encontramos son:</p>
 <ul>
 <li><strong>Diagnostico</strong> no es un factor.</li>
-<li><strong>M_POINT</strong> no es un factor.</li>
-<li><strong>SEX</strong> no es un factor.</li>
+<li><strong>MedTimepoint</strong> no es un factor.</li>
+<li><strong>are-caretaker</strong> no es un factor.</li>
+<li><strong>deep-brain-stimulation</strong> no es un factor.</li>
+<li><strong>diagnosis-year</strong> no lo trata como número.</li>
+<li><strong>education</strong> no es un factor.</li>
+<li><strong>employment</strong> no es un factor.</li>
+<li><strong>gender</strong> no es un factor.</li>
+<li><strong>maritalStatus</strong> no es un factor.</li>
+<li><strong>medication-start-year</strong> no es un número.</li>
+<li><strong>onset-year</strong> no es un número.</li>
+<li><strong>race</strong> no es un factor.</li>
+<li><strong>smoked</strong> no es un factor.</li>
+<li><strong>surgery</strong> no es un factor.</li>
+<li><strong>years-smoking</strong> no es un número.</li>
 <li>Además le cambiamos lo nombres a las variables para que sea más manejable.</li>
 </ul>
-<pre><code>## tibble [2,218 x 11] (S3: tbl_df/tbl/data.frame)
-##  $ id         : num [1:2218] 24665 21472 25155 22829 24848 ...
-##  $ edad       : num [1:2218] 71 48 73 50 57 51 56 52 64 36 ...
-##  $ EdadR      : num [1:2218] 70 45 70 50 55 50 55 50 60 35 ...
-##  $ diagnostico: Factor w/ 2 levels &quot;0&quot;,&quot;1&quot;: 2 1 2 2 2 2 2 2 2 1 ...
-##  $ m_point    : Factor w/ 4 levels &quot;0&quot;,&quot;1&quot;,&quot;2&quot;,&quot;3&quot;: 2 1 2 1 2 4 NA 3 2 1 ...
-##  $ sexo       : Factor w/ 2 levels &quot;1&quot;,&quot;2&quot;: 1 2 2 2 1 2 1 1 2 1 ...
-##  $ d1         : num [1:2218] 35.2 35.1 53.8 31.2 36.3 ...
-##  $ d2         : num [1:2218] -179 -177 -179 -197 -118 ...
-##  $ d3         : num [1:2218] 0.375 0.38 0.36 0.326 0.271 ...
-##  $ d4         : num [1:2218] 0.0966 0.1159 0.1094 0.1032 0.1028 ...
-##  $ d5         : num [1:2218] 0.03211 0.02492 0.05817 0.06926 0.00582 ...</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `anio_diagnostico`.
+## i NAs introducidos por coerción
+## i Input `anio_diagnostico` is `as.numeric(anio_diagnostico)`.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(dots[[i]]): NAs introducidos por coerción</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `anio_medicacion`.
+## i NAs introducidos por coerción
+## i Input `anio_medicacion` is `as.numeric(anio_medicacion)`.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(dots[[i]]): NAs introducidos por coerción</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `anio_enfermedad`.
+## i NAs introducidos por coerción
+## i Input `anio_enfermedad` is `as.numeric(anio_enfermedad)`.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(dots[[i]]): NAs introducidos por coerción</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `anios_fumo`.
+## i NAs introducidos por coerción
+## i Input `anios_fumo` is `as.numeric(anios_fumo)`.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(dots[[i]]): NAs introducidos por coerción</code></pre>
+<pre><code>## tibble [2,218 x 22] (S3: tbl_df/tbl/data.frame)
+##  $ id                   : num [1:2218] 24665 21472 25155 22829 24848 ...
+##  $ diagnostico          : Factor w/ 2 levels &quot;0&quot;,&quot;1&quot;: 2 1 2 2 2 2 2 2 2 1 ...
+##  $ d1                   : num [1:2218] 35.2 35.1 53.8 31.2 36.3 ...
+##  $ d2                   : num [1:2218] -179 -177 -179 -197 -118 ...
+##  $ d3                   : num [1:2218] 0.375 0.38 0.36 0.326 0.271 ...
+##  $ d4                   : num [1:2218] 0.0966 0.1159 0.1094 0.1032 0.1028 ...
+##  $ d5                   : num [1:2218] 0.03211 0.02492 0.05817 0.06926 0.00582 ...
+##  $ punto_medicacion     : Factor w/ 5 levels &quot;Another time&quot;,..: 3 2 3 2 3 4 5 1 3 2 ...
+##  $ edad                 : num [1:2218] 71 48 73 50 57 51 56 52 64 36 ...
+##  $ cuidado              : Factor w/ 3 levels &quot;false&quot;,&quot;NULL&quot;,..: 3 1 1 1 1 1 1 1 1 1 ...
+##  $ estimulacion_cerebral: Factor w/ 3 levels &quot;false&quot;,&quot;NULL&quot;,..: 1 2 1 1 1 1 1 1 1 2 ...
+##  $ anio_diagnostico     : num [1:2218] 2011 NA 2005 2014 2012 ...
+##  $ educacion            : Factor w/ 9 levels &quot;2-year college degree&quot;,..: 4 7 7 4 2 5 7 1 5 5 ...
+##  $ trabajo              : Factor w/ 8 levels &quot;A homemaker&quot;,..: 6 3 6 7 7 3 6 8 3 6 ...
+##  $ genero               : Factor w/ 4 levels &quot;Female&quot;,&quot;Male&quot;,..: 1 2 2 2 1 2 1 1 2 1 ...
+##  $ estado_civil         : Factor w/ 7 levels &quot;Divorced&quot;,&quot;Married or domestic partnership&quot;,..: 2 2 2 2 2 2 2 2 2 6 ...
+##  $ anio_medicacion      : num [1:2218] 2011 NA 2005 0 2012 ...
+##  $ anio_enfermedad      : num [1:2218] 2011 NA 2005 2012 2011 ...
+##  $ raza                 : Factor w/ 41 levels &quot;Black or African&quot;,..: 34 34 34 34 34 34 34 34 31 34 ...
+##  $ fumo                 : Factor w/ 3 levels &quot;false&quot;,&quot;NULL&quot;,..: 1 1 3 1 3 1 1 3 3 2 ...
+##  $ cirugias             : Factor w/ 3 levels &quot;false&quot;,&quot;NULL&quot;,..: 1 2 1 1 1 1 1 1 1 2 ...
+##  $ anios_fumo           : num [1:2218] NA NA 4 NA 15 NA NA 30 10 NA ...</code></pre>
 <p>Ahora las variables se tratan correctamente. Calculamos las medidas resumen para las variables cuantitativas y creamos tablas de frecuencia para variables cualitativas</p>
-<table>
-<thead>
-<tr class="header">
-<th align="left">Variable</th>
-<th align="right">Media</th>
-<th align="right">Mediana</th>
-<th align="right">Primer_Cuartil</th>
-<th align="right">Tercer_Cuartil</th>
-<th align="right">Desvio</th>
-<th align="right">NAs</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">edad</td>
-<td align="right">53.6248873</td>
-<td align="right">53.0000000</td>
-<td align="right">43.0000000</td>
-<td align="right">63.0000000</td>
-<td align="right">12.3163076</td>
-<td align="right">0</td>
-</tr>
-<tr class="even">
-<td align="left">EdadR</td>
-<td align="right">51.7335437</td>
-<td align="right">50.0000000</td>
-<td align="right">40.0000000</td>
-<td align="right">60.0000000</td>
-<td align="right">12.2669438</td>
-<td align="right">0</td>
-</tr>
-<tr class="odd">
-<td align="left">d1</td>
-<td align="right">27.5911286</td>
-<td align="right">26.5423300</td>
-<td align="right">23.8980225</td>
-<td align="right">30.9442275</td>
-<td align="right">5.0348308</td>
-<td align="right">0</td>
-</tr>
-<tr class="even">
-<td align="left">d2</td>
-<td align="right">-12.5927314</td>
-<td align="right">-5.9796315</td>
-<td align="right">-16.8696925</td>
-<td align="right">1.3972347</td>
-<td align="right">26.3564481</td>
-<td align="right">0</td>
-</tr>
-<tr class="odd">
-<td align="left">d3</td>
-<td align="right">0.2291587</td>
-<td align="right">0.2140395</td>
-<td align="right">0.1173868</td>
-<td align="right">0.3300710</td>
-<td align="right">0.1340449</td>
-<td align="right">0</td>
-</tr>
-<tr class="even">
-<td align="left">d4</td>
-<td align="right">0.0876227</td>
-<td align="right">0.0881300</td>
-<td align="right">0.0731908</td>
-<td align="right">0.1024220</td>
-<td align="right">0.0222837</td>
-<td align="right">0</td>
-</tr>
-<tr class="odd">
-<td align="left">d5</td>
-<td align="right">0.0178797</td>
-<td align="right">0.0102170</td>
-<td align="right">0.0059705</td>
-<td align="right">0.0212127</td>
-<td align="right">0.0199257</td>
-<td align="right">0</td>
-</tr>
-</tbody>
-</table>
-<table>
-<thead>
-<tr class="header">
-<th align="left">Var1</th>
-<th align="right">Freq</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">0</td>
-<td align="right">1278</td>
-</tr>
-<tr class="even">
-<td align="left">1</td>
-<td align="right">940</td>
-</tr>
-</tbody>
-</table>
-<table>
-<thead>
-<tr class="header">
-<th align="left">Var1</th>
-<th align="right">Freq</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">0</td>
-<td align="right">1343</td>
-</tr>
-<tr class="even">
-<td align="left">1</td>
-<td align="right">209</td>
-</tr>
-<tr class="odd">
-<td align="left">2</td>
-<td align="right">394</td>
-</tr>
-<tr class="even">
-<td align="left">3</td>
-<td align="right">255</td>
-</tr>
-</tbody>
-</table>
-<table>
-<thead>
-<tr class="header">
-<th align="left">Var1</th>
-<th align="right">Freq</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">1</td>
-<td align="right">574</td>
-</tr>
-<tr class="even">
-<td align="left">2</td>
-<td align="right">1641</td>
-</tr>
-</tbody>
-</table>
 </div>
 
 

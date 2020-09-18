@@ -15,6 +15,7 @@ library(dplyr)
 ```{r setup, include = FALSE, cache = FALSE}
 opts_chunk$set(echo = FALSE)
 opts_knit$set(root.dir = "../")
+options(knitr.kable.NA = " ")
 ```
 
 ```{r, include = FALSE}
@@ -24,40 +25,104 @@ source("./R/Utils.R")
 
 ## Análisis de Datos
 
-Las variables que vamos a utilizar son
+Las variables con las que se va a trabajar son:
 
-|Nombre Variable (viejo)|Nombre Variable (nuevo)|Significado|Tipo Variable|
-|:------:|:------------:|:--------------------|:-----------:|
+|Nombre Variable Original|Nombre Variable Nuevo|Significado|Tipo Variable|
+|:--|:--|:----|:-:|
 |ROW_ID|id|Es el identificador de fila|-|
-|age|edad|Edad del paciente|Discreta|
-|EdadR|?|?|Discreta|
-|DIAGNOSTICO|diagnostico|Resultado del diagnóstico. 1 = Enfermo 0 = No enfermo|Categórica|
-|M_POINT|?|?|Categórica|
-|Sex|sexo|Sexo del paciente|-|
+|DIAGNOSTICO|diagnostico|Resultado del diagnóstico|Categórica|
 |d1|d1|Mean of logarithmic F0 on a semitone frequency scale|Continua|
 |d2|d2|Mean of the ratio of the energy of the spectral harmonic peak at the first formant’s center frequency to the energy of the spectral peak at F0 in voiced regions|Continua|
 |d3|d3| Coefficient of variation of the ratio of the energy of the spectral harmonic peak at the first formant’s center frequency to the energy of the spectral peak at F0 in voiced regions|Continua|
 |d4|d4|Mean of linear regression slope of the logarithmic power spectrum within 0–500 Hz band entropy.|Continua|
 |d5|d5|Mean Jitter of the deviations in individual consecutive F0 period lengths.|Continua|
+|medTimePoint|punto_medicacion|Punto de toma de medicación|Cualitativa|
+|age|edad|Edad del paciente|Discreta|
+|are-caretaker|cuidado|Esta con cuidado|Cualitativa|
+|deep-brain-stimulation|estimulacion_cerebral|Presenta estimulacion cerebral|Cualitativa|
+|diagnosis-year|anio_diagnostico|Año en que le diagnosticaron la enfermedad|Discreta|
+|education|educacion|Nivel de educacion|Cualitativa|
+|employment|trabajo|Trabajo del paciente|Cualitativa|
+|gender|genero|Genero del paciente|Cualitativa|
+|maritalStatus|estado_civil|Estado civil|Cualitativa|
+|medication-start-year|anio_medicacion|Año en que comenzo a medicarse|Discreta|
+|onset-year|anio_enfermedad|Año en que se manifesto la enfermedad|Discreta|
+|smoked|fumo|Si fumo|Cualitativa|
+|surgery|cirugias|Si presenta cirugías|Cualitativa|
+|years-smoking|anios_fumo|Cantidad de años que fumo|Discreta|
+
 
 Primero cargamos los datos, luego observamos como los trata R.
 
-```{r}
-datos_crudos <- read_excel("./data/bd_acotada.xlsx")
+```{r, message = FALSE}
+# Código hacer join entre las tablas
+datos_izq <- read_excel("./data/bd_acotada.xlsx") %>% 
+  select(ROW_ID, DIAGNOSTICO, d1, d2, d3, d4, d5)
+
+datos_der <- read_excel("./data/bd.xlsx") %>% 
+   select(healthCode1, medTimepoint, "F0semitoneFrom27#5Hz_sma3nz_amean", "F0semitoneFrom27#5Hz_sma3nz_stddevNorm",
+          "F0semitoneFrom27#5Hz_sma3nz_percentile20#0", "F0semitoneFrom27#5Hz_sma3nz_percentile50#0", 
+          "F0semitoneFrom27#5Hz_sma3nz_percentile80#0", "F0semitoneFrom27#5Hz_sma3nz_pctlrange0-2",
+          "F0semitoneFrom27#5Hz_sma3nz_meanRisingSlope", "F0semitoneFrom27#5Hz_sma3nz_stddevRisingSlope",
+          "F0semitoneFrom27#5Hz_sma3nz_meanFallingSlope", "F0semitoneFrom27#5Hz_sma3nz_stddevFallingSlope",
+          "jitterLocal_sma3nz_amean", "jitterLocal_sma3nz_stddevNorm", "shimmerLocaldB_sma3nz_amean",
+          "shimmerLocaldB_sma3nz_stddevNorm", ROW_ID2, age, "are-caretaker", "deep-brain-stimulation",
+          "diagnosis-year", education, employment, gender, maritalStatus, "medication-start-year", "onset-year",
+          smartphone, smoked, surgery, "years-smoking", healthCode) %>% 
+  rename(ROW_ID = ROW_ID2)
+
+#View(datos_der[duplicated(datos_der, by = "ROW_ID"), ])
+ 
+datos_crudos <- inner_join(datos_izq, datos_der, by = "ROW_ID") %>% distinct()
+#write.csv(datos_crudos, "./data/bd_join.csv")
+
+rm(datos_izq,datos_der)
+
 str(datos_crudos)
 ```
 
 Los problemas que encontramos son:
 
 * **Diagnostico** no es un factor.
-* **M_POINT** no es un factor.
-* **SEX** no es un factor.
+* **MedTimepoint** no es un factor.
+* **are-caretaker** no es un factor.
+* **deep-brain-stimulation** no es un factor.
+* **diagnosis-year** no lo trata como número.
+* **education** no es un factor.
+* **employment** no es un factor.
+* **gender** no es un factor.
+* **maritalStatus** no es un factor.
+* **medication-start-year** no es un número.
+* **onset-year** no es un número.
+* **race** no es un factor.
+* **smoked** no es un factor.
+* **surgery** no es un factor.
+* **years-smoking** no es un número.
 * Además le cambiamos lo nombres a las variables para que sea más manejable.
 
 ```{r}
 datos_it0 <- datos_crudos %>%
-  rename(id = ROW_ID, edad = age, diagnostico = DIAGNOSTICO, sexo = SEX, m_point = M_POINT) %>% 
-  mutate(diagnostico = as.factor(diagnostico), m_point = as.factor(m_point), sexo = as.factor(sexo))
+  rename(id = ROW_ID, diagnostico = DIAGNOSTICO, punto_medicacion = medTimepoint, edad = age,
+         cuidado = "are-caretaker", estimulacion_cerebral	 = "deep-brain-stimulation",
+         anio_diagnostico = "diagnosis-year", educacion = education, trabajo = employment,
+         genero = gender, estado_civil = maritalStatus, anio_medicacion = "medication-start-year",
+         anio_enfermedad = "onset-year", raza = race, fumo = smoked, cirugias = surgery,
+         anios_fumo = "years-smoking") %>%
+  mutate(diagnostico = as.factor(diagnostico),
+         punto_medicacion = as.factor(punto_medicacion),
+         cuidado = as.factor(cuidado),
+         estimulacion_cerebral = as.factor(estimulacion_cerebral),
+         anio_diagnostico = as.numeric(anio_diagnostico),
+         educacion = as.factor(educacion),
+         trabajo = as.factor(trabajo),
+         genero = as.factor(genero),
+         estado_civil = as.factor(estado_civil),
+         anio_medicacion = as.numeric(anio_medicacion),
+         anio_enfermedad = as.numeric(anio_enfermedad),
+         raza = as.factor(raza),
+         fumo = as.factor(fumo),
+         cirugias = as.factor(cirugias),
+         anios_fumo = as.numeric(anios_fumo))
 
 str(datos_it0)
 ```
@@ -65,21 +130,21 @@ str(datos_it0)
 Ahora las variables se tratan correctamente. Calculamos las medidas resumen para las variables cuantitativas y creamos tablas de frecuencia para variables cualitativas
 
 ```{r}
-# Para variables cualtiativas
-df_aux <- datos_it0 %>% 
-  select(where(is.numeric)) %>% 
-  mutate(id = NULL)
-
-lista_aux <- list(data = df_aux, nombre_var = names(df_aux))
-
-kable(pmap_dfr(lista_aux, medidas_resumen))
-
-# Para variables cuantitativas
-kable(table(datos_it0$diagnostico))
-kable(table(datos_it0$m_point))
-kable(table(datos_it0$sexo))
-
-rm(df_aux,lista_aux)
+# # Para variables cualtiativas
+# df_aux_cuanti <- datos_it0 %>% 
+#   select(where(is.numeric)) %>% 
+#   mutate(id = NULL)
+# 
+# lista_aux <- list(data = df_aux_cuanti, nombre_var = names(df_aux_cuanti))
+# 
+# kable(pmap_dfr(lista_aux, medidas_resumen), caption = "Medidas Resumen de Variables Cuantitativas")
+# 
+# # Para variables cuantitativas
+# 
+# df_aux_cuali <- datos_it0 %>% 
+#   select(where(is.factor))
+# kable(summary(df_aux_cuali), caption = "Frecuencias de Variables Cualitativas")
+# rm(df_aux_cuanti, df_aux_cuali, lista_aux)
   
 ```
 
