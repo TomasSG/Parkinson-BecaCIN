@@ -29,6 +29,8 @@ Las variables con las que se va a trabajar son:
 
 |Nombre Variable Original|Nombre Variable Nuevo|Significado|Tipo Variable|
 |:--|:--|:----|:-:|
+|healthCode|-|-|-|
+|healthCode1|-|Es el identificador del paciente|-|
 |ROW_ID|id|Es el identificador de fila|-|
 |DIAGNOSTICO|diagnostico|Resultado del diagnóstico|Categórica|
 |d1|d1|Mean of logarithmic F0 on a semitone frequency scale|Continua|
@@ -47,6 +49,7 @@ Las variables con las que se va a trabajar son:
 |maritalStatus|estado_civil|Estado civil|Cualitativa|
 |medication-start-year|anio_medicacion|Año en que comenzo a medicarse|Discreta|
 |onset-year|anio_enfermedad|Año en que se manifesto la enfermedad|Discreta|
+|smartphone|facilidad_celular|Facilidad con la que usa el celular|Cualitativa|
 |smoked|fumo|Si fumo|Cualitativa|
 |surgery|cirugias|Si presenta cirugías|Cualitativa|
 |years-smoking|anios_fumo|Cantidad de años que fumo|Discreta|
@@ -70,44 +73,52 @@ datos_der <- read_excel("./data/bd.xlsx") %>%
           "diagnosis-year", education, employment, gender, maritalStatus, "medication-start-year", "onset-year",
           smartphone, smoked, surgery, "years-smoking", healthCode) %>% 
   rename(ROW_ID = ROW_ID2)
-
-#View(datos_der[duplicated(datos_der, by = "ROW_ID"), ])
  
 datos_crudos <- inner_join(datos_izq, datos_der, by = "ROW_ID") %>% distinct()
-#write.csv(datos_crudos, "./data/bd_join.csv")
+
 
 rm(datos_izq,datos_der)
 
-str(datos_crudos)
-```
 
-Los problemas que encontramos son:
-
-* **Diagnostico** no es un factor.
-* **MedTimepoint** no es un factor.
-* **are-caretaker** no es un factor.
-* **deep-brain-stimulation** no es un factor.
-* **diagnosis-year** no lo trata como número.
-* **education** no es un factor.
-* **employment** no es un factor.
-* **gender** no es un factor.
-* **maritalStatus** no es un factor.
-* **medication-start-year** no es un número.
-* **onset-year** no es un número.
-* **race** no es un factor.
-* **smoked** no es un factor.
-* **surgery** no es un factor.
-* **years-smoking** no es un número.
-* Además le cambiamos lo nombres a las variables para que sea más manejable.
-
-```{r}
+# Cambiamos los nombres para que concida con la tabla
 datos_it0 <- datos_crudos %>%
   rename(id = ROW_ID, diagnostico = DIAGNOSTICO, punto_medicacion = medTimepoint, edad = age,
          cuidado = "are-caretaker", estimulacion_cerebral	 = "deep-brain-stimulation",
          anio_diagnostico = "diagnosis-year", educacion = education, trabajo = employment,
          genero = gender, estado_civil = maritalStatus, anio_medicacion = "medication-start-year",
-         anio_enfermedad = "onset-year", raza = race, fumo = smoked, cirugias = surgery,
-         anios_fumo = "years-smoking") %>%
+         anio_enfermedad = "onset-year", facilidad_celular = smartphone, fumo = smoked,
+         cirugias = surgery, anios_fumo = "years-smoking") 
+
+
+
+str(datos_it0)
+```
+
+Los problemas que encontramos son:
+
+* **diagnostico** no es un factor.
+* **punto_medicacion** no es un factor.
+* **cuidado** no es un factor.
+* **estimulacion_cerebral** no es un factor.
+* **anio_diagnostico** no lo trata como número.
+* **educacion** no es un factor.
+* **trabajo** no es un factor.
+* **genero** no es un factor.
+* **estado_civil** no es un factor.
+* **anio_medicacion** no es un número.
+* **anio_enfermedad** no es un número.
+* **facilidad_celular** no es un factor.
+* **fumo** no es un factor.
+* **cirugias** no es un factor.
+* **anios_fumo** no es un número.
+* Además le cambiamos lo nombres a las variables para que sea más manejable.
+
+```{r}
+#Reemplazamos todos los NULL con NA
+datos_it0[datos_it0 == "NULL"] <- NA
+
+
+datos_it1 <- datos_it0 %>%
   mutate(diagnostico = as.factor(diagnostico),
          punto_medicacion = as.factor(punto_medicacion),
          cuidado = as.factor(cuidado),
@@ -119,32 +130,53 @@ datos_it0 <- datos_crudos %>%
          estado_civil = as.factor(estado_civil),
          anio_medicacion = as.numeric(anio_medicacion),
          anio_enfermedad = as.numeric(anio_enfermedad),
-         raza = as.factor(raza),
+         facilidad_celular = as.factor(facilidad_celular),
          fumo = as.factor(fumo),
          cirugias = as.factor(cirugias),
          anios_fumo = as.numeric(anios_fumo))
 
-str(datos_it0)
+str(datos_it1)
 ```
 
 Ahora las variables se tratan correctamente. Calculamos las medidas resumen para las variables cuantitativas y creamos tablas de frecuencia para variables cualitativas
 
 ```{r}
-# # Para variables cualtiativas
-# df_aux_cuanti <- datos_it0 %>% 
-#   select(where(is.numeric)) %>% 
-#   mutate(id = NULL)
-# 
-# lista_aux <- list(data = df_aux_cuanti, nombre_var = names(df_aux_cuanti))
-# 
-# kable(pmap_dfr(lista_aux, medidas_resumen), caption = "Medidas Resumen de Variables Cuantitativas")
-# 
-# # Para variables cuantitativas
-# 
-# df_aux_cuali <- datos_it0 %>% 
-#   select(where(is.factor))
-# kable(summary(df_aux_cuali), caption = "Frecuencias de Variables Cualitativas")
-# rm(df_aux_cuanti, df_aux_cuali, lista_aux)
-  
+# Para variables cualtiativas
+df_aux_cuanti <- datos_it1 %>%
+  select(where(is.numeric)) %>%
+  mutate(id = NULL)
+
+lista_aux <- list(data = df_aux_cuanti, nombre_var = names(df_aux_cuanti))
+
+kable(pmap_dfr(lista_aux, medidas_resumen, remover_na = TRUE), 
+      caption = "Medidas Resumen de Variables Cuantitativas", digits = 2)
+
+# Para variables cuantitativas
+df_aux_cuali <- datos_it1 %>%
+  select(where(is.factor))
+
+kable(summary(df_aux_cuali), caption = "Frecuencias de Variables Cualitativas")
+
+rm(df_aux_cuanti, df_aux_cuali, lista_aux)
+
 ```
 
+De las variables cuantitativas se destaca que:
+
+* **anio_diagnostico** presenta 1287 observaciones con NA. ¿Puede ocurrir que existan observaciones sin una fecha de  diagnóstico?
+* **anio_medicacion** presenta una media en 1429.44 indicando que hay valores muy chicos que distorsionan la verdadera media. Luego, observamos que el primer cuartil tiene valor 0. Estos valores es posible que indiquen que esa persona no toma medicaciones y en su lugar se debería reemplazar estas observaciones con NA para que no interfieran. ¿Es posible que existan observaciones de personas sin medicaciones?
+* **anio_enfermedad** presenta 1120 observaciones con NA. ¿Puede ocurrir que existan observaciones de personas sanas?
+* **anios_fumo** para esta variables hay observaciones con NA pero se cree que no son un error  porque es posible que una persona no haya fumado.
+
+De las variables cualitativas se destaca que:
+
+* **punto_medicacion** presenta 17 observaciones con NA, ¿es posible que correspondan a una categoría de "nunca tome medicamentos"?.
+* **cuidado** presenta 3 observaciones con NA, ¿es posible que correspondan a la categoría de "false"?
+*  **estimulacion_cerebral** presenta 268 observaciones con NA, ¿es posible que correspondan a la categoría de "false"?
+* **educacion** presenta 7 observaciones con NA, ¿es posible que correspondan a la categoría de "sin estudios"?
+* **trabajo** presenta 8 obsercaviones con NA, ¿es posible que corresponda a una categoría de "nunca trabaje"?
+* **genero** presenta 2 observaciones con NA, ¿es posible que corresponda a la categoría "prefer not to answer"?
+* **estado_civil** presenta 4 observaciones con NA.
+* **facilidad_celular** presenta una observacion con NA.
+* **fumo** presenta 64 observaciones con NA, ¿es posible que correspondan a la categoria "false"?
+* **cirugias** presenta 383 observaciones con NA, ¿es posible que correspondan a la categoría "false"?

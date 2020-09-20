@@ -389,6 +389,18 @@ summary {
 </thead>
 <tbody>
 <tr class="odd">
+<td align="left">healthCode</td>
+<td align="left">-</td>
+<td align="left">-</td>
+<td align="center">-</td>
+</tr>
+<tr class="even">
+<td align="left">healthCode1</td>
+<td align="left">-</td>
+<td align="left">Es el identificador del paciente</td>
+<td align="center">-</td>
+</tr>
+<tr class="odd">
 <td align="left">ROW_ID</td>
 <td align="left">id</td>
 <td align="left">Es el identificador de fila</td>
@@ -497,9 +509,9 @@ summary {
 <td align="center">Discreta</td>
 </tr>
 <tr class="odd">
-<td align="left">race</td>
-<td align="left">raza</td>
-<td align="left">Raza del paciente</td>
+<td align="left">smartphone</td>
+<td align="left">facilidad_celular</td>
+<td align="left">Facilidad con la que usa el celular</td>
 <td align="center">Cualitativa</td>
 </tr>
 <tr class="even">
@@ -523,88 +535,489 @@ summary {
 </tbody>
 </table>
 <p>Primero cargamos los datos, luego observamos como los trata R.</p>
-<pre><code>## tibble [2,218 x 22] (S3: tbl_df/tbl/data.frame)
-##  $ ROW_ID                : num [1:2218] 24665 21472 25155 22829 24848 ...
-##  $ DIAGNOSTICO           : num [1:2218] 1 0 1 1 1 1 1 1 1 0 ...
-##  $ d1                    : num [1:2218] 35.2 35.1 53.8 31.2 36.3 ...
-##  $ d2                    : num [1:2218] -179 -177 -179 -197 -118 ...
-##  $ d3                    : num [1:2218] 0.375 0.38 0.36 0.326 0.271 ...
-##  $ d4                    : num [1:2218] 0.0966 0.1159 0.1094 0.1032 0.1028 ...
-##  $ d5                    : num [1:2218] 0.03211 0.02492 0.05817 0.06926 0.00582 ...
-##  $ medTimepoint          : chr [1:2218] &quot;Immediately before Parkinson medication&quot; &quot;I don&#39;t take Parkinson medications&quot; &quot;Immediately before Parkinson medication&quot; &quot;I don&#39;t take Parkinson medications&quot; ...
-##  $ age                   : num [1:2218] 71 48 73 50 57 51 56 52 64 36 ...
-##  $ are-caretaker         : chr [1:2218] &quot;true&quot; &quot;false&quot; &quot;false&quot; &quot;false&quot; ...
-##  $ deep-brain-stimulation: chr [1:2218] &quot;false&quot; &quot;NULL&quot; &quot;false&quot; &quot;false&quot; ...
-##  $ diagnosis-year        : chr [1:2218] &quot;2011&quot; &quot;NULL&quot; &quot;2005&quot; &quot;2014&quot; ...
-##  $ education             : chr [1:2218] &quot;High School Diploma/GED&quot; &quot;Some college&quot; &quot;Some college&quot; &quot;High School Diploma/GED&quot; ...
-##  $ employment            : chr [1:2218] &quot;Retired&quot; &quot;Employment for wages&quot; &quot;Retired&quot; &quot;Self-employed&quot; ...
-##  $ gender                : chr [1:2218] &quot;Female&quot; &quot;Male&quot; &quot;Male&quot; &quot;Male&quot; ...
-##  $ maritalStatus         : chr [1:2218] &quot;Married or domestic partnership&quot; &quot;Married or domestic partnership&quot; &quot;Married or domestic partnership&quot; &quot;Married or domestic partnership&quot; ...
-##  $ medication-start-year : chr [1:2218] &quot;2011&quot; &quot;NULL&quot; &quot;2005&quot; &quot;0&quot; ...
-##  $ onset-year            : chr [1:2218] &quot;2011&quot; &quot;NULL&quot; &quot;2005&quot; &quot;2012&quot; ...
-##  $ race                  : chr [1:2218] &quot;White or Caucasian&quot; &quot;White or Caucasian&quot; &quot;White or Caucasian&quot; &quot;White or Caucasian&quot; ...
-##  $ smoked                : chr [1:2218] &quot;false&quot; &quot;false&quot; &quot;true&quot; &quot;false&quot; ...
-##  $ surgery               : chr [1:2218] &quot;false&quot; &quot;NULL&quot; &quot;false&quot; &quot;false&quot; ...
-##  $ years-smoking         : chr [1:2218] &quot;NULL&quot; &quot;NULL&quot; &quot;4&quot; &quot;NULL&quot; ...</code></pre>
+<pre><code>## tibble [2,218 x 38] (S3: tbl_df/tbl/data.frame)
+##  $ id                                            : num [1:2218] 24665 21472 25155 22829 24848 ...
+##  $ diagnostico                                   : num [1:2218] 1 0 1 1 1 1 1 1 1 0 ...
+##  $ d1                                            : num [1:2218] 35.2 35.1 53.8 31.2 36.3 ...
+##  $ d2                                            : num [1:2218] -179 -177 -179 -197 -118 ...
+##  $ d3                                            : num [1:2218] 0.375 0.38 0.36 0.326 0.271 ...
+##  $ d4                                            : num [1:2218] 0.0966 0.1159 0.1094 0.1032 0.1028 ...
+##  $ d5                                            : num [1:2218] 0.03211 0.02492 0.05817 0.06926 0.00582 ...
+##  $ healthCode1                                   : chr [1:2218] &quot;c9640e39-4b86-43d7-a3bb-b11838143f1f&quot; &quot;cde05521-c092-40ad-babc-d80092a43efa&quot; &quot;b8b33fac-a8c3-45bd-848e-519f42f38de3&quot; &quot;ec275daf-781f-422f-970a-ddc19dfcbcc5&quot; ...
+##  $ punto_medicacion                              : chr [1:2218] &quot;Immediately before Parkinson medication&quot; &quot;I don&#39;t take Parkinson medications&quot; &quot;Immediately before Parkinson medication&quot; &quot;I don&#39;t take Parkinson medications&quot; ...
+##  $ F0semitoneFrom27#5Hz_sma3nz_amean             : num [1:2218] 35.2 35.1 53.8 31.2 36.3 ...
+##  $ F0semitoneFrom27#5Hz_sma3nz_stddevNorm        : num [1:2218] 0.161 0.107 0.182 0.162 0.055 ...
+##  $ F0semitoneFrom27#5Hz_sma3nz_percentile20#0    : num [1:2218] 29.5 32.4 40.4 28 36 ...
+##  $ F0semitoneFrom27#5Hz_sma3nz_percentile50#0    : num [1:2218] 38.6 35.8 60.4 28.5 36 ...
+##  $ F0semitoneFrom27#5Hz_sma3nz_percentile80#0    : num [1:2218] 38.8 37.6 61.3 36.9 36.1 ...
+##  $ F0semitoneFrom27#5Hz_sma3nz_pctlrange0-2      : num [1:2218] 9.387 5.165 20.833 8.948 0.153 ...
+##  $ F0semitoneFrom27#5Hz_sma3nz_meanRisingSlope   : num [1:2218] 114 118 429 419 241 ...
+##  $ F0semitoneFrom27#5Hz_sma3nz_stddevRisingSlope : num [1:2218] 56.1 107.3 689.4 321.4 241.5 ...
+##  $ F0semitoneFrom27#5Hz_sma3nz_meanFallingSlope  : num [1:2218] 97.9 81 127.1 254.6 121.1 ...
+##  $ F0semitoneFrom27#5Hz_sma3nz_stddevFallingSlope: num [1:2218] 182.3 77.6 123 53.7 112.6 ...
+##  $ jitterLocal_sma3nz_amean                      : num [1:2218] 0.03211 0.02492 0.05817 0.06926 0.00582 ...
+##  $ jitterLocal_sma3nz_stddevNorm                 : num [1:2218] 2.301 1.259 0.668 0.968 3.41 ...
+##  $ shimmerLocaldB_sma3nz_amean                   : num [1:2218] 0.752 1.418 1.862 2.252 0.275 ...
+##  $ shimmerLocaldB_sma3nz_stddevNorm              : num [1:2218] 1.076 0.564 0.269 0.587 2.213 ...
+##  $ edad                                          : num [1:2218] 71 48 73 50 57 51 56 52 64 36 ...
+##  $ cuidado                                       : chr [1:2218] &quot;true&quot; &quot;false&quot; &quot;false&quot; &quot;false&quot; ...
+##  $ estimulacion_cerebral                         : chr [1:2218] &quot;false&quot; &quot;NULL&quot; &quot;false&quot; &quot;false&quot; ...
+##  $ anio_diagnostico                              : chr [1:2218] &quot;2011&quot; &quot;NULL&quot; &quot;2005&quot; &quot;2014&quot; ...
+##  $ educacion                                     : chr [1:2218] &quot;High School Diploma/GED&quot; &quot;Some college&quot; &quot;Some college&quot; &quot;High School Diploma/GED&quot; ...
+##  $ trabajo                                       : chr [1:2218] &quot;Retired&quot; &quot;Employment for wages&quot; &quot;Retired&quot; &quot;Self-employed&quot; ...
+##  $ genero                                        : chr [1:2218] &quot;Female&quot; &quot;Male&quot; &quot;Male&quot; &quot;Male&quot; ...
+##  $ estado_civil                                  : chr [1:2218] &quot;Married or domestic partnership&quot; &quot;Married or domestic partnership&quot; &quot;Married or domestic partnership&quot; &quot;Married or domestic partnership&quot; ...
+##  $ anio_medicacion                               : chr [1:2218] &quot;2011&quot; &quot;NULL&quot; &quot;2005&quot; &quot;0&quot; ...
+##  $ anio_enfermedad                               : chr [1:2218] &quot;2011&quot; &quot;NULL&quot; &quot;2005&quot; &quot;2012&quot; ...
+##  $ facilidad_celular                             : chr [1:2218] &quot;Neither easy nor difficult&quot; &quot;Very easy&quot; &quot;Neither easy nor difficult&quot; &quot;Very easy&quot; ...
+##  $ fumo                                          : chr [1:2218] &quot;false&quot; &quot;false&quot; &quot;true&quot; &quot;false&quot; ...
+##  $ cirugias                                      : chr [1:2218] &quot;false&quot; &quot;NULL&quot; &quot;false&quot; &quot;false&quot; ...
+##  $ anios_fumo                                    : chr [1:2218] &quot;NULL&quot; &quot;NULL&quot; &quot;4&quot; &quot;NULL&quot; ...
+##  $ healthCode                                    : chr [1:2218] &quot;c9640e39-4b86-43d7-a3bb-b11838143f1f&quot; &quot;cde05521-c092-40ad-babc-d80092a43efa&quot; &quot;b8b33fac-a8c3-45bd-848e-519f42f38de3&quot; &quot;NULL&quot; ...</code></pre>
 <p>Los problemas que encontramos son:</p>
 <ul>
-<li><strong>Diagnostico</strong> no es un factor.</li>
-<li><strong>MedTimepoint</strong> no es un factor.</li>
-<li><strong>are-caretaker</strong> no es un factor.</li>
-<li><strong>deep-brain-stimulation</strong> no es un factor.</li>
-<li><strong>diagnosis-year</strong> no lo trata como número.</li>
-<li><strong>education</strong> no es un factor.</li>
-<li><strong>employment</strong> no es un factor.</li>
-<li><strong>gender</strong> no es un factor.</li>
-<li><strong>maritalStatus</strong> no es un factor.</li>
-<li><strong>medication-start-year</strong> no es un número.</li>
-<li><strong>onset-year</strong> no es un número.</li>
-<li><strong>race</strong> no es un factor.</li>
-<li><strong>smoked</strong> no es un factor.</li>
-<li><strong>surgery</strong> no es un factor.</li>
-<li><strong>years-smoking</strong> no es un número.</li>
+<li><strong>diagnostico</strong> no es un factor.</li>
+<li><strong>punto_medicacion</strong> no es un factor.</li>
+<li><strong>cuidado</strong> no es un factor.</li>
+<li><strong>estimulacion_cerebral</strong> no es un factor.</li>
+<li><strong>anio_diagnostico</strong> no lo trata como número.</li>
+<li><strong>educacion</strong> no es un factor.</li>
+<li><strong>trabajo</strong> no es un factor.</li>
+<li><strong>genero</strong> no es un factor.</li>
+<li><strong>estado_civil</strong> no es un factor.</li>
+<li><strong>anio_medicacion</strong> no es un número.</li>
+<li><strong>anio_enfermedad</strong> no es un número.</li>
+<li><strong>facilidad_celular</strong> no es un factor.</li>
+<li><strong>fumo</strong> no es un factor.</li>
+<li><strong>cirugias</strong> no es un factor.</li>
+<li><strong>anios_fumo</strong> no es un número.</li>
 <li>Además le cambiamos lo nombres a las variables para que sea más manejable.</li>
 </ul>
-<pre><code>## Warning: Problem with `mutate()` input `anio_diagnostico`.
-## i NAs introducidos por coerción
-## i Input `anio_diagnostico` is `as.numeric(anio_diagnostico)`.</code></pre>
-<pre><code>## Warning in mask$eval_all_mutate(dots[[i]]): NAs introducidos por coerción</code></pre>
-<pre><code>## Warning: Problem with `mutate()` input `anio_medicacion`.
-## i NAs introducidos por coerción
-## i Input `anio_medicacion` is `as.numeric(anio_medicacion)`.</code></pre>
-<pre><code>## Warning in mask$eval_all_mutate(dots[[i]]): NAs introducidos por coerción</code></pre>
-<pre><code>## Warning: Problem with `mutate()` input `anio_enfermedad`.
-## i NAs introducidos por coerción
-## i Input `anio_enfermedad` is `as.numeric(anio_enfermedad)`.</code></pre>
-<pre><code>## Warning in mask$eval_all_mutate(dots[[i]]): NAs introducidos por coerción</code></pre>
-<pre><code>## Warning: Problem with `mutate()` input `anios_fumo`.
-## i NAs introducidos por coerción
-## i Input `anios_fumo` is `as.numeric(anios_fumo)`.</code></pre>
-<pre><code>## Warning in mask$eval_all_mutate(dots[[i]]): NAs introducidos por coerción</code></pre>
-<pre><code>## tibble [2,218 x 22] (S3: tbl_df/tbl/data.frame)
-##  $ id                   : num [1:2218] 24665 21472 25155 22829 24848 ...
-##  $ diagnostico          : Factor w/ 2 levels &quot;0&quot;,&quot;1&quot;: 2 1 2 2 2 2 2 2 2 1 ...
-##  $ d1                   : num [1:2218] 35.2 35.1 53.8 31.2 36.3 ...
-##  $ d2                   : num [1:2218] -179 -177 -179 -197 -118 ...
-##  $ d3                   : num [1:2218] 0.375 0.38 0.36 0.326 0.271 ...
-##  $ d4                   : num [1:2218] 0.0966 0.1159 0.1094 0.1032 0.1028 ...
-##  $ d5                   : num [1:2218] 0.03211 0.02492 0.05817 0.06926 0.00582 ...
-##  $ punto_medicacion     : Factor w/ 5 levels &quot;Another time&quot;,..: 3 2 3 2 3 4 5 1 3 2 ...
-##  $ edad                 : num [1:2218] 71 48 73 50 57 51 56 52 64 36 ...
-##  $ cuidado              : Factor w/ 3 levels &quot;false&quot;,&quot;NULL&quot;,..: 3 1 1 1 1 1 1 1 1 1 ...
-##  $ estimulacion_cerebral: Factor w/ 3 levels &quot;false&quot;,&quot;NULL&quot;,..: 1 2 1 1 1 1 1 1 1 2 ...
-##  $ anio_diagnostico     : num [1:2218] 2011 NA 2005 2014 2012 ...
-##  $ educacion            : Factor w/ 9 levels &quot;2-year college degree&quot;,..: 4 7 7 4 2 5 7 1 5 5 ...
-##  $ trabajo              : Factor w/ 8 levels &quot;A homemaker&quot;,..: 6 3 6 7 7 3 6 8 3 6 ...
-##  $ genero               : Factor w/ 4 levels &quot;Female&quot;,&quot;Male&quot;,..: 1 2 2 2 1 2 1 1 2 1 ...
-##  $ estado_civil         : Factor w/ 7 levels &quot;Divorced&quot;,&quot;Married or domestic partnership&quot;,..: 2 2 2 2 2 2 2 2 2 6 ...
-##  $ anio_medicacion      : num [1:2218] 2011 NA 2005 0 2012 ...
-##  $ anio_enfermedad      : num [1:2218] 2011 NA 2005 2012 2011 ...
-##  $ raza                 : Factor w/ 41 levels &quot;Black or African&quot;,..: 34 34 34 34 34 34 34 34 31 34 ...
-##  $ fumo                 : Factor w/ 3 levels &quot;false&quot;,&quot;NULL&quot;,..: 1 1 3 1 3 1 1 3 3 2 ...
-##  $ cirugias             : Factor w/ 3 levels &quot;false&quot;,&quot;NULL&quot;,..: 1 2 1 1 1 1 1 1 1 2 ...
-##  $ anios_fumo           : num [1:2218] NA NA 4 NA 15 NA NA 30 10 NA ...</code></pre>
+<pre><code>## tibble [2,218 x 38] (S3: tbl_df/tbl/data.frame)
+##  $ id                                            : num [1:2218] 24665 21472 25155 22829 24848 ...
+##  $ diagnostico                                   : Factor w/ 2 levels &quot;0&quot;,&quot;1&quot;: 2 1 2 2 2 2 2 2 2 1 ...
+##  $ d1                                            : num [1:2218] 35.2 35.1 53.8 31.2 36.3 ...
+##  $ d2                                            : num [1:2218] -179 -177 -179 -197 -118 ...
+##  $ d3                                            : num [1:2218] 0.375 0.38 0.36 0.326 0.271 ...
+##  $ d4                                            : num [1:2218] 0.0966 0.1159 0.1094 0.1032 0.1028 ...
+##  $ d5                                            : num [1:2218] 0.03211 0.02492 0.05817 0.06926 0.00582 ...
+##  $ healthCode1                                   : chr [1:2218] &quot;c9640e39-4b86-43d7-a3bb-b11838143f1f&quot; &quot;cde05521-c092-40ad-babc-d80092a43efa&quot; &quot;b8b33fac-a8c3-45bd-848e-519f42f38de3&quot; &quot;ec275daf-781f-422f-970a-ddc19dfcbcc5&quot; ...
+##  $ punto_medicacion                              : Factor w/ 4 levels &quot;Another time&quot;,..: 3 2 3 2 3 4 NA 1 3 2 ...
+##  $ F0semitoneFrom27#5Hz_sma3nz_amean             : num [1:2218] 35.2 35.1 53.8 31.2 36.3 ...
+##  $ F0semitoneFrom27#5Hz_sma3nz_stddevNorm        : num [1:2218] 0.161 0.107 0.182 0.162 0.055 ...
+##  $ F0semitoneFrom27#5Hz_sma3nz_percentile20#0    : num [1:2218] 29.5 32.4 40.4 28 36 ...
+##  $ F0semitoneFrom27#5Hz_sma3nz_percentile50#0    : num [1:2218] 38.6 35.8 60.4 28.5 36 ...
+##  $ F0semitoneFrom27#5Hz_sma3nz_percentile80#0    : num [1:2218] 38.8 37.6 61.3 36.9 36.1 ...
+##  $ F0semitoneFrom27#5Hz_sma3nz_pctlrange0-2      : num [1:2218] 9.387 5.165 20.833 8.948 0.153 ...
+##  $ F0semitoneFrom27#5Hz_sma3nz_meanRisingSlope   : num [1:2218] 114 118 429 419 241 ...
+##  $ F0semitoneFrom27#5Hz_sma3nz_stddevRisingSlope : num [1:2218] 56.1 107.3 689.4 321.4 241.5 ...
+##  $ F0semitoneFrom27#5Hz_sma3nz_meanFallingSlope  : num [1:2218] 97.9 81 127.1 254.6 121.1 ...
+##  $ F0semitoneFrom27#5Hz_sma3nz_stddevFallingSlope: num [1:2218] 182.3 77.6 123 53.7 112.6 ...
+##  $ jitterLocal_sma3nz_amean                      : num [1:2218] 0.03211 0.02492 0.05817 0.06926 0.00582 ...
+##  $ jitterLocal_sma3nz_stddevNorm                 : num [1:2218] 2.301 1.259 0.668 0.968 3.41 ...
+##  $ shimmerLocaldB_sma3nz_amean                   : num [1:2218] 0.752 1.418 1.862 2.252 0.275 ...
+##  $ shimmerLocaldB_sma3nz_stddevNorm              : num [1:2218] 1.076 0.564 0.269 0.587 2.213 ...
+##  $ edad                                          : num [1:2218] 71 48 73 50 57 51 56 52 64 36 ...
+##  $ cuidado                                       : Factor w/ 2 levels &quot;false&quot;,&quot;true&quot;: 2 1 1 1 1 1 1 1 1 1 ...
+##  $ estimulacion_cerebral                         : Factor w/ 2 levels &quot;false&quot;,&quot;true&quot;: 1 NA 1 1 1 1 1 1 1 NA ...
+##  $ anio_diagnostico                              : num [1:2218] 2011 NA 2005 2014 2012 ...
+##  $ educacion                                     : Factor w/ 8 levels &quot;2-year college degree&quot;,..: 4 6 6 4 2 5 6 1 5 5 ...
+##  $ trabajo                                       : Factor w/ 7 levels &quot;A homemaker&quot;,..: 5 3 5 6 6 3 5 7 3 5 ...
+##  $ genero                                        : Factor w/ 3 levels &quot;Female&quot;,&quot;Male&quot;,..: 1 2 2 2 1 2 1 1 2 1 ...
+##  $ estado_civil                                  : Factor w/ 6 levels &quot;Divorced&quot;,&quot;Married or domestic partnership&quot;,..: 2 2 2 2 2 2 2 2 2 5 ...
+##  $ anio_medicacion                               : num [1:2218] 2011 NA 2005 0 2012 ...
+##  $ anio_enfermedad                               : num [1:2218] 2011 NA 2005 2012 2011 ...
+##  $ facilidad_celular                             : Factor w/ 5 levels &quot;Difficult&quot;,&quot;Easy&quot;,..: 3 5 3 5 5 5 5 5 2 5 ...
+##  $ fumo                                          : Factor w/ 2 levels &quot;false&quot;,&quot;true&quot;: 1 1 2 1 2 1 1 2 2 NA ...
+##  $ cirugias                                      : Factor w/ 2 levels &quot;false&quot;,&quot;true&quot;: 1 NA 1 1 1 1 1 1 1 NA ...
+##  $ anios_fumo                                    : num [1:2218] NA NA 4 NA 15 NA NA 30 10 NA ...
+##  $ healthCode                                    : chr [1:2218] &quot;c9640e39-4b86-43d7-a3bb-b11838143f1f&quot; &quot;cde05521-c092-40ad-babc-d80092a43efa&quot; &quot;b8b33fac-a8c3-45bd-848e-519f42f38de3&quot; NA ...</code></pre>
 <p>Ahora las variables se tratan correctamente. Calculamos las medidas resumen para las variables cuantitativas y creamos tablas de frecuencia para variables cualitativas</p>
+<table>
+<caption>Medidas Resumen de Variables Cuantitativas</caption>
+<thead>
+<tr class="header">
+<th align="left">Variable</th>
+<th align="right">Media</th>
+<th align="right">Mediana</th>
+<th align="right">Primer_Cuartil</th>
+<th align="right">Tercer_Cuartil</th>
+<th align="right">Desvio</th>
+<th align="right">NAs</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">d1</td>
+<td align="right">27.59</td>
+<td align="right">26.54</td>
+<td align="right">23.90</td>
+<td align="right">30.94</td>
+<td align="right">5.03</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">d2</td>
+<td align="right">-12.59</td>
+<td align="right">-5.98</td>
+<td align="right">-16.87</td>
+<td align="right">1.40</td>
+<td align="right">26.36</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">d3</td>
+<td align="right">0.23</td>
+<td align="right">0.21</td>
+<td align="right">0.12</td>
+<td align="right">0.33</td>
+<td align="right">0.13</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">d4</td>
+<td align="right">0.09</td>
+<td align="right">0.09</td>
+<td align="right">0.07</td>
+<td align="right">0.10</td>
+<td align="right">0.02</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">d5</td>
+<td align="right">0.02</td>
+<td align="right">0.01</td>
+<td align="right">0.01</td>
+<td align="right">0.02</td>
+<td align="right">0.02</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">F0semitoneFrom27#5Hz_sma3nz_amean</td>
+<td align="right">27.59</td>
+<td align="right">26.54</td>
+<td align="right">23.90</td>
+<td align="right">30.94</td>
+<td align="right">5.03</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">F0semitoneFrom27#5Hz_sma3nz_stddevNorm</td>
+<td align="right">0.07</td>
+<td align="right">0.05</td>
+<td align="right">0.01</td>
+<td align="right">0.11</td>
+<td align="right">0.07</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">F0semitoneFrom27#5Hz_sma3nz_percentile20#0</td>
+<td align="right">26.70</td>
+<td align="right">25.63</td>
+<td align="right">22.81</td>
+<td align="right">30.38</td>
+<td align="right">5.33</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">F0semitoneFrom27#5Hz_sma3nz_percentile50#0</td>
+<td align="right">27.44</td>
+<td align="right">26.40</td>
+<td align="right">23.53</td>
+<td align="right">31.17</td>
+<td align="right">5.35</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">F0semitoneFrom27#5Hz_sma3nz_percentile80#0</td>
+<td align="right">28.43</td>
+<td align="right">27.36</td>
+<td align="right">24.30</td>
+<td align="right">32.34</td>
+<td align="right">5.53</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">F0semitoneFrom27#5Hz_sma3nz_pctlrange0-2</td>
+<td align="right">1.74</td>
+<td align="right">0.46</td>
+<td align="right">0.31</td>
+<td align="right">0.90</td>
+<td align="right">3.40</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">F0semitoneFrom27#5Hz_sma3nz_meanRisingSlope</td>
+<td align="right">98.65</td>
+<td align="right">59.42</td>
+<td align="right">4.53</td>
+<td align="right">144.77</td>
+<td align="right">143.55</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">F0semitoneFrom27#5Hz_sma3nz_stddevRisingSlope</td>
+<td align="right">84.07</td>
+<td align="right">43.13</td>
+<td align="right">2.40</td>
+<td align="right">109.15</td>
+<td align="right">144.97</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">F0semitoneFrom27#5Hz_sma3nz_meanFallingSlope</td>
+<td align="right">57.49</td>
+<td align="right">26.12</td>
+<td align="right">4.01</td>
+<td align="right">84.53</td>
+<td align="right">89.79</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">F0semitoneFrom27#5Hz_sma3nz_stddevFallingSlope</td>
+<td align="right">57.40</td>
+<td align="right">24.08</td>
+<td align="right">2.94</td>
+<td align="right">73.33</td>
+<td align="right">96.93</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">jitterLocal_sma3nz_amean</td>
+<td align="right">0.02</td>
+<td align="right">0.01</td>
+<td align="right">0.01</td>
+<td align="right">0.02</td>
+<td align="right">0.02</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">jitterLocal_sma3nz_stddevNorm</td>
+<td align="right">1.94</td>
+<td align="right">1.79</td>
+<td align="right">1.18</td>
+<td align="right">2.50</td>
+<td align="right">0.99</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">shimmerLocaldB_sma3nz_amean</td>
+<td align="right">0.78</td>
+<td align="right">0.63</td>
+<td align="right">0.40</td>
+<td align="right">0.97</td>
+<td align="right">0.58</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">shimmerLocaldB_sma3nz_stddevNorm</td>
+<td align="right">0.90</td>
+<td align="right">0.82</td>
+<td align="right">0.67</td>
+<td align="right">1.06</td>
+<td align="right">0.32</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">edad</td>
+<td align="right">53.62</td>
+<td align="right">53.00</td>
+<td align="right">43.00</td>
+<td align="right">63.00</td>
+<td align="right">12.32</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">anio_diagnostico</td>
+<td align="right">2009.73</td>
+<td align="right">2011.00</td>
+<td align="right">2007.00</td>
+<td align="right">2013.00</td>
+<td align="right">4.77</td>
+<td align="right">1287</td>
+</tr>
+<tr class="even">
+<td align="left">anio_medicacion</td>
+<td align="right">1429.44</td>
+<td align="right">2009.00</td>
+<td align="right">0.00</td>
+<td align="right">2013.00</td>
+<td align="right">911.21</td>
+<td align="right">1006</td>
+</tr>
+<tr class="odd">
+<td align="left">anio_enfermedad</td>
+<td align="right">2007.91</td>
+<td align="right">2010.00</td>
+<td align="right">2006.00</td>
+<td align="right">2012.00</td>
+<td align="right">6.24</td>
+<td align="right">1120</td>
+</tr>
+<tr class="even">
+<td align="left">anios_fumo</td>
+<td align="right">14.32</td>
+<td align="right">12.00</td>
+<td align="right">5.00</td>
+<td align="right">20.00</td>
+<td align="right">11.14</td>
+<td align="right">1471</td>
+</tr>
+</tbody>
+</table>
+<table style="width:100%;">
+<caption>Frecuencias de Variables Cualitativas</caption>
+<colgroup>
+<col width="1%"></col>
+<col width="4%"></col>
+<col width="19%"></col>
+<col width="3%"></col>
+<col width="7%"></col>
+<col width="9%"></col>
+<col width="9%"></col>
+<col width="9%"></col>
+<col width="13%"></col>
+<col width="12%"></col>
+<col width="3%"></col>
+<col width="3%"></col>
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">diagnostico</th>
+<th align="left">punto_medicacion</th>
+<th align="left">cuidado</th>
+<th align="left">estimulacion_cerebral</th>
+<th align="left">educacion</th>
+<th align="left">trabajo</th>
+<th align="left">genero</th>
+<th align="left">estado_civil</th>
+<th align="left">facilidad_celular</th>
+<th align="left">fumo</th>
+<th align="left">cirugias</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">0:1278</td>
+<td align="left">Another time : 394</td>
+<td align="left">false:2075</td>
+<td align="left">false:1850</td>
+<td align="left">4-year college degree:575</td>
+<td align="left">Employment for wages:1117</td>
+<td align="left">Female : 574</td>
+<td align="left">Divorced : 182</td>
+<td align="left">Difficult : 35</td>
+<td align="left">false:1375</td>
+<td align="left">false:1822</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">1: 940</td>
+<td align="left">I don’t take Parkinson medications :1343</td>
+<td align="left">true : 140</td>
+<td align="left">true : 100</td>
+<td align="left">Masters Degree :554</td>
+<td align="left">Retired : 540</td>
+<td align="left">Male :1641</td>
+<td align="left">Married or domestic partnership:1735</td>
+<td align="left">Easy : 436</td>
+<td align="left">true : 778</td>
+<td align="left">true : 13</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">Immediately before Parkinson medication : 209</td>
+<td align="left">NA’s : 3</td>
+<td align="left">NA’s : 268</td>
+<td align="left">Some college :348</td>
+<td align="left">Self-employed : 332</td>
+<td align="left">Prefer not to answer: 1</td>
+<td align="left">Other : 11</td>
+<td align="left">Neither easy nor difficult: 176</td>
+<td align="left">NA’s : 65</td>
+<td align="left">NA’s : 383</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">Just after Parkinson medication (at your best): 255</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">Doctoral Degree :295</td>
+<td align="left">Unable to work : 120</td>
+<td align="left">NA’s : 2</td>
+<td align="left">Separated : 27</td>
+<td align="left">Very Difficult : 8</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">NA’s : 17</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">Some graduate school :171</td>
+<td align="left">Out of work : 57</td>
+<td align="left"></td>
+<td align="left">Single never married : 209</td>
+<td align="left">Very easy :1562</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">(Other) :268</td>
+<td align="left">(Other) : 44</td>
+<td align="left"></td>
+<td align="left">Widowed : 50</td>
+<td align="left">NA’s : 1</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">NA’s : 7</td>
+<td align="left">NA’s : 8</td>
+<td align="left"></td>
+<td align="left">NA’s : 4</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+</tbody>
+</table>
+<p>De las variables cuantitativas:</p>
+<ul>
+<li><strong>anio_diagnostico</strong> presenta 1287 observaciones con NA. ¿Puede ocurrir que existan observaciones sin una fecha de diagnóstico?</li>
+<li><strong>anio_medicacion</strong> presenta una media en 1429.44 indicando que hay valores muy chicos que distorsionan la verdadera media. Luego, observamos que el primer cuartil tiene valor 0. Estos valores es posible que indiquen que esa persona no toma medicaciones y en su lugar se debería reemplazar estas observaciones con NA para que no interfieran. ¿Es posible que existan observaciones de personas sin medicaciones?</li>
+<li><strong>anio_enfermedad</strong> presenta 1120 observaciones con NA. ¿Puede ocurrir que existan observaciones de personas sanas?</li>
+<li><strong>anios_fumo</strong> para esta variables hay observaciones con NA pero se cree que no son un error porque es posible que una persona no haya fumado.</li>
+</ul>
+<p>De las variables cualitativas:</p>
+<ul>
+<li><strong>punto_medicacion</strong> presenta 17 observaciones con NA, ¿es posible que correspondan a una categoría de “nunca tome medicamentos”?.</li>
+<li><strong>cuidado</strong> presenta 3 observaciones con NA, ¿es posible que correspondan a la categoría de “false”?</li>
+<li><strong>estimulacion_cerebral</strong> presenta 268 observaciones con NA, ¿es posible que correspondan a la categoría de “false”?</li>
+<li><strong>educacion</strong> presenta 7 observaciones con NA, ¿es posible que correspondan a la categoría de “sin estudios”?</li>
+<li><strong>trabajo</strong> presenta 8 obsercaviones con NA, ¿es posible que corresponda a una categoría de “nunca trabaje”?</li>
+<li><strong>genero</strong> presenta 2 observaciones con NA, ¿es posible que corresponda a la categoría “prefer not to answer”?</li>
+<li><strong>estado_civil</strong> presenta 4 observaciones con NA.</li>
+<li><strong>facilidad_celular</strong> presenta una observacion con NA.</li>
+<li><strong>fumo</strong> presenta 64 observaciones con NA, ¿es posible que correspondan a la categoria “false”?</li>
+<li><strong>cirugias</strong> presenta 383 observaciones con NA, ¿es posible que correspondan a la categoría “false”?</li>
+</ul>
 </div>
 
 
