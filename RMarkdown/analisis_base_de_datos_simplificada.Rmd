@@ -10,10 +10,11 @@ output: html_document
 library(knitr)
 library(readxl)
 library(dplyr)
+library(ggpubr)
 ```
 
 ```{r setup, include = FALSE, cache = FALSE}
-opts_chunk$set(echo = FALSE)
+opts_chunk$set(echo = FALSE, fig.align = "center")
 opts_knit$set(root.dir = "../")
 options(knitr.kable.NA = " ")
 ```
@@ -100,13 +101,13 @@ Los problemas que encontramos son:
 * **punto_medicacion** no es un factor.
 * **cuidado** no es un factor.
 * **estimulacion_cerebral** no es un factor.
-* **anio_diagnostico** no lo trata como número.
+* **anio_diagnostico** no es una fecha.
 * **educacion** no es un factor.
 * **trabajo** no es un factor.
 * **genero** no es un factor.
 * **estado_civil** no es un factor.
-* **anio_medicacion** no es un número.
-* **anio_enfermedad** no es un número.
+* **anio_medicacion** no es una fecha
+* **anio_enfermedad** no es una fecha.
 * **facilidad_celular** no es un factor.
 * **fumo** no es un factor.
 * **cirugias** no es un factor.
@@ -123,13 +124,13 @@ datos_it1 <- datos_it0 %>%
          punto_medicacion = as.factor(punto_medicacion),
          cuidado = as.factor(cuidado),
          estimulacion_cerebral = as.factor(estimulacion_cerebral),
-         anio_diagnostico = as.numeric(anio_diagnostico),
+         anio_diagnostico = as.Date(anio_diagnostico, format = "%Y"),
          educacion = as.factor(educacion),
          trabajo = as.factor(trabajo),
          genero = as.factor(genero),
          estado_civil = as.factor(estado_civil),
-         anio_medicacion = as.numeric(anio_medicacion),
-         anio_enfermedad = as.numeric(anio_enfermedad),
+         anio_medicacion = as.Date(anio_medicacion, format = "%Y"),
+         anio_enfermedad = as.Date(anio_enfermedad, format = "%Y"),
          facilidad_celular = as.factor(facilidad_celular),
          fumo = as.factor(fumo),
          cirugias = as.factor(cirugias),
@@ -161,14 +162,14 @@ rm(df_aux_cuanti, df_aux_cuali, lista_aux)
 
 ```
 
-De las variables cuantitativas se destaca que:
+De las variables cuantitativas los problemas que se encuentran son que:
 
 * **anio_diagnostico** presenta 1287 observaciones con NA. ¿Puede ocurrir que existan observaciones sin una fecha de  diagnóstico?
 * **anio_medicacion** presenta una media en 1429.44 indicando que hay valores muy chicos que distorsionan la verdadera media. Luego, observamos que el primer cuartil tiene valor 0. Estos valores es posible que indiquen que esa persona no toma medicaciones y en su lugar se debería reemplazar estas observaciones con NA para que no interfieran. ¿Es posible que existan observaciones de personas sin medicaciones?
 * **anio_enfermedad** presenta 1120 observaciones con NA. ¿Puede ocurrir que existan observaciones de personas sanas?
 * **anios_fumo** para esta variables hay observaciones con NA pero se cree que no son un error  porque es posible que una persona no haya fumado.
 
-De las variables cualitativas se destaca que:
+De las variables cualitativas los problemas que se encuentran son que:
 
 * **punto_medicacion** presenta 17 observaciones con NA, ¿es posible que correspondan a una categoría de "nunca tome medicamentos"?.
 * **cuidado** presenta 3 observaciones con NA, ¿es posible que correspondan a la categoría de "false"?
@@ -180,3 +181,125 @@ De las variables cualitativas se destaca que:
 * **facilidad_celular** presenta una observacion con NA.
 * **fumo** presenta 64 observaciones con NA, ¿es posible que correspondan a la categoria "false"?
 * **cirugias** presenta 383 observaciones con NA, ¿es posible que correspondan a la categoría "false"?
+
+Empezamos realizando gráficos de una sola variable
+
+```{r}
+
+g0 <- ggplot(datos_it1) + ylab("")
+
+# Histogramas de variables di
+g1 <- g0 + geom_histogram(aes(d1), bins = calcular_cant_bins(sum(!is.na(datos_it1$d1))), alpha = 0, color = "black")
+g2 <- g0 + geom_histogram(aes(d2), bins = calcular_cant_bins(sum(!is.na(datos_it1$d2))), alpha = 0, color = "black")
+g3 <- g0 + geom_histogram(aes(d3), bins = calcular_cant_bins(sum(!is.na(datos_it1$d3))), alpha = 0, color = "black")
+g4 <- g0 + geom_histogram(aes(d4), bins = calcular_cant_bins(sum(!is.na(datos_it1$d4))), alpha = 0, color = "black")
+g5 <- g0 + geom_histogram(aes(d5), bins = calcular_cant_bins(sum(!is.na(datos_it1$d5))), alpha = 0, color = "black")
+
+arrange <- ggarrange(g1, g2, g3, g4, g5, nrow = 2, ncol = 3)
+
+annotate_figure(arrange,top = text_grob("Histograma variables di"))
+
+# Histogramas de variables anios
+g1 <- g0 + geom_histogram(aes(edad), bins = calcular_cant_bins(sum(!is.na(datos_it1$edad))), 
+                          alpha = 0, color = "black", na.rm = TRUE)
+g2 <- g0 + geom_histogram(aes(anios_fumo), bins = calcular_cant_bins(sum(!is.na(datos_it1$anios_fumo))), 
+                          alpha = 0, color = "black", na.rm = TRUE)
+
+arrange <- ggarrange(g1, g2, nrow = 1, ncol = 2)
+
+annotate_figure(arrange,top = text_grob("Histograma variables de anios"))
+
+# Boxplot de variables di
+g1 <- g0 + geom_boxplot(aes(d1))
+g2 <- g0 + geom_boxplot(aes(d2))
+g3 <- g0 + geom_boxplot(aes(d3))
+g4 <- g0 + geom_boxplot(aes(d4))
+g5 <- g0 + geom_boxplot(aes(d5))
+
+arrange <- ggarrange(g1, g2, g3, g4, g5, nrow = 2, ncol = 3)
+
+annotate_figure(arrange,top = text_grob("Boxplot variables di"))
+
+# Boxplot de variables anios
+g1 <- g0 + geom_boxplot(aes(edad), na.rm = TRUE)
+g2 <- g0 + geom_boxplot(aes(anios_fumo), na.rm = TRUE)
+
+
+arrange <- ggarrange(g1, g2, nrow = 1, ncol = 2)
+
+annotate_figure(arrange,top = text_grob("Boxplot variables de anios"))
+
+# Barplot variables con fecha
+g1 <- g0 + geom_bar(aes(anio_diagnostico),na.rm = TRUE)
+g2 <- g0 + geom_bar(aes(anio_medicacion), na.rm = TRUE)
+g3 <- g0 + geom_bar(aes(anio_enfermedad), na.rm = TRUE)
+
+arrange <- ggarrange(g1, g2, g3, nrow = 1, ncol = 3)
+
+annotate_figure(arrange,top = text_grob("Barplot variables fecha"))
+
+
+# Barplot variables cualitativas
+
+g1 <- g0 + geom_bar(aes(diagnostico), na.rm = TRUE)
+g2 <- g0 + geom_bar(aes(punto_medicacion), na.rm = TRUE) + coord_flip()
+g3 <- g0 + geom_bar(aes(cuidado), na.rm = TRUE)
+g4 <- g0 + geom_bar(aes(estimulacion_cerebral), na.rm = FALSE)
+g5 <- g0 + geom_bar(aes(educacion), na.rm = TRUE) + coord_flip()
+g6 <- g0 + geom_bar(aes(trabajo), na.rm = TRUE) + coord_flip()
+g7 <- g0 + geom_bar(aes(genero), na.rm = TRUE)
+g8 <- g0 + geom_bar(aes(estado_civil), na.rm = TRUE) + coord_flip()
+g9 <- g0 + geom_bar(aes(facilidad_celular), na.rm = TRUE) + coord_flip()
+g10 <- g0 + geom_bar(aes(fumo), na.rm = TRUE)
+g11 <- g0 + geom_bar(aes(cirugias), na.rm = TRUE)
+
+arrange <- ggarrange(g1, g3, g4, g10, g11, nrow = 2, ncol = 3)
+
+annotate_figure(arrange,top = text_grob("Barplot variables cualitativas"))
+
+g2
+g5
+g6
+g7
+g8
+g9
+
+rm(g0, g1, g2, g3, g4, g5, g6, g8, g9, g10, g11, arrange)
+
+```
+
+* **d2** y **d5** tienen muchos outliers
+* **anio_medicacion** tiene problemas con los 0s.
+* **anio_enfermedad** y **anio_diagnostico** tienen muchos outliers.
+* En las cualitativas es posible que los *NA* tengan algún significado?
+* Hacer validaciones de las variables? Por ej, anios_fumo < edad
+
+```{r,include = FALSE}
+
+# Algunas validaciones
+
+nrow(datos_it1 %>% filter(anios_fumo >= edad))
+
+# Buscamos gente con diagnóstico positivo pero sin anio_diagnostico o anio_enfermedad
+nrow(datos_it1 %>% filter(diagnostico == 1) %>% filter(is.na(anio_diagnostico)))
+nrow(datos_it1 %>% filter(diagnostico == 1) %>% filter(is.na(anio_enfermedad)))
+
+# Buscamos gente que empezo a tomer medicacion antes o despúes del diagnostico pero que figuren con diagnostico 0
+nrow(datos_it1 %>% filter(punto_medicacion == levels(punto_medicacion)[4]) %>% filter(diagnostico != 1))
+nrow(datos_it1 %>% filter(punto_medicacion == levels(punto_medicacion)[3]) %>% filter(diagnostico != 1))
+
+# Buscamos gente de las variables anios con un valor de 0
+nrow(datos_it1 %>% filter(edad == 0))
+nrow(datos_it1 %>% filter(anio_diagnostico == 0))
+nrow(datos_it1 %>% filter(anio_medicacion == 0))
+nrow(datos_it1 %>% filter(anio_enfermedad == 0))
+nrow(datos_it1 %>% filter(anios_fumo == 0))
+
+# Buscamos gente que fumo pero con anios_fumo igual a 0 o NA
+nrow(datos_it1 %>% filter(fumo == levels(fumo)[2]) %>% filter(anios_fumo == 0 | is.na(anios_fumo)))
+
+# Buscamos gente que no fumo pero tiene algun valo en anio_fumo
+nrow(datos_it1 %>% filter(fumo == "false") %>% filter(anios_fumo != 0))
+
+```
+
