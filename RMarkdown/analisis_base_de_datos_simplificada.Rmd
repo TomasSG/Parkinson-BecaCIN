@@ -5,23 +5,22 @@ date: "13/9/2020"
 output: html_document
 ---
 
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, fig.align = "center")
+options(knitr.kable.NA = " ")
+```
+
 ```{r, include = FALSE}
 # Bibliotecas
 library(knitr)
 library(readxl)
 library(dplyr)
 library(ggpubr)
-```
+library(ggplot2)
+library(lubridate)
 
-```{r setup, include = FALSE, cache = FALSE}
-opts_chunk$set(echo = FALSE, fig.align = "center")
-opts_knit$set(root.dir = "../")
-options(knitr.kable.NA = " ")
-```
-
-```{r, include = FALSE}
 # Funciones utiles
-source("./R/Utils.R")
+source("../R/Utils.R")
 ```
 
 ## Análisis de Datos
@@ -60,19 +59,41 @@ Primero cargamos los datos, luego observamos como los trata R.
 
 ```{r, message = FALSE}
 # Código hacer join entre las tablas
-datos_izq <- read_excel("./data/bd_acotada.xlsx") %>% 
+datos_izq <- read_excel("../data/bd_acotada.xlsx") %>% 
   select(ROW_ID, DIAGNOSTICO, d1, d2, d3, d4, d5)
 
-datos_der <- read_excel("./data/bd.xlsx") %>% 
-   select(healthCode1, medTimepoint, "F0semitoneFrom27#5Hz_sma3nz_amean", "F0semitoneFrom27#5Hz_sma3nz_stddevNorm",
-          "F0semitoneFrom27#5Hz_sma3nz_percentile20#0", "F0semitoneFrom27#5Hz_sma3nz_percentile50#0", 
-          "F0semitoneFrom27#5Hz_sma3nz_percentile80#0", "F0semitoneFrom27#5Hz_sma3nz_pctlrange0-2",
-          "F0semitoneFrom27#5Hz_sma3nz_meanRisingSlope", "F0semitoneFrom27#5Hz_sma3nz_stddevRisingSlope",
-          "F0semitoneFrom27#5Hz_sma3nz_meanFallingSlope", "F0semitoneFrom27#5Hz_sma3nz_stddevFallingSlope",
-          "jitterLocal_sma3nz_amean", "jitterLocal_sma3nz_stddevNorm", "shimmerLocaldB_sma3nz_amean",
-          "shimmerLocaldB_sma3nz_stddevNorm", ROW_ID2, age, "are-caretaker", "deep-brain-stimulation",
-          "diagnosis-year", education, employment, gender, maritalStatus, "medication-start-year", "onset-year",
-          smartphone, smoked, surgery, "years-smoking", healthCode) %>% 
+datos_der <- read_excel("../data/bd.xlsx") %>% 
+   select(healthCode1, 
+          medTimepoint, 
+          "F0semitoneFrom27#5Hz_sma3nz_amean", 
+          "F0semitoneFrom27#5Hz_sma3nz_stddevNorm",
+          "F0semitoneFrom27#5Hz_sma3nz_percentile20#0", 
+          "F0semitoneFrom27#5Hz_sma3nz_percentile50#0", 
+          "F0semitoneFrom27#5Hz_sma3nz_percentile80#0", 
+          "F0semitoneFrom27#5Hz_sma3nz_pctlrange0-2",
+          "F0semitoneFrom27#5Hz_sma3nz_meanRisingSlope", 
+          "F0semitoneFrom27#5Hz_sma3nz_stddevRisingSlope",
+          "F0semitoneFrom27#5Hz_sma3nz_meanFallingSlope", 
+          "F0semitoneFrom27#5Hz_sma3nz_stddevFallingSlope",
+          "jitterLocal_sma3nz_amean", 
+          "jitterLocal_sma3nz_stddevNorm", 
+          "shimmerLocaldB_sma3nz_amean",
+          "shimmerLocaldB_sma3nz_stddevNorm", 
+          ROW_ID2, age, 
+          "are-caretaker", 
+          "deep-brain-stimulation",
+          "diagnosis-year", 
+          education, 
+          employment, 
+          gender, 
+          maritalStatus, 
+          "medication-start-year", 
+          "onset-year",
+          smartphone, 
+          smoked, 
+          surgery, 
+          "years-smoking", 
+          healthCode) %>% 
   rename(ROW_ID = ROW_ID2)
  
 datos_crudos <- inner_join(datos_izq, datos_der, by = "ROW_ID") %>% distinct()
@@ -83,12 +104,23 @@ rm(datos_izq,datos_der)
 
 # Cambiamos los nombres para que concida con la tabla
 datos_it0 <- datos_crudos %>%
-  rename(id = ROW_ID, diagnostico = DIAGNOSTICO, punto_medicacion = medTimepoint, edad = age,
-         cuidado = "are-caretaker", estimulacion_cerebral	 = "deep-brain-stimulation",
-         anio_diagnostico = "diagnosis-year", educacion = education, trabajo = employment,
-         genero = gender, estado_civil = maritalStatus, anio_medicacion = "medication-start-year",
-         anio_enfermedad = "onset-year", facilidad_celular = smartphone, fumo = smoked,
-         cirugias = surgery, anios_fumo = "years-smoking") 
+  rename(id = ROW_ID, 
+         diagnostico = DIAGNOSTICO, 
+         punto_medicacion = medTimepoint, 
+         edad = age,
+         cuidado = "are-caretaker", 
+         estimulacion_cerebral	 = "deep-brain-stimulation",
+         anio_diagnostico = "diagnosis-year", 
+         educacion = education, 
+         trabajo = employment,
+         genero = gender, 
+         estado_civil = maritalStatus, 
+         anio_medicacion = "medication-start-year",
+         anio_enfermedad = "onset-year", 
+         facilidad_celular = smartphone, 
+         fumo = smoked,
+         cirugias = surgery, 
+         anios_fumo = "years-smoking") 
 
 
 
@@ -124,16 +156,16 @@ datos_it1 <- datos_it0 %>%
          punto_medicacion = as.factor(punto_medicacion),
          cuidado = as.factor(cuidado),
          estimulacion_cerebral = as.factor(estimulacion_cerebral),
-         anio_diagnostico = as.Date(anio_diagnostico, format = "%Y"),
          educacion = as.factor(educacion),
          trabajo = as.factor(trabajo),
          genero = as.factor(genero),
          estado_civil = as.factor(estado_civil),
-         anio_medicacion = as.Date(anio_medicacion, format = "%Y"),
-         anio_enfermedad = as.Date(anio_enfermedad, format = "%Y"),
          facilidad_celular = as.factor(facilidad_celular),
          fumo = as.factor(fumo),
          cirugias = as.factor(cirugias),
+         anio_medicacion = as.numeric(anio_medicacion),
+         anio_enfermedad = as.numeric(anio_enfermedad),
+         anio_diagnostico = as.numeric(anio_diagnostico),
          anios_fumo = as.numeric(anios_fumo))
 
 str(datos_it1)
@@ -204,8 +236,14 @@ g1 <- g0 + geom_histogram(aes(edad), bins = calcular_cant_bins(sum(!is.na(datos_
                           alpha = 0, color = "black", na.rm = TRUE)
 g2 <- g0 + geom_histogram(aes(anios_fumo), bins = calcular_cant_bins(sum(!is.na(datos_it1$anios_fumo))), 
                           alpha = 0, color = "black", na.rm = TRUE)
+g3 <- g0 + geom_histogram(aes(anio_diagnostico), bins = calcular_cant_bins(sum(!is.na(datos_it1$anio_diagnostico))), 
+                          alpha = 0, color = "black", na.rm = TRUE)
+g4 <- g0 + geom_histogram(aes(anio_medicacion), bins = calcular_cant_bins(sum(!is.na(datos_it1$anio_medicacion))), 
+                          alpha = 0, color = "black", na.rm = TRUE)
+g5 <- g0 + geom_histogram(aes(anio_enfermedad), bins = calcular_cant_bins(sum(!is.na(datos_it1$anio_enfermedad))), 
+                          alpha = 0, color = "black", na.rm = TRUE)
 
-arrange <- ggarrange(g1, g2, nrow = 1, ncol = 2)
+arrange <- ggarrange(g1, g2, g3, g4, g5,  nrow = 2, ncol = 3)
 
 annotate_figure(arrange,top = text_grob("Histograma variables de anios"))
 
@@ -224,20 +262,9 @@ annotate_figure(arrange,top = text_grob("Boxplot variables di"))
 g1 <- g0 + geom_boxplot(aes(edad), na.rm = TRUE)
 g2 <- g0 + geom_boxplot(aes(anios_fumo), na.rm = TRUE)
 
-
 arrange <- ggarrange(g1, g2, nrow = 1, ncol = 2)
 
 annotate_figure(arrange,top = text_grob("Boxplot variables de anios"))
-
-# Barplot variables con fecha
-g1 <- g0 + geom_bar(aes(anio_diagnostico),na.rm = TRUE)
-g2 <- g0 + geom_bar(aes(anio_medicacion), na.rm = TRUE)
-g3 <- g0 + geom_bar(aes(anio_enfermedad), na.rm = TRUE)
-
-arrange <- ggarrange(g1, g2, g3, nrow = 1, ncol = 3)
-
-annotate_figure(arrange,top = text_grob("Barplot variables fecha"))
-
 
 # Barplot variables cualitativas
 
@@ -268,9 +295,8 @@ rm(g0, g1, g2, g3, g4, g5, g6, g8, g9, g10, g11, arrange)
 
 ```
 
+* **anios_fumo** y **anio_medicacion** tiene problemas con los 0s.
 * **d2** y **d5** tienen muchos outliers
-* **anio_medicacion** tiene problemas con los 0s.
-* **anio_enfermedad** y **anio_diagnostico** tienen muchos outliers.
 * En las cualitativas es posible que los *NA* tengan algún significado?
 * Hacer validaciones de las variables? Por ej, anios_fumo < edad
 
@@ -278,28 +304,44 @@ rm(g0, g1, g2, g3, g4, g5, g6, g8, g9, g10, g11, arrange)
 
 # Algunas validaciones
 
-nrow(datos_it1 %>% filter(anios_fumo >= edad))
-
-# Buscamos gente con diagnóstico positivo pero sin anio_diagnostico o anio_enfermedad
-nrow(datos_it1 %>% filter(diagnostico == 1) %>% filter(is.na(anio_diagnostico)))
-nrow(datos_it1 %>% filter(diagnostico == 1) %>% filter(is.na(anio_enfermedad)))
-
-# Buscamos gente que empezo a tomer medicacion antes o despúes del diagnostico pero que figuren con diagnostico 0
-nrow(datos_it1 %>% filter(punto_medicacion == levels(punto_medicacion)[4]) %>% filter(diagnostico != 1))
-nrow(datos_it1 %>% filter(punto_medicacion == levels(punto_medicacion)[3]) %>% filter(diagnostico != 1))
-
 # Buscamos gente de las variables anios con un valor de 0
 nrow(datos_it1 %>% filter(edad == 0))
+nrow(datos_it1 %>% filter(anios_fumo == 0))
 nrow(datos_it1 %>% filter(anio_diagnostico == 0))
 nrow(datos_it1 %>% filter(anio_medicacion == 0))
 nrow(datos_it1 %>% filter(anio_enfermedad == 0))
-nrow(datos_it1 %>% filter(anios_fumo == 0))
 
-# Buscamos gente que fumo pero con anios_fumo igual a 0 o NA
-nrow(datos_it1 %>% filter(fumo == levels(fumo)[2]) %>% filter(anios_fumo == 0 | is.na(anios_fumo)))
+# Buscamos gente que fumo pero con anios_fumo igual a 0
+nrow(datos_it1 %>% filter(tolower(fumo) == "true" & anios_fumo == 0))
+
+# Buscamos gente con anio de medicacion con valores muy chicos
+nrow(datos_it1 %>% filter(anio_medicacion < 1980) %>% select(anio_medicacion))
+
+# Gente con que tiene más años fumando que edad
+nrow(datos_it1 %>% filter(anios_fumo >= edad))
 
 # Buscamos gente que no fumo pero tiene algun valo en anio_fumo
 nrow(datos_it1 %>% filter(fumo == "false") %>% filter(anios_fumo != 0))
+
+```
+Por la presencia de los 0s en la variable **anios_fumo** decidimos reemplazarlos por NAs. Además, completamos con NAs aquellos valores que sean anteriores a 1980 en la variable **anio_medicacion**. Volvemos a realizar los histogramas para observar el resultado.
+
+```{r}
+datos_it2 <- datos_it1
+datos_it2$anios_fumo[datos_it2$anios_fumo == 0] <- NA
+datos_it2$anio_medicacion[datos_it2$anio_medicacion < 1980] <- NA
+
+# Volvemos a hacer los gráficos
+g0 <- ggplot(datos_it2) + ylab("")
+
+g1 <- g0 + geom_histogram(aes(anios_fumo), bins = calcular_cant_bins(sum(!is.na(datos_it1$anios_fumo))), 
+                          alpha = 0, color = "black", na.rm = TRUE)
+g2 <- g0 + geom_histogram(aes(anio_medicacion), bins = calcular_cant_bins(sum(!is.na(datos_it1$anio_medicacion))), 
+                          alpha = 0, color = "black", na.rm = TRUE)
+
+arrange <- ggarrange(g1, g2, nrow = 1, ncol = 2)
+
+annotate_figure(arrange,top = text_grob("Histograma"))
 
 ```
 
