@@ -237,7 +237,8 @@ Empezamos realizando gráficos de una sola variable
 
 ```{r}
 
-g0 <- ggplot(datos_it2) + ylab("")
+g0 <- datos_it2 %>% ggplot() + ylab("")
+
 
 # Histogramas de variables di
 g1 <- g0 + geom_histogram(aes(d1), bins = calcular_cant_bins(sum(!is.na(datos_it1$d1))), alpha = 0, color = "black")
@@ -339,63 +340,136 @@ arrange <- ggarrange(g1, g2, nrow = 1, ncol = 2)
 
 annotate_figure(arrange,top = text_grob("Boxplot variables de anios"))
 
-rm(g1, g2, arrange)
+rm(g0, g1, g2, arrange)
 ```
 En **edad** parece que la mediana se encuentra cercana a 52 años, con el 50% central de los datos desde los 45 hasta los 62 aproximadamente. No hay presencia de valores extremos.
 
 En **anios_fumo** la mediana parece encontrarse cerca de los 10 años. El 50% central de los datos va desde los 5 años hasta los 20. Existen algunos valores extremos.
 
 ```{r}
-g0 + geom_bar(aes(diagnostico, y = ..count.. / sum(..count..)), na.rm = TRUE)
+datos_it2 %>% 
+  filter(!is.na(diagnostico)) %>% 
+  ggplot() + 
+  ylab("") + 
+  geom_bar(aes(diagnostico, y = ..count.. / sum(..count..)))
+
 kable(table(datos_it2$diagnostico))
 ```
 En **diagnostico** más de la mitad de los datos corresponden a diagnósticos negativos, y el resto a diagnosticos positivos.
 
 ```{r}
-g0 + geom_bar(aes(punto_medicacion, y = ..count.. / sum(..count..)), na.rm = TRUE) + coord_flip()
+datos_it2 %>% 
+  filter(!is.na(punto_medicacion)) %>% 
+  ggplot() + 
+  ylab("") + 
+  geom_bar(aes(punto_medicacion, y = ..count.. / sum(..count..))) + 
+  coord_flip()
+
 kable(table(datos_it2$punto_medicacion))
 ```
 
 En **punto_medicacion** el 60% de los datos corresponden a personas que no toman medicación para parkinson. Luego sigue, "Another time", "Just After Parkinson medication" y "Immediately before Parkinson medication".
 
 ```{r}
-g0 + geom_bar(aes(cuidado, y = ..count.. / sum(..count..)), na.rm = TRUE)
+datos_it2 %>% 
+  filter(!is.na(cuidado)) %>% 
+  ggplot() + 
+  ylab("") + 
+  geom_bar(aes(cuidado, y = ..count.. / sum(..count..)))
+
+kable(table(datos_it2$cuidado))
 ```
-En **cuidado** más del 80% de las personas se respondieron falso, casi el 5% si y el resto no respondio.
+En **cuidado** más del 80% de las personas se respondieron falso, casi el 5% si.
 
 
 ```{r}
-g0 + geom_bar(aes(estimulacion_cerebral, y = ..count.. / sum(..count..)), na.rm = FALSE)
+datos_it2 %>% 
+  filter(!is.na(estimulacion_cerebral)) %>% 
+  ggplot() + 
+  ylab("") + 
+  geom_bar(aes(estimulacion_cerebral, y = ..count.. / sum(..count..)))
+
 kable(table(datos_it2$estimulacion_cerebral))
 ```
-En **estimulacion_cerebral** más del 80% de los datos respondieron fallos, más del 10% no respondieron y el resto verdadero.
+En **estimulacion_cerebral** más del 80% de los datos respondieron fallos y el resto verdadero.
 
 ```{r}
-g0 + geom_bar(aes(educacion, y = ..count.. / sum(..count..)), na.rm = TRUE) + coord_flip()
+datos_it2 %>% 
+  filter(!is.na(educacion)) %>% 
+  ggplot() + 
+  ylab("") + 
+  geom_bar(aes(educacion, y = ..count.. / sum(..count..))) + 
+  coord_flip()
+
 kable(table(datos_it2$educacion))
 ```
 En **educacion** se presenta la mayor cantidad de observaciones con "4-year college degree", seguido por "Masters Degree". En tercer lugar se tiene "Some college" y en cuarto "Doctoral Degree".
 
 ```{r}
-g0 + geom_bar(aes(trabajo, y = ..count.. / sum(..count..)), na.rm = TRUE) + coord_flip()
+datos_it2 %>% 
+  filter(!is.na(trabajo)) %>% 
+  ggplot() + 
+  ylab("") +
+  geom_bar(aes(trabajo, y = ..count.. / sum(..count..))) + 
+  coord_flip()
+
 kable(table(datos_it2$trabajo))
 ```
 En **educacion** la mayor cantidad de los datos corresponden por "Empoyment for wages", seguido por "Retired" y "Self-employed".
 
 ```{r}
-g0 + geom_bar(aes(genero, y = ..count.. / sum(..count..)), na.rm = TRUE)
+datos_it2 %>% 
+  filter(!is.na(genero)) %>% 
+  ggplot() + 
+  ylab("") + 
+  geom_bar(aes(genero, y = ..count.. / sum(..count..)))
+
 kable(table(datos_it2$genero))
 ```
 En **genero** más del 70% de los datos corresponden a hombres, y un poco menos del 30% a mujeres.
 
+```{r}
+datos_it2 %>% 
+  filter(!is.na(estado_civil)) %>% 
+  ggplot() + 
+  ylab("") + 
+  geom_bar(aes(estado_civil, y = ..count.. / sum(..count..))) + 
+  coord_flip()
 
+kable(table(datos_it2$estado_civil))
+```
+En **estado_civil**  casi el 80% de los datos se enceuntran en "Married or domestic partnership". Luego, siguen "Single never married" y "Divorced" con menos del 10% cada uno. El resto se distribuyo entre el resto de categorías.
 
 ```{r}
-g0 + geom_bar(aes(estado_civil), na.rm = TRUE) + coord_flip()
-g0 + geom_bar(aes(facilidad_celular), na.rm = TRUE) + coord_flip()
-g0 + geom_bar(aes(fumo), na.rm = TRUE)
-g0 + geom_bar(aes(cirugias), na.rm = TRUE)
+datos_it2 %>% 
+  filter(!is.na(facilidad_celular)) %>% 
+  ggplot() + 
+  ylab("") + 
+  geom_bar(aes(facilidad_celular, y = ..count.. / sum(..count..))) + 
+  coord_flip()
 
-rm(g0)
+kable(table(datos_it2$facilidad_celular))
 ```
+En **facilidad_celular** el 70% de los datos coresponden a "Very easy", un 20% a "Easy", menos del 10% a "Neither easy nor dificult" y el resto a las demás categorías.
 
+```{r}
+datos_it2 %>% 
+  filter(!is.na(fumo)) %>% 
+  ggplot() + 
+  ylab("") + 
+  geom_bar(aes(fumo, y = ..count.. / sum(..count..)))
+
+kable(table(datos_it2$fumo))
+```
+En **fumo** encontramos que más del 60% de los datos corresponden a falso y un poco más del 30% a verdadero.
+
+```{r}
+datos_it2 %>% 
+  filter(!is.na(cirugias)) %>% 
+  ggplot() + 
+  ylab("") +
+  geom_bar(aes(cirugias, y = ..count.. / sum(..count..)))
+
+kable(table(datos_it2$cirugias))
+```
+En **cirugas** casi el 100% de los resultados corresponden a falos y un pequeño porcentaje a verdadero.
