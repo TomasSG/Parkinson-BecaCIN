@@ -347,11 +347,13 @@ En **anios_fumo** la mediana parece encontrarse cerca de los 10 años. El 50% ce
 
 ```{r}
 g0 + geom_bar(aes(diagnostico, y = ..count.. / sum(..count..)), na.rm = TRUE)
+kable(table(datos_it2$diagnostico))
 ```
 En **diagnostico** más de la mitad de los datos corresponden a diagnósticos negativos, y el resto a diagnosticos positivos.
 
 ```{r}
 g0 + geom_bar(aes(punto_medicacion, y = ..count.. / sum(..count..)), na.rm = TRUE) + coord_flip()
+kable(table(datos_it2$punto_medicacion))
 ```
 
 En **punto_medicacion** el 60% de los datos corresponden a personas que no toman medicación para parkinson. Luego sigue, "Another time", "Just After Parkinson medication" y "Immediately before Parkinson medication".
@@ -364,14 +366,31 @@ En **cuidado** más del 80% de las personas se respondieron falso, casi el 5% si
 
 ```{r}
 g0 + geom_bar(aes(estimulacion_cerebral, y = ..count.. / sum(..count..)), na.rm = FALSE)
+kable(table(datos_it2$estimulacion_cerebral))
 ```
-En **estimulacion_cerebral** más del 80% de los datos respondieron falos, más del 10% no respondieron y el resto verdadero.
+En **estimulacion_cerebral** más del 80% de los datos respondieron fallos, más del 10% no respondieron y el resto verdadero.
 
 ```{r}
-g0 + geom_bar(aes(estimulacion_cerebral), na.rm = FALSE)
-g0 + geom_bar(aes(educacion), na.rm = TRUE) + coord_flip()
-g0 + geom_bar(aes(trabajo), na.rm = TRUE) + coord_flip()
-g0 + geom_bar(aes(genero), na.rm = TRUE)
+g0 + geom_bar(aes(educacion, y = ..count.. / sum(..count..)), na.rm = TRUE) + coord_flip()
+kable(table(datos_it2$educacion))
+```
+En **educacion** se presenta la mayor cantidad de observaciones con "4-year college degree", seguido por "Masters Degree". En tercer lugar se tiene "Some college" y en cuarto "Doctoral Degree".
+
+```{r}
+g0 + geom_bar(aes(trabajo, y = ..count.. / sum(..count..)), na.rm = TRUE) + coord_flip()
+kable(table(datos_it2$trabajo))
+```
+En **educacion** la mayor cantidad de los datos corresponden por "Empoyment for wages", seguido por "Retired" y "Self-employed".
+
+```{r}
+g0 + geom_bar(aes(genero, y = ..count.. / sum(..count..)), na.rm = TRUE)
+kable(table(datos_it2$genero))
+```
+En **genero** más del 70% de los datos corresponden a hombres, y un poco menos del 30% a mujeres.
+
+
+
+```{r}
 g0 + geom_bar(aes(estado_civil), na.rm = TRUE) + coord_flip()
 g0 + geom_bar(aes(facilidad_celular), na.rm = TRUE) + coord_flip()
 g0 + geom_bar(aes(fumo), na.rm = TRUE)
