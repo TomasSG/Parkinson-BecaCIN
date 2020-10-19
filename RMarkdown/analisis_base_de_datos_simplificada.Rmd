@@ -196,29 +196,48 @@ rm(df_aux_cuanti, df_aux_cuali, lista_aux)
 
 De las variables cuantitativas los problemas que se encuentran son que:
 
-* **anio_diagnostico** presenta 1287 observaciones con NA. ¿Puede ocurrir que existan observaciones sin una fecha de  diagnóstico?
-* **anio_medicacion** presenta una media en 1429.44 indicando que hay valores muy chicos que distorsionan la verdadera media. Luego, observamos que el primer cuartil tiene valor 0. Estos valores es posible que indiquen que esa persona no toma medicaciones y en su lugar se debería reemplazar estas observaciones con NA para que no interfieran. ¿Es posible que existan observaciones de personas sin medicaciones?
-* **anio_enfermedad** presenta 1120 observaciones con NA. ¿Puede ocurrir que existan observaciones de personas sanas?
-* **anios_fumo** para esta variables hay observaciones con NA pero se cree que no son un error  porque es posible que una persona no haya fumado.
+* **anio_medicacion** presenta una media en 1429.44 indicando que hay valores muy chicos que distorsionan la verdadera media. Luego, observamos que el primer cuartil tiene valor 0. Estos valores es posible que indiquen que esa persona no toma medicaciones y en su lugar se debería reemplazar estas observaciones con NA para que no interfieran.
 
-De las variables cualitativas los problemas que se encuentran son que:
+Realizamos algunas verificaciones para determinar que no hay otros errores de este estilo.
 
-* **punto_medicacion** presenta 17 observaciones con NA, ¿es posible que correspondan a una categoría de "nunca tome medicamentos"?.
-* **cuidado** presenta 3 observaciones con NA, ¿es posible que correspondan a la categoría de "false"?
-*  **estimulacion_cerebral** presenta 268 observaciones con NA, ¿es posible que correspondan a la categoría de "false"?
-* **educacion** presenta 7 observaciones con NA, ¿es posible que correspondan a la categoría de "sin estudios"?
-* **trabajo** presenta 8 obsercaviones con NA, ¿es posible que corresponda a una categoría de "nunca trabaje"?
-* **genero** presenta 2 observaciones con NA, ¿es posible que corresponda a la categoría "prefer not to answer"?
-* **estado_civil** presenta 4 observaciones con NA.
-* **facilidad_celular** presenta una observacion con NA.
-* **fumo** presenta 64 observaciones con NA, ¿es posible que correspondan a la categoria "false"?
-* **cirugias** presenta 383 observaciones con NA, ¿es posible que correspondan a la categoría "false"?
+```{r,include = FALSE}
+
+# Algunas validaciones
+
+# Buscamos gente de las variables anios con un valor de 0
+nrow(datos_it1 %>% filter(edad == 0))
+nrow(datos_it1 %>% filter(anios_fumo == 0))
+nrow(datos_it1 %>% filter(anio_diagnostico == 0))
+nrow(datos_it1 %>% filter(anio_medicacion == 0))
+nrow(datos_it1 %>% filter(anio_enfermedad == 0))
+
+# Buscamos gente que fumo pero con anios_fumo igual a 0
+nrow(datos_it1 %>% filter(tolower(fumo) == "true" & anios_fumo == 0))
+
+# Buscamos gente con anio de medicacion con valores muy chicos
+nrow(datos_it1 %>% filter(anio_medicacion < 1980) %>% select(anio_medicacion))
+
+# Gente con que tiene más años fumando que edad
+nrow(datos_it1 %>% filter(anios_fumo >= edad))
+
+# Buscamos gente que no fumo pero tiene algun valo en anio_fumo
+nrow(datos_it1 %>% filter(fumo == "false") %>% filter(anios_fumo != 0))
+
+```
+
+Por la presencia de los 0s en la variable **anios_fumo** decidimos reemplazarlos por NAs. Además, completamos con NAs aquellos valores que sean anteriores a 1980 en la variable **anio_medicacion**.
+
+```{r}
+datos_it2 <- datos_it1
+datos_it2$anios_fumo[datos_it2$anios_fumo == 0] <- NA
+datos_it2$anio_medicacion[datos_it2$anio_medicacion < 1980] <- NA
+```
 
 Empezamos realizando gráficos de una sola variable
 
 ```{r}
 
-g0 <- ggplot(datos_it1) + ylab("")
+g0 <- ggplot(datos_it2) + ylab("")
 
 # Histogramas de variables di
 g1 <- g0 + geom_histogram(aes(d1), bins = calcular_cant_bins(sum(!is.na(datos_it1$d1))), alpha = 0, color = "black")
@@ -231,6 +250,58 @@ arrange <- ggarrange(g1, g2, g3, g4, g5, nrow = 2, ncol = 3)
 
 annotate_figure(arrange,top = text_grob("Histograma variables di"))
 
+rm(g1, g2, g3, g4, g5, arrange)
+```
+En **d1** parece ser que los datos se concentran entre los valores de 20 y 40, teniendo algunas observaciones por fuera de este intervalo.
+
+En **d2** los datos parecen estar centrados en 0, pero presenta una cola con algunas observaciones para los números negativos.
+
+En **d3** todas las observaciones se encuentran distribuidas entre 0 y 0.6, con gran cantidad de observaciones en los valores intermedios.
+
+En **d4** todas las observaciones se encuentran distribuidas entre 0 y 0.15, pero con mayor cantidad de observaciones para los valores que se encuentran entre 0.05 0.10.
+
+En **d5** se presenta la mayor cantidad de observaciones en los valores más cercanos a 0 de esta variable. Teniendo también observaciones para valores mayores a 0.10, pero en menor medida.
+
+```{r}
+# Boxplot de variables di
+g1 <- g0 + geom_boxplot(aes(d1))
+g2 <- g0 + geom_boxplot(aes(d2))
+g3 <- g0 + geom_boxplot(aes(d3))
+g4 <- g0 + geom_boxplot(aes(d4))
+g5 <- g0 + geom_boxplot(aes(d5))
+
+arrange <- ggarrange(g1, g2, g3, g4, g5, nrow = 2, ncol = 3)
+
+annotate_figure(arrange,top = text_grob("Boxplot variables di"))
+
+rm(g1, g3, g4, arrange)
+```
+En **d1** se tiene la mediana cercana a 25, y el 50% central de los datos parecen estar contenidos entre 25 y 30 aproximadamente. Hay gran presencia de valores extremos.
+
+En **d2** hay gran presencia de valores extremos por lo que se distorsiona el gráfico, posteriormente realizamos un zoom a la zona de interés.
+
+En **d3** la mediana pareciera estar cerca de 0.2 y el 50% central entre 0.1 y 0.3, aprozimadamente. Presenta un único valor extremo.
+
+En **d4** la mediana se encuentra cercana a 0.1, con el 50% central entre 0.08 y 0.1. Hay varios valores extremos.
+
+En **d5** hay gran presencia de valores extremos, por lo que realizamos un zoom para analizar.
+
+```{r}
+# Boxplot de variables di
+g2 <- g2 + coord_cartesian(xlim = c(-25, 25))
+g5 <- g5 + coord_cartesian(xlim = c(0, 0.025))
+
+arrange <- ggarrange(g2, g5, nrow = 1, ncol = 2)
+
+annotate_figure(arrange,top = text_grob("Boxplot con zoom"))
+
+rm(g2, g5, arrange)
+```
+En **d2** la mediana se encuentra cercana a -5 y el 50% central de los datos entre -50 y 0, aproximadamente.
+
+En **d5** la mediana se encuentra aproximadamente en 0.010, con el 50% central entre 0.005 y 0.020 aproximadamente.
+
+```{r}
 # Histogramas de variables anios
 g1 <- g0 + geom_histogram(aes(edad), bins = calcular_cant_bins(sum(!is.na(datos_it1$edad))), 
                           alpha = 0, color = "black", na.rm = TRUE)
@@ -247,17 +318,19 @@ arrange <- ggarrange(g1, g2, g3, g4, g5,  nrow = 2, ncol = 3)
 
 annotate_figure(arrange,top = text_grob("Histograma variables de anios"))
 
-# Boxplot de variables di
-g1 <- g0 + geom_boxplot(aes(d1))
-g2 <- g0 + geom_boxplot(aes(d2))
-g3 <- g0 + geom_boxplot(aes(d3))
-g4 <- g0 + geom_boxplot(aes(d4))
-g5 <- g0 + geom_boxplot(aes(d5))
+rm(g1, g2, g3, g4, g5, arrange)
+```
+En **edad** encontramos que las observaciones parecieran distribuirse uniformemente en el rango de 40 y 70, con algunas pocas observaciones extras para edades superiores a 70.
 
-arrange <- ggarrange(g1, g2, g3, g4, g5, nrow = 2, ncol = 3)
+En **anios_fumo** encontramos que existen observaciones de valores entre 1 y 50 prácticamente. Pero la mayo cantidad de observaciones se centran en los 15 años aproximadamente.
 
-annotate_figure(arrange,top = text_grob("Boxplot variables di"))
+En **anio_diagnostico** la mayor cantidad de observaciones se encuentran cerca del año 2010, pero existen algunas observaciones para los años menores a 2000.
 
+En **anio_medicacion** encontramos gran cantidad de observaciones cercanas al año 2010, y unas pocas para los años menores a 200.
+
+En **anio_enfermedad** la mayor cantidad de observaciones se encuentran cerca del año 2010, pero existen algunas observaciones para los años menores a 2000.
+
+```{r}
 # Boxplot de variables anios
 g1 <- g0 + geom_boxplot(aes(edad), na.rm = TRUE)
 g2 <- g0 + geom_boxplot(aes(anios_fumo), na.rm = TRUE)
@@ -265,6 +338,14 @@ g2 <- g0 + geom_boxplot(aes(anios_fumo), na.rm = TRUE)
 arrange <- ggarrange(g1, g2, nrow = 1, ncol = 2)
 
 annotate_figure(arrange,top = text_grob("Boxplot variables de anios"))
+
+rm(g1, g2, arrange)
+```
+En **edad** parece que la mediana se encuentra cercana a 52 años, con el 50% central de los datos desde los 45 hasta los 62 aproximadamente. No hay presencia de valores extremos.
+
+En **anios_fumo** la mediana parece encontrarse cerca de los 10 años. El 50% central de los datos va desde los 5 años hasta los 20. Existen algunos valores extremos.
+
+```{r}
 
 # Barplot variables cualitativas
 
@@ -292,56 +373,5 @@ g8
 g9
 
 rm(g0, g1, g2, g3, g4, g5, g6, g8, g9, g10, g11, arrange)
-
-```
-
-* **anios_fumo** y **anio_medicacion** tiene problemas con los 0s.
-* **d2** y **d5** tienen muchos outliers
-* En las cualitativas es posible que los *NA* tengan algún significado?
-* Hacer validaciones de las variables? Por ej, anios_fumo < edad
-
-```{r,include = FALSE}
-
-# Algunas validaciones
-
-# Buscamos gente de las variables anios con un valor de 0
-nrow(datos_it1 %>% filter(edad == 0))
-nrow(datos_it1 %>% filter(anios_fumo == 0))
-nrow(datos_it1 %>% filter(anio_diagnostico == 0))
-nrow(datos_it1 %>% filter(anio_medicacion == 0))
-nrow(datos_it1 %>% filter(anio_enfermedad == 0))
-
-# Buscamos gente que fumo pero con anios_fumo igual a 0
-nrow(datos_it1 %>% filter(tolower(fumo) == "true" & anios_fumo == 0))
-
-# Buscamos gente con anio de medicacion con valores muy chicos
-nrow(datos_it1 %>% filter(anio_medicacion < 1980) %>% select(anio_medicacion))
-
-# Gente con que tiene más años fumando que edad
-nrow(datos_it1 %>% filter(anios_fumo >= edad))
-
-# Buscamos gente que no fumo pero tiene algun valo en anio_fumo
-nrow(datos_it1 %>% filter(fumo == "false") %>% filter(anios_fumo != 0))
-
-```
-Por la presencia de los 0s en la variable **anios_fumo** decidimos reemplazarlos por NAs. Además, completamos con NAs aquellos valores que sean anteriores a 1980 en la variable **anio_medicacion**. Volvemos a realizar los histogramas para observar el resultado.
-
-```{r}
-datos_it2 <- datos_it1
-datos_it2$anios_fumo[datos_it2$anios_fumo == 0] <- NA
-datos_it2$anio_medicacion[datos_it2$anio_medicacion < 1980] <- NA
-
-# Volvemos a hacer los gráficos
-g0 <- ggplot(datos_it2) + ylab("")
-
-g1 <- g0 + geom_histogram(aes(anios_fumo), bins = calcular_cant_bins(sum(!is.na(datos_it1$anios_fumo))), 
-                          alpha = 0, color = "black", na.rm = TRUE)
-g2 <- g0 + geom_histogram(aes(anio_medicacion), bins = calcular_cant_bins(sum(!is.na(datos_it1$anio_medicacion))), 
-                          alpha = 0, color = "black", na.rm = TRUE)
-
-arrange <- ggarrange(g1, g2, nrow = 1, ncol = 2)
-
-annotate_figure(arrange,top = text_grob("Histograma"))
-
 ```
 
