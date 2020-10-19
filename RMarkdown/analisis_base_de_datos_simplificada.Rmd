@@ -23,7 +23,7 @@ library(lubridate)
 source("../R/Utils.R")
 ```
 
-## Análisis de Datos
+# Análisis de Datos
 
 Las variables con las que se va a trabajar son:
 
@@ -233,7 +233,7 @@ datos_it2$anios_fumo[datos_it2$anios_fumo == 0] <- NA
 datos_it2$anio_medicacion[datos_it2$anio_medicacion < 1980] <- NA
 ```
 
-Empezamos realizando gráficos de una sola variable
+## Análisis Univariado
 
 ```{r}
 
@@ -473,3 +473,7 @@ datos_it2 %>%
 kable(table(datos_it2$cirugias))
 ```
 En **cirugas** casi el 100% de los resultados corresponden a falos y un pequeño porcentaje a verdadero.
+
+## Análisis Multivariado
+
+### Cualitativa vs cuantitativa
