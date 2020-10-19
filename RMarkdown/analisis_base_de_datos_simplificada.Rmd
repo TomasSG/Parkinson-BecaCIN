@@ -346,32 +346,37 @@ En **edad** parece que la mediana se encuentra cercana a 52 años, con el 50% ce
 En **anios_fumo** la mediana parece encontrarse cerca de los 10 años. El 50% central de los datos va desde los 5 años hasta los 20. Existen algunos valores extremos.
 
 ```{r}
+g0 + geom_bar(aes(diagnostico, y = ..count.. / sum(..count..)), na.rm = TRUE)
+```
+En **diagnostico** más de la mitad de los datos corresponden a diagnósticos negativos, y el resto a diagnosticos positivos.
 
-# Barplot variables cualitativas
+```{r}
+g0 + geom_bar(aes(punto_medicacion, y = ..count.. / sum(..count..)), na.rm = TRUE) + coord_flip()
+```
 
-g1 <- g0 + geom_bar(aes(diagnostico), na.rm = TRUE)
-g2 <- g0 + geom_bar(aes(punto_medicacion), na.rm = TRUE) + coord_flip()
-g3 <- g0 + geom_bar(aes(cuidado), na.rm = TRUE)
-g4 <- g0 + geom_bar(aes(estimulacion_cerebral), na.rm = FALSE)
-g5 <- g0 + geom_bar(aes(educacion), na.rm = TRUE) + coord_flip()
-g6 <- g0 + geom_bar(aes(trabajo), na.rm = TRUE) + coord_flip()
-g7 <- g0 + geom_bar(aes(genero), na.rm = TRUE)
-g8 <- g0 + geom_bar(aes(estado_civil), na.rm = TRUE) + coord_flip()
-g9 <- g0 + geom_bar(aes(facilidad_celular), na.rm = TRUE) + coord_flip()
-g10 <- g0 + geom_bar(aes(fumo), na.rm = TRUE)
-g11 <- g0 + geom_bar(aes(cirugias), na.rm = TRUE)
+En **punto_medicacion** el 60% de los datos corresponden a personas que no toman medicación para parkinson. Luego sigue, "Another time", "Just After Parkinson medication" y "Immediately before Parkinson medication".
 
-arrange <- ggarrange(g1, g3, g4, g10, g11, nrow = 2, ncol = 3)
+```{r}
+g0 + geom_bar(aes(cuidado, y = ..count.. / sum(..count..)), na.rm = TRUE)
+```
+En **cuidado** más del 80% de las personas se respondieron falso, casi el 5% si y el resto no respondio.
 
-annotate_figure(arrange,top = text_grob("Barplot variables cualitativas"))
 
-g2
-g5
-g6
-g7
-g8
-g9
+```{r}
+g0 + geom_bar(aes(estimulacion_cerebral, y = ..count.. / sum(..count..)), na.rm = FALSE)
+```
+En **estimulacion_cerebral** más del 80% de los datos respondieron falos, más del 10% no respondieron y el resto verdadero.
 
-rm(g0, g1, g2, g3, g4, g5, g6, g8, g9, g10, g11, arrange)
+```{r}
+g0 + geom_bar(aes(estimulacion_cerebral), na.rm = FALSE)
+g0 + geom_bar(aes(educacion), na.rm = TRUE) + coord_flip()
+g0 + geom_bar(aes(trabajo), na.rm = TRUE) + coord_flip()
+g0 + geom_bar(aes(genero), na.rm = TRUE)
+g0 + geom_bar(aes(estado_civil), na.rm = TRUE) + coord_flip()
+g0 + geom_bar(aes(facilidad_celular), na.rm = TRUE) + coord_flip()
+g0 + geom_bar(aes(fumo), na.rm = TRUE)
+g0 + geom_bar(aes(cirugias), na.rm = TRUE)
+
+rm(g0)
 ```
 
