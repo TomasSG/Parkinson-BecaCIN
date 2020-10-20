@@ -41,7 +41,7 @@ Las variables con las que se va a trabajar son:
 |medTimePoint|punto_medicacion|Punto de toma de medicación|Cualitativa|
 |age|edad|Edad del paciente|Discreta|
 |are-caretaker|cuidado|Esta con cuidado|Cualitativa|
-|deep-brain-stimulation|estimulacion_cerebral|Presenta estimulacion cerebral|Cualitativa|
+|deep-brain-stimulation|estimulacion_cerebral|Presenta el tratamiento de estimulación cerebral|Cualitativa|
 |diagnosis-year|anio_diagnostico|Año en que le diagnosticaron la enfermedad|Discreta|
 |education|educacion|Nivel de educacion|Cualitativa|
 |employment|trabajo|Trabajo del paciente|Cualitativa|
@@ -518,4 +518,50 @@ datos_it2 %>%
 ```
 No parece existir diferencia de edades entre los dos grupos.
 
+```{r}
+datos_it2 %>% 
+  filter(!is.na(estimulacion_cerebral)) %>% 
+  ggplot(aes(x = estimulacion_cerebral, y = edad, fill =  estimulacion_cerebral)) + 
+  geom_boxplot(na.rm = TRUE)
+```
+La variabilidad de edades del grupo con el tratamiento deep brain parece ser menor que el otro grupo. Además, la edad mediana del grupo sin el tratamiento es menor al 75% del otro grupo (datos a partir del primer cuartil).
 
+```{r}
+g0 <- datos_it2 %>% 
+  filter(!is.na(educacion)) %>% 
+  ggplot(aes(y = educacion, fill = educacion)) +
+  ylab("")
+  
+
+g1 <- g0 + geom_boxplot(aes(x = edad), na.rm = TRUE)
+g2 <- g0 + geom_boxplot(aes(x = anios_fumo), na.rm = TRUE)
+
+arrange <- ggarrange(g1, g2, nrow = 1, ncol = 2, common.legend = TRUE, legend = "none")
+
+annotate_figure(arrange, top = text_grob("Boxplot vs educacion"))
+
+rm(g0, g1, g2, arrange)
+```
+En general, parece que todos los grupos presentan edades similares, aunque "Some graduate school" pareciera que la variabilidad es mayor.
+
+Para **anios_fumo** parece que es similar para todos los grupos, pero el grupo "Masters Degree" presenta menor variablidad. En contraste "2-year college degree" es el grupo con mayor variabilidad.
+
+```{r}
+g0 <- datos_it2 %>% 
+  filter(!is.na(trabajo)) %>% 
+  ggplot(aes(y = trabajo, fill = trabajo)) +
+  ylab("")
+  
+
+g1 <- g0 + geom_boxplot(aes(x = edad), na.rm = TRUE)
+g2 <- g0 + geom_boxplot(aes(x = anios_fumo), na.rm = TRUE)
+
+arrange <- ggarrange(g1, g2, nrow = 1, ncol = 2, common.legend = TRUE, legend = "none")
+
+annotate_figure(arrange, top = text_grob("Boxplot vs educacion"))
+
+rm(g0, g1, g2, arrange)
+```
+El grupo de "A student" pareciera presentar edades menores al resto de grupos. A su vez "Retired" son los que tienen mayor edad, aunque encontramos varios valores extremos. El resto de grupos tienen edades intermedias, y en general presentan valores parecidos aunque la variabilidad cambia.
+
+En el segundo gráfico, todos los grupos presentan una cantidad de años que fumo similares. Aunque el grupo "A student" presenta edades menores al resto, **anios_fumo** es similar al de resto de grupos.
