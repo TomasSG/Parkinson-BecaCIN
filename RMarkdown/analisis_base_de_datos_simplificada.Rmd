@@ -17,10 +17,20 @@ library(readxl)
 library(dplyr)
 library(ggpubr)
 library(ggplot2)
+library(ggthemes)
 library(lubridate)
+library(extrafont)
+library(kableExtra)
+
+# Para no tener problemas con las fuentes
+loadfonts(device = "win")
 
 # Funciones utiles
 source("../R/Utils.R")
+
+# Poniendo un tema por defecto
+theme_set(theme_gdocs() + theme(title = element_text(hjust = .5),
+                                axis.title = element_text(family = "Bell MT", face = "bold", size = 15)))
 ```
 
 # Análisis de Datos
@@ -174,7 +184,7 @@ str(datos_it1)
 Ahora las variables se tratan correctamente. Calculamos las medidas resumen para las variables cuantitativas y creamos tablas de frecuencia para variables cualitativas
 
 ```{r}
-# Para variables cualtiativas
+# Para variables cuantitativas
 df_aux_cuanti <- datos_it1 %>%
   select(where(is.numeric)) %>%
   mutate(id = NULL)
@@ -184,13 +194,8 @@ lista_aux <- list(data = df_aux_cuanti, nombre_var = names(df_aux_cuanti))
 kable(pmap_dfr(lista_aux, medidas_resumen, remover_na = TRUE), 
       caption = "Medidas Resumen de Variables Cuantitativas", digits = 2)
 
-# Para variables cuantitativas
-df_aux_cuali <- datos_it1 %>%
-  select(where(is.factor))
 
-kable(summary(df_aux_cuali), caption = "Frecuencias de Variables Cualitativas")
-
-rm(df_aux_cuanti, df_aux_cuali, lista_aux)
+rm(df_aux_cuanti, lista_aux)
 
 ```
 
@@ -499,7 +504,7 @@ Se sugiere que la **edad** de las personas con diagnostico positivo es mayor a l
 datos_it2 %>% 
   filter(!is.na(punto_medicacion)) %>% 
   ggplot(aes(x = edad, y = punto_medicacion, fill = punto_medicacion)) +
-  geom_boxplot(na.rm = TRUE) 
+  geom_boxplot(na.rm = TRUE, show.legend = FALSE) 
 ```
 Se observa como la **edad** parece ser menor en el caso de "I don't take Parkinsons medications" y los demás niveles son casi idénticos. Sin embargo, comparando con el gráfico previo de **edad** vs **diagnostico** se observa como las edades de las personas que tienen un diagnostico negativo son bastante similares a las edades de este grupo en particular. Entonces capaz que las personas de este grupo sean las que tienen un diagnostico negativo.
 
@@ -589,7 +594,7 @@ datos_it2 %>%
   ggplot(aes(x = edad, y = estado_civil, fill = estado_civil)) +
   geom_boxplot(show.legend = FALSE)
 ```
-El grupo "Single never married" presenta una edad mediana menor al primer cuartil del resto de los grupos. A su vez el grupo "widowed" presenta el primer cuartil superior al tercer cuartil del resto de grupos, excepto "Other". Además, este último es el grupo que pareciera presentar mayor variabilidad.
+El grupo "Single never married" presenta una edad mediana menor al primer cuartil del resto de los grupos. A su vez el grupo "widowed" presenta el primer cuartil superior al tercer cuartil del resto de grupos, excepto "Other".
 
 ```{r}
 datos_it2 %>% 
@@ -606,7 +611,7 @@ datos_it2 %>%
   geom_boxplot(show.legend = FALSE)
 
 ```
-No parece haber diferencia de edades entre ambos grupos, pero si parece haber mayor variabilidad  de edades en el grupo que si fumo.s
+No parece haber diferencia de edades entre ambos grupos.
 
 ```{r}
 datos_it2 %>% 
@@ -617,3 +622,29 @@ datos_it2 %>%
 ```
 
 No parece haber diferencias de edades entre ambos grupos, pero el grupo que si tiene cirugías presenta menor variabilidad que el otro.
+
+### Cualitativa vs Cualitativa
+
+Realizamos algunas tablas de contigencias entre variables
+
+```{r}
+table(datos_it2$cuidado, datos_it2$diagnostico) %>% 
+  addmargins(c(1, 2))
+```
+Del grupo con diagnóstico negativo, el 94.45% no presenta cuidados y el resto si. Por le otro lado, para el grupo con diagnostico positivo presenta un 92.25% no presenta cuidado y el resto si.
+
+Del grupo que no tiene cuidado, el 58.12% presenta diangostico negativo, y el resto diagnóstico positivo. Por el otro lado, para el caso del grupo con cuidado, los datos se reparten exactamente a la mitad entre personas con diagnóstico positivo y negativo, es decir que hay un 50% para cada uno. Se observa como en estos casos la distribución de observaciones es más equitativa que cuando se miraban las columnas.
+
+```{r}
+table(datos_it2$estimulacion_cerebral, datos_it2$diagnostico) %>% 
+  addmargins(c(1, 2))
+```
+* Del grupo con diagnóstico negativo, el 99.4% no se realiza el tratamiento DBS y el resto si. 
+* Del grupo con diagnóstico positivo, el 89.96% no realiza el tratamiento de DBS y el resto sí.
+* Del grupo que no realiza el tratamiento DBS, el 54.43% presenta diágnostico negativo y el resto positivo. La distribución de las osbservaciones es más equitativa en este caso.
+Del grupo que si realiza el tratamiento DBS, el 94% presenta diágnostico postivo y el resto negativo. Esto puede tener causa en que este tratamiento es usado generalmente en pacientes de Parkinson.
+
+```{r}
+
+```
+
