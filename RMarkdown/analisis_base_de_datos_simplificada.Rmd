@@ -20,6 +20,7 @@ library(ggplot2)
 library(ggthemes)
 library(lubridate)
 library(extrafont)
+library(scales)
 library(kableExtra)
 
 # Para no tener problemas con las fuentes
@@ -419,8 +420,24 @@ datos_it2 %>%
   coord_flip()
 
 kable(table(datos_it2$trabajo))
+
+datos_it2 %>% 
+  filter(!is.na(educacion)) %>%
+  group_by(educacion) %>% 
+  mutate(educacion = factor(educacion, c("Doctoral Degree", "Masters Degree",  "Some graduate school", "4-year college degree", 
+                                                  "2-year college degree",  "Some college", "High School Diploma/GED", "Some high school"))) %>% 
+  
+  summarise(n = n()) %>% 
+  mutate(prop = n / sum(n), acum = cumsum(prop)) %>% 
+  ggplot(aes(y = acum, x = educacion)) +
+  geom_bar(show.legend = FALSE, alpha = .4, stat = "identity", fill = "darkblue") +
+  ylab("") +
+  xlab("") +
+  ggtitle("Frequencias acumuladas") +
+  scale_y_continuous(labels = label_percent(2), breaks = seq(0, 1, .2)) +
+  theme(axis.text.x = element_text(angle = 45))
 ```
-En **educacion** la mayor cantidad de los datos corresponden por "Empoyment for wages", seguido por "Retired" y "Self-employed".
+En **educacion** la mayor cantidad de los datos corresponden por "Empoyment for wages", seguido por "Retired" y "Self-employed". Además, en el gráfico de barra se ordeno por el nivel de educación, para observar como son la distribución de los datos. Aquí encontramos que hasta "2-year college degree", es decir que tienen un título universitario, se acumula casi el 80% de los datos. Luego, si contamos "Some college" ya obtenemos más de los 90% de los datos. 
 
 ```{r}
 datos_it2 %>% 
@@ -645,6 +662,53 @@ table(datos_it2$estimulacion_cerebral, datos_it2$diagnostico) %>%
 Del grupo que si realiza el tratamiento DBS, el 94% presenta diágnostico postivo y el resto negativo. Esto puede tener causa en que este tratamiento es usado generalmente en pacientes de Parkinson.
 
 ```{r}
+table(datos_it2$educacion, datos_it2$diagnostico) %>% 
+  addmargins(c(1, 2)) 
+```
+En este caso, vamos a realizar dos diagramas de barras para mostrar como son la distribución de observaciones cuando se agrupa según el **diagnostico**
+
+```{r}
+datos_it2 %>% 
+  filter(diagnostico == 1 & !is.na(educacion)) %>%
+  group_by(educacion) %>% 
+  summarise(n = n()) %>% 
+  mutate(prop = n / sum(n)) %>% 
+  arrange(-prop) %>% 
+  mutate(educacion = factor(educacion, levels = educacion)) %>% 
+  ggplot(aes(x = prop, y = educacion, fill = educacion)) +
+  geom_bar(show.legend = FALSE, alpha = .4, stat = "identity") +
+  xlab("") +
+  ggtitle("Grupo con diagnóstico positivo") +
+  scale_x_continuous(labels = label_percent(2))
 
 ```
+
+Se observa como los grupos de "Masters Degree" y "4-year collegye degree" acumulan el 50% de las observaciones. Luego, entre el grupo de "Doctoral Degree" y "Some college" acumulan otro 20% más. El resto se reparte entre las categorias restantes.
+
+```{r}
+datos_it2 %>% 
+  filter(diagnostico == 0 & !is.na(educacion)) %>%
+  group_by(educacion) %>% 
+  summarise(n = n()) %>% 
+  mutate(prop = n / sum(n)) %>% 
+  arrange(-prop) %>% 
+  mutate(educacion = factor(educacion, levels = educacion)) %>% 
+  ggplot(aes(x = prop, y = educacion, fill = educacion)) +
+  geom_bar(show.legend = FALSE, alpha = .4, stat = "identity") +
+  xlab("") +
+  ggtitle("Grupo con diagnóstico negativo") +
+  scale_x_continuous(labels = label_percent(2))
+```
+Se presentan resultados similares que en el caso de grupo con diagnóstico positivo. 
+
+```{r}
+datos_it2 %>% 
+  filter(!is.na(educacion)) %>% 
+  ggplot(aes(y = educacion, x = ..count.. / sum(..count..), fill = diagnostico)) +
+  geom_bar(position = "fill", alpha = .6) +
+  xlab("") +
+  ggtitle("Diagnosticos postivios/negativos según nivel de educación") +
+  scale_x_continuous(labels = label_percent(2))
+```
+Se observa como todos los niveles de educación presentan porcentajes parecidos de personas con porcentajes negativos/postivos. El caso de "High School Diploma" que tiene los datos repartidos equitativamente.
 
