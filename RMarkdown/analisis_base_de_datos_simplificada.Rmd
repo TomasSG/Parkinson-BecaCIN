@@ -223,7 +223,7 @@ nrow(datos_it1 %>% filter(anio_enfermedad == 0))
 nrow(datos_it1 %>% filter(tolower(fumo) == "true" & anios_fumo == 0))
 
 # Buscamos gente con anio de medicacion con valores muy chicos
-nrow(datos_it1 %>% filter(anio_medicacion < 1980) %>% select(anio_medicacion))
+nrow(datos_it1 %>% filter(anio_medicacion < 1960) %>% select(anio_medicacion))
 
 # Gente con que tiene más años fumando que edad
 nrow(datos_it1 %>% filter(anios_fumo >= edad))
@@ -238,7 +238,7 @@ Por la presencia de los 0s en la variable **anios_fumo** decidimos reemplazarlos
 ```{r}
 datos_it2 <- datos_it1
 datos_it2$anios_fumo[datos_it2$anios_fumo == 0] <- NA
-datos_it2$anio_medicacion[datos_it2$anio_medicacion < 1980] <- NA
+datos_it2$anio_medicacion[datos_it2$anio_medicacion < 1960] <- NA
 ```
 
 ## Análisis Univariado
@@ -785,3 +785,51 @@ table(datos_it2$cirugias, datos_it2$diagnostico) %>%
 * Del grupo con diagnóstico negativo el 99.77% no presenta cirugías. En el grupo con diagnóstico positivo ocurre algo similar, hay un 98.82% de las personas sin cirugías. 
 * Del grupo sin cirugías, el 49.06% tienen diagnóstico negativo y el resto positivo. Se observa que los datos se encuentran repartidos equitativamente.
 * Del grupo con cirugías, el 15.38% tienen diagnóstico negativo y el resto postivio. Aqui encontramos que predominan las personas con Parkinson.
+
+```{r}
+table(datos_it2$trabajo, datos_it2$fumo)
+```
+
+## Análisis cuanti vs cuanti
+
+```{r, message = FALSE}
+  datos_it2 %>% 
+  filter(!is.na(anio_diagnostico)) %>% 
+  group_by(anio_diagnostico) %>% 
+  summarise(edad_media = mean(edad)) %>% 
+  ggplot(aes(y = edad_media, x = anio_diagnostico)) +  
+  geom_point() +
+  geom_line()
+```
+
+
+```{r, message = FALSE}
+datos_it2 %>% 
+  filter(!is.na(anios_fumo)) %>% 
+  group_by(anios_fumo) %>% 
+  summarise(edad_media = mean(edad)) %>% 
+  ggplot(aes(y = edad_media, x = anios_fumo)) +  
+  geom_point() +
+  geom_line() +
+  scale_x_continuous(breaks = seq(0, 50, 5))
+```
+```{r}
+datos_it2 %>% 
+  filter(!is.na(anio_diagnostico) & !is.na(anio_enfermedad)) %>% 
+  ggplot(aes(x = anio_diagnostico, y = anio_enfermedad)) +
+  geom_point() +
+  geom_point(data = )
+  
+```
+
+
+
+```{r}
+datos_it2 %>% 
+  filter(!is.na(anio_diagnostico) & !is.na(anio_enfermedad)) %>% 
+  mutate(punto_enfemedad = ifelse(anio_enfermedad < anio_diagnostico, "Antes", ifelse(anio_enfermedad > anio_diagnostico, "Despues", "Igual"))) %>% 
+  ggplot(aes(x = punto_enfemedad, y = ..count.. / sum(..count..))) + 
+  geom_bar(fill = "darkblue", alpha = 0.6) +
+  ylab("")
+```
+
