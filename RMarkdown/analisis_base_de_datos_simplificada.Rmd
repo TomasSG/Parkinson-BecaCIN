@@ -767,3 +767,21 @@ datos_it2 %>%
   xlab("")
 ```
 Se observa como en todos los grupos, menos en "Very easy", se más del 60% de las personas con diagnóstico postivo. En "Very easy" ocurre lo contrario, la mayoría de las personas corresponden a diagnóstico negativo.
+
+```{r}
+table(datos_it2$fumo, datos_it2$diagnostico) %>% 
+  addmargins(c(1, 2))
+```
+
+* Del grupo con diagnóstico negativo, el 62.52% no fumo y el 37.48% si. 
+* Del grupo con diagnóstico positivo, el 65.6% no fumo y el 34.4% si. Resultados similares al grupo anterior
+* Del grupo que no fumo, el 55.2% tiene diagnóstico positivo y el 44.8% negativo. Encontramos que los datos estan distribuidos de forma equitativa.
+* Del grupo que sí fumo, el 58.48% tiene diagnóstico positivo y el 41.52% negativo. Situación similar al caso anterior.
+
+```{r}
+table(datos_it2$cirugias, datos_it2$diagnostico) %>% 
+  addmargins(c(1, 2))
+```
+* Del grupo con diagnóstico negativo el 99.77% no presenta cirugías. En el grupo con diagnóstico positivo ocurre algo similar, hay un 98.82% de las personas sin cirugías. 
+* Del grupo sin cirugías, el 49.06% tienen diagnóstico negativo y el resto positivo. Se observa que los datos se encuentran repartidos equitativamente.
+* Del grupo con cirugías, el 15.38% tienen diagnóstico negativo y el resto postivio. Aqui encontramos que predominan las personas con Parkinson.
