@@ -30,10 +30,12 @@ loadfonts(device = "win")
 source("../R/Utils.R")
 
 # Poniendo un tema por defecto
-familia_texto <- "Bell MT"
-theme_set(theme_gdocs() + theme(title = element_text(family = familia_texto, size = 15),
-                                axis.title = element_text(family = familia_texto, face = "bold", size = 10)))
-rm(familia_texto)
+familia_texto <- "Consolas"
+tamanio_titulo <- 20
+face_titulo <- "bold"
+theme_set(theme_gdocs() + theme(title = element_text(family = familia_texto, size = 20, face = "bold"),
+                                axis.title = element_text(family = familia_texto, face = "bold", size = 15)))
+
 ```
 
 # Análisis de Datos
@@ -69,6 +71,7 @@ Las variables con las que se va a trabajar son:
 
 
 Primero cargamos los datos, luego observamos como los trata R.
+
 
 ```{r, message = FALSE}
 # Código hacer join entre las tablas
@@ -140,6 +143,7 @@ datos_it0 <- datos_crudos %>%
 str(datos_it0)
 ```
 
+
 Los problemas que encontramos son:
 
 * **diagnostico** no es un factor.
@@ -158,6 +162,7 @@ Los problemas que encontramos son:
 * **cirugias** no es un factor.
 * **anios_fumo** no es un número.
 * Además le cambiamos lo nombres a las variables para que sea más manejable.
+
 
 ```{r}
 #Reemplazamos todos los NULL con NA
@@ -184,7 +189,9 @@ datos_it1 <- datos_it0 %>%
 str(datos_it1)
 ```
 
+
 Ahora las variables se tratan correctamente. Calculamos las medidas resumen para las variables cuantitativas y creamos tablas de frecuencia para variables cualitativas
+
 
 ```{r}
 # Para variables cuantitativas
@@ -202,11 +209,13 @@ rm(df_aux_cuanti, lista_aux)
 
 ```
 
+
 De las variables cuantitativas los problemas que se encuentran son que:
 
 * **anio_medicacion** presenta una media en 1429.44 indicando que hay valores muy chicos que distorsionan la verdadera media. Luego, observamos que el primer cuartil tiene valor 0. Estos valores es posible que indiquen que esa persona no toma medicaciones y en su lugar se debería reemplazar estas observaciones con NA para que no interfieran.
 
 Realizamos algunas verificaciones para determinar que no hay otros errores de este estilo.
+
 
 ```{r,include = FALSE}
 
@@ -233,7 +242,9 @@ nrow(datos_it1 %>% filter(fumo == "false") %>% filter(anios_fumo != 0))
 
 ```
 
+
 Por la presencia de los 0s en la variable **anios_fumo** decidimos reemplazarlos por NAs. Además, completamos con NAs aquellos valores que sean anteriores a 1980 en la variable **anio_medicacion**.
+
 
 ```{r}
 datos_it2 <- datos_it1
@@ -249,51 +260,50 @@ g0 <- datos_it2 %>% ggplot() + ylab("")
 
 
 # Histogramas de variables di
-g1 <- g0 + geom_histogram(aes(d1), bins = calcular_cant_bins(sum(!is.na(datos_it1$d1))), alpha = 0, color = "black")
-g2 <- g0 + geom_histogram(aes(d2), bins = calcular_cant_bins(sum(!is.na(datos_it1$d2))), alpha = 0, color = "black")
-g3 <- g0 + geom_histogram(aes(d3), bins = calcular_cant_bins(sum(!is.na(datos_it1$d3))), alpha = 0, color = "black")
-g4 <- g0 + geom_histogram(aes(d4), bins = calcular_cant_bins(sum(!is.na(datos_it1$d4))), alpha = 0, color = "black")
-g5 <- g0 + geom_histogram(aes(d5), bins = calcular_cant_bins(sum(!is.na(datos_it1$d5))), alpha = 0, color = "black")
+g1 <- g0 + geom_histogram(aes(d1), bins = calcular_cant_bins(sum(!is.na(datos_it1$d1))), alpha = 0.4, color = "firebrick", fill = "white")
+g2 <- g0 + geom_histogram(aes(d2), bins = calcular_cant_bins(sum(!is.na(datos_it1$d2))), alpha = 0.4, color = "firebrick", fill = "white") + 
+  scale_x_continuous(breaks = seq(-200, 0, 100))
+g3 <- g0 + geom_histogram(aes(d3), bins = calcular_cant_bins(sum(!is.na(datos_it1$d3))), alpha = 0.4, color = "firebrick", fill = "white")
+g4 <- g0 + geom_histogram(aes(d4), bins = calcular_cant_bins(sum(!is.na(datos_it1$d4))), alpha = 0.4, color = "firebrick", fill = "white")
+g5 <- g0 + geom_histogram(aes(d5), bins = calcular_cant_bins(sum(!is.na(datos_it1$d5))), alpha = 0.4, color = "firebrick", fill = "white")
 
 arrange <- ggarrange(g1, g2, g3, g4, g5, nrow = 2, ncol = 3)
 
-annotate_figure(arrange,top = text_grob("Histograma variables di"))
+annotate_figure(arrange,top = text_grob("Histograma variables di", family = familia_texto, face = face_titulo, size = tamanio_titulo))
 
 rm(g1, g2, g3, g4, g5, arrange)
 ```
-En **d1** parece ser que los datos se concentran entre los valores de 20 y 40, teniendo algunas observaciones por fuera de este intervalo.
 
-En **d2** los datos parecen estar centrados en 0, pero presenta una cola con algunas observaciones para los números negativos.
 
-En **d3** todas las observaciones se encuentran distribuidas entre 0 y 0.6, con gran cantidad de observaciones en los valores intermedios.
+* En **d1** parece ser que los datos se concentran entre los valores de 20 y 40, teniendo algunas observaciones por fuera de este intervalo.
+* En **d2** los datos parecen estar centrados en 0, pero presenta una cola con algunas observaciones para los números negativos.
+* En **d3** todas las observaciones se encuentran distribuidas entre 0 y 0.6, con gran cantidad de observaciones en los valores intermedios.
+* En **d4** todas las observaciones se encuentran distribuidas entre 0 y 0.15, pero con mayor cantidad de observaciones para los valores que se encuentran entre 0.05 0.10.
+* En **d5** se presenta la mayor cantidad de observaciones en los valores más cercanos a 0 de esta variable. Teniendo también observaciones para valores mayores a 0.10, pero en menor medida.
 
-En **d4** todas las observaciones se encuentran distribuidas entre 0 y 0.15, pero con mayor cantidad de observaciones para los valores que se encuentran entre 0.05 0.10.
-
-En **d5** se presenta la mayor cantidad de observaciones en los valores más cercanos a 0 de esta variable. Teniendo también observaciones para valores mayores a 0.10, pero en menor medida.
 
 ```{r}
 # Boxplot de variables di
-g1 <- g0 + geom_boxplot(aes(d1))
-g2 <- g0 + geom_boxplot(aes(d2))
-g3 <- g0 + geom_boxplot(aes(d3))
-g4 <- g0 + geom_boxplot(aes(d4))
-g5 <- g0 + geom_boxplot(aes(d5))
+g1 <- g0 + geom_boxplot(aes(d1), color = "darkblue", fill = "blue", alpha = .6)
+g2 <- g0 + geom_boxplot(aes(d2), color = "darkblue", fill = "blue", alpha = .6)
+g3 <- g0 + geom_boxplot(aes(d3), color = "darkblue", fill = "blue", alpha = .6)
+g4 <- g0 + geom_boxplot(aes(d4), color = "darkblue", fill = "blue", alpha = .6)
+g5 <- g0 + geom_boxplot(aes(d5), color = "darkblue", fill = "blue", alpha = .6)
 
 arrange <- ggarrange(g1, g2, g3, g4, g5, nrow = 2, ncol = 3)
 
-annotate_figure(arrange,top = text_grob("Boxplot variables di"))
+annotate_figure(arrange, top = text_grob("Boxplot variables di", family = familia_texto, face = face_titulo, size = tamanio_titulo))
 
 rm(g1, g3, g4, arrange)
 ```
-En **d1** se tiene la mediana cercana a 25, y el 50% central de los datos parecen estar contenidos entre 25 y 30 aproximadamente. Hay gran presencia de valores extremos.
 
-En **d2** hay gran presencia de valores extremos por lo que se distorsiona el gráfico, posteriormente realizamos un zoom a la zona de interés.
 
-En **d3** la mediana pareciera estar cerca de 0.2 y el 50% central entre 0.1 y 0.3, aprozimadamente. Presenta un único valor extremo.
+* En **d1** se tiene la mediana cercana a 25, y el 50% central de los datos parecen estar contenidos entre 25 y 30 aproximadamente. Hay gran presencia de valores extremos.
+* En **d2** hay gran presencia de valores extremos por lo que se distorsiona el gráfico, posteriormente realizamos un zoom a la zona de interés.
+* En **d3** la mediana pareciera estar cerca de 0.2 y el 50% central entre 0.1 y 0.3, aprozimadamente. Presenta un único valor extremo.
+* En **d4** la mediana se encuentra cercana a 0.1, con el 50% central entre 0.08 y 0.1. Hay varios valores extremos.
+* En **d5** hay gran presencia de valores extremos, por lo que realizamos un zoom para analizar.
 
-En **d4** la mediana se encuentra cercana a 0.1, con el 50% central entre 0.08 y 0.1. Hay varios valores extremos.
-
-En **d5** hay gran presencia de valores extremos, por lo que realizamos un zoom para analizar.
 
 ```{r}
 # Boxplot de variables di
@@ -302,126 +312,172 @@ g5 <- g5 + coord_cartesian(xlim = c(0, 0.025))
 
 arrange <- ggarrange(g2, g5, nrow = 1, ncol = 2)
 
-annotate_figure(arrange,top = text_grob("Boxplot con zoom"))
+annotate_figure(arrange,top = text_grob("Boxplot con zoom", family = familia_texto, face = face_titulo, size = tamanio_titulo))
 
 rm(g2, g5, arrange)
 ```
-En **d2** la mediana se encuentra cercana a -5 y el 50% central de los datos entre -50 y 0, aproximadamente.
 
-En **d5** la mediana se encuentra aproximadamente en 0.010, con el 50% central entre 0.005 y 0.020 aproximadamente.
+
+* En **d2** la mediana se encuentra cercana a -5 y el 50% central de los datos entre -50 y 0, aproximadamente.
+* En **d5** la mediana se encuentra aproximadamente en 0.010, con el 50% central entre 0.005 y 0.020 aproximadamente.
+
 
 ```{r}
 # Histogramas de variables anios
 g1 <- g0 + geom_histogram(aes(edad), bins = calcular_cant_bins(sum(!is.na(datos_it1$edad))), 
-                          alpha = 0, color = "black", na.rm = TRUE)
+                          alpha = 0.4, color = "firebrick", fill = "white", na.rm = TRUE)
 g2 <- g0 + geom_histogram(aes(anios_fumo), bins = calcular_cant_bins(sum(!is.na(datos_it1$anios_fumo))), 
-                          alpha = 0, color = "black", na.rm = TRUE)
+                          alpha = 0.4, color = "firebrick", fill = "white", na.rm = TRUE)
 g3 <- g0 + geom_histogram(aes(anio_diagnostico), bins = calcular_cant_bins(sum(!is.na(datos_it1$anio_diagnostico))), 
-                          alpha = 0, color = "black", na.rm = TRUE)
+                          alpha = 0.4, color = "firebrick", fill = "white", na.rm = TRUE)
 g4 <- g0 + geom_histogram(aes(anio_medicacion), bins = calcular_cant_bins(sum(!is.na(datos_it1$anio_medicacion))), 
-                          alpha = 0, color = "black", na.rm = TRUE)
+                          alpha = 0.4, color = "firebrick", fill = "white", na.rm = TRUE)
 g5 <- g0 + geom_histogram(aes(anio_enfermedad), bins = calcular_cant_bins(sum(!is.na(datos_it1$anio_enfermedad))), 
-                          alpha = 0, color = "black", na.rm = TRUE)
+                          alpha = 0.4, color = "firebrick", fill = "white", na.rm = TRUE)
 
-arrange <- ggarrange(g1, g2, g3, g4, g5,  nrow = 2, ncol = 3)
+arrange <- ggarrange(g1, g2, g3, g4, g5,  nrow = 3, ncol = 2)
 
-annotate_figure(arrange,top = text_grob("Histograma variables de anios"))
+annotate_figure(arrange,top = text_grob("Histograma variables de anios", family = familia_texto, face = face_titulo, size = tamanio_titulo))
 
 rm(g1, g2, g3, g4, g5, arrange)
 ```
-En **edad** encontramos que las observaciones parecieran distribuirse uniformemente en el rango de 40 y 70, con algunas pocas observaciones extras para edades superiores a 70.
 
-En **anios_fumo** encontramos que existen observaciones de valores entre 1 y 50 prácticamente. Pero la mayo cantidad de observaciones se centran en los 15 años aproximadamente.
 
-En **anio_diagnostico** la mayor cantidad de observaciones se encuentran cerca del año 2010, pero existen algunas observaciones para los años menores a 2000.
+* En **edad** encontramos que las observaciones parecieran distribuirse uniformemente en el rango de 40 y 70, con algunas pocas observaciones extras para edades superiores a 70.
+* En **anios_fumo** encontramos que existen observaciones de valores entre 1 y 50 prácticamente. Pero la mayo cantidad de observaciones se centran en los 15 años aproximadamente.
+* En **anio_diagnostico** la mayor cantidad de observaciones se encuentran cerca del año 2010, pero existen algunas observaciones para los años menores a 2000.
+* En **anio_medicacion** encontramos gran cantidad de observaciones cercanas al año 2010, y unas pocas para los años menores a 200.
+* En **anio_enfermedad** la mayor cantidad de observaciones se encuentran cerca del año 2010, pero existen algunas observaciones para los años menores a 2000.
 
-En **anio_medicacion** encontramos gran cantidad de observaciones cercanas al año 2010, y unas pocas para los años menores a 200.
-
-En **anio_enfermedad** la mayor cantidad de observaciones se encuentran cerca del año 2010, pero existen algunas observaciones para los años menores a 2000.
 
 ```{r}
 # Boxplot de variables anios
-g1 <- g0 + geom_boxplot(aes(edad), na.rm = TRUE)
-g2 <- g0 + geom_boxplot(aes(anios_fumo), na.rm = TRUE)
+g1 <- g0 + geom_boxplot(aes(edad), na.rm = TRUE, color = "darkblue", fill = "blue", alpha = .6)
+g2 <- g0 + geom_boxplot(aes(anios_fumo), na.rm = TRUE, color = "darkblue", fill = "blue", alpha = .6)
 
 arrange <- ggarrange(g1, g2, nrow = 1, ncol = 2)
 
-annotate_figure(arrange,top = text_grob("Boxplot variables de anios"))
+annotate_figure(arrange,top = text_grob("Boxplot variables de anios", family = familia_texto, face = face_titulo, size = tamanio_titulo))
 
 rm(g0, g1, g2, arrange)
 ```
-En **edad** parece que la mediana se encuentra cercana a 52 años, con el 50% central de los datos desde los 45 hasta los 62 aproximadamente. No hay presencia de valores extremos.
 
-En **anios_fumo** la mediana parece encontrarse cerca de los 10 años. El 50% central de los datos va desde los 5 años hasta los 20. Existen algunos valores extremos.
+
+* En **edad** parece que la mediana se encuentra cercana a 52 años, con el 50% central de los datos desde los 45 hasta los 62 aproximadamente. No hay resencia de valores extremos.
+* En **anios_fumo** la mediana parece encontrarse cerca de los 10 años. El 50% central de los datos va desde los 5 años hasta los 20. Existen algunos valores extremos.
+
+
+```{r}
+kbl(table(diagnostico = datos_it2$diagnostico)) %>% 
+  kable_classic_2(full_width = FALSE, font_size = 20)
+```
+
 
 ```{r}
 datos_it2 %>% 
   filter(!is.na(diagnostico)) %>% 
-  ggplot() + 
+  ggplot(aes(diagnostico, y = ..count.. / sum(..count..), fill = diagnostico)) + 
+  geom_bar(alpha = .6, show.legend = FALSE) +
   ylab("") + 
-  geom_bar(aes(diagnostico, y = ..count.. / sum(..count..)))
-
-kable(table(datos_it2$diagnostico))
+  scale_y_continuous(labels = label_percent(2))
 ```
-En **diagnostico** más de la mitad de los datos corresponden a diagnósticos negativos, y el resto a diagnosticos positivos.
+
+
+* En **diagnostico** más de la mitad de los datos corresponden a diagnósticos negativos, y el resto a diagnosticos positivos.
+
+
+```{r}
+kbl(table(punto_medicacion = datos_it2$punto_medicacion)) %>% 
+  kable_classic_2(full_width = FALSE, font_size = 20)
+```
+
+
 
 ```{r}
 datos_it2 %>% 
   filter(!is.na(punto_medicacion)) %>% 
-  ggplot() + 
-  ylab("") + 
-  geom_bar(aes(punto_medicacion, y = ..count.. / sum(..count..))) + 
-  coord_flip()
-
-kable(table(datos_it2$punto_medicacion))
+  ggplot(aes(y = punto_medicacion, x = ..count.. / sum(..count..), fill = punto_medicacion)) + 
+  geom_bar(alpha = .6, show.legend = FALSE) + 
+  xlab("") + 
+  scale_x_continuous(labels = label_percent(2))
+  
 ```
 
-En **punto_medicacion** el 60% de los datos corresponden a personas que no toman medicación para parkinson. Luego sigue, "Another time", "Just After Parkinson medication" y "Immediately before Parkinson medication".
+
+* En **punto_medicacion** el 60% de los datos corresponden a personas que no toman medicación para parkinson. Luego sigue, "Another time", "Just After Parkinson medication" y "Immediately before Parkinson medication".
+
+
+
+```{r}
+kbl(table(cuidado = datos_it2$cuidado)) %>% 
+  kable_classic_2(full_width = FALSE, font_size = 20)
+```
+
 
 ```{r}
 datos_it2 %>% 
   filter(!is.na(cuidado)) %>% 
-  ggplot() + 
-  ylab("") + 
-  geom_bar(aes(cuidado, y = ..count.. / sum(..count..)))
-
-kable(table(datos_it2$cuidado))
+  ggplot(aes(x = cuidado, y = ..count.. / sum(..count..), fill = cuidado)) + 
+  geom_bar(alpha = .6, show.legend = FALSE) +
+  ylab("") +
+  scale_y_continuous(labels = label_percent(2))
 ```
-En **cuidado** más del 80% de las personas se respondieron falso, casi el 5% si.
+
+
+* En **cuidado** más del 80% de las personas se respondieron falso, casi el 5% si.
+
+
+```{r}
+kbl(table(DBS = datos_it2$estimulacion_cerebral)) %>% 
+  kable_classic_2(full_width = FALSE, font_size = 20)
+```
 
 
 ```{r}
 datos_it2 %>% 
   filter(!is.na(estimulacion_cerebral)) %>% 
-  ggplot() + 
-  ylab("") + 
-  geom_bar(aes(estimulacion_cerebral, y = ..count.. / sum(..count..)))
-
-kable(table(datos_it2$estimulacion_cerebral))
+  ggplot(aes(x = estimulacion_cerebral, y = ..count.. / sum(..count..), fill = estimulacion_cerebral)) + 
+  geom_bar(alpha = .6, show.legend = FALSE) +
+  ylab("") +
+  scale_y_continuous(labels = label_percent(2))
 ```
-En **estimulacion_cerebral** más del 80% de los datos respondieron fallos y el resto verdadero.
+
+* En **estimulacion_cerebral** más del 80% de los datos respondieron fallos y el resto verdadero.
+
+
+```{r}
+kbl(table(DBS = datos_it2$educacion)) %>% 
+  kable_classic_2(full_width = FALSE, font_size = 20)
+```
+
 
 ```{r}
 datos_it2 %>% 
   filter(!is.na(educacion)) %>% 
-  ggplot() + 
-  ylab("") + 
-  geom_bar(aes(educacion, y = ..count.. / sum(..count..))) + 
-  coord_flip()
-
-kable(table(datos_it2$educacion))
+  ggplot(aes(y = educacion, x = ..count.. / sum(..count..), fill = educacion)) + 
+  geom_bar(alpha = .6, show.legend = FALSE) +
+  xlab("") +
+  scale_x_continuous(labels = label_percent(2))
 ```
-En **educacion** se presenta la mayor cantidad de observaciones con "4-year college degree", seguido por "Masters Degree". En tercer lugar se tiene "Some college" y en cuarto "Doctoral Degree".
+
+
+* En **educacion** se presenta la mayor cantidad de observaciones con "4-year college degree", seguido por "Masters Degree". En tercer lugar se tiene "Some college" y en cuarto "Doctoral Degree".
+
+
+```{r}
+kbl(table(DBS = datos_it2$trabajo)) %>% 
+  kable_classic_2(full_width = FALSE, font_size = 20)
+```
+
 
 ```{r, message = FALSE}
 datos_it2 %>% 
   filter(!is.na(trabajo)) %>% 
-  ggplot() + 
-  ylab("") +
-  geom_bar(aes(trabajo, y = ..count.. / sum(..count..))) + 
-  coord_flip()
+  ggplot(aes(y = trabajo, x = ..count.. / sum(..count..), fill = trabajo)) + 
+  geom_bar(alpha = .6, show.legend = FALSE) +
+  xlab("") +
+  scale_x_continuous(labels = label_percent(2))
 
-kable(table(datos_it2$trabajo))
 
 datos_it2 %>% 
   filter(!is.na(educacion)) %>%
@@ -435,22 +491,34 @@ datos_it2 %>%
   geom_bar(show.legend = FALSE, alpha = .4, stat = "identity", fill = "darkblue") +
   ylab("") +
   xlab("") +
-  ggtitle("Frequencias acumuladas") +
+  ggtitle("Frecuencias acumuladas") +
   scale_y_continuous(labels = label_percent(2), breaks = seq(0, 1, .2)) +
   theme(axis.text.x = element_text(angle = 45))
 ```
-En **educacion** la mayor cantidad de los datos corresponden por "Empoyment for wages", seguido por "Retired" y "Self-employed". Además, en el gráfico de barra se ordeno por el nivel de educación, para observar como son la distribución de los datos. Aquí encontramos que hasta "2-year college degree", es decir que tienen un título universitario, se acumula casi el 80% de los datos. Luego, si contamos "Some college" ya obtenemos más de los 90% de los datos. 
+
+
+* En **educacion** la mayor cantidad de los datos corresponden por "Empoyment for wages", seguido por "Retired" y "Self-employed". Además, en el gráfico de barra se ordeno por el nivel de educación, para observar como son la distribución de los datos. Aquí encontramos que hasta "2-year college degree", es decir que tienen un título universitario, se acumula casi el 80% de los datos. Luego, si contamos "Some college" ya obtenemos más de los 90% de los datos. 
+
+
+```{r}
+kbl(table(DBS = datos_it2$genero)) %>% 
+  kable_classic_2(full_width = FALSE, font_size = 20)
+```
+
 
 ```{r}
 datos_it2 %>% 
   filter(!is.na(genero)) %>% 
-  ggplot() + 
-  ylab("") + 
-  geom_bar(aes(genero, y = ..count.. / sum(..count..)))
+  ggplot(aes(x = genero, y = ..count.. / sum(..count..), fill = genero)) + 
+  geom_bar(alpha = .6, show.legend = FALSE) +
+  ylab("") +
+  scale_y_continuous(labels = label_percent(2))
 
-kable(table(datos_it2$genero))
 ```
-En **genero** más del 70% de los datos corresponden a hombres, y un poco menos del 30% a mujeres.
+
+
+* En **genero** más del 70% de los datos corresponden a hombres, y un poco menos del 30% a mujeres.
+
 
 ```{r}
 datos_it2 %>% 
