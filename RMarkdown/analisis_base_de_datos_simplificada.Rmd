@@ -201,8 +201,9 @@ df_aux_cuanti <- datos_it1 %>%
 
 lista_aux <- list(data = df_aux_cuanti, nombre_var = names(df_aux_cuanti))
 
-kable(pmap_dfr(lista_aux, medidas_resumen, remover_na = TRUE), 
-      caption = "Medidas Resumen de Variables Cuantitativas", digits = 2)
+kbl(pmap_dfr(lista_aux, medidas_resumen, remover_na = TRUE), 
+      caption = "Medidas Resumen de Variables Cuantitativas", digits = 2) %>% 
+  kable_classic_2(full_width = FALSE, font_size = 15)
 
 
 rm(df_aux_cuanti, lista_aux)
@@ -446,7 +447,7 @@ datos_it2 %>%
 
 
 ```{r}
-kbl(table(DBS = datos_it2$educacion)) %>% 
+kbl(table(educacion = datos_it2$educacion)) %>% 
   kable_classic_2(full_width = FALSE, font_size = 20)
 ```
 
@@ -465,7 +466,7 @@ datos_it2 %>%
 
 
 ```{r}
-kbl(table(DBS = datos_it2$trabajo)) %>% 
+kbl(table(trabajo = datos_it2$trabajo)) %>% 
   kable_classic_2(full_width = FALSE, font_size = 20)
 ```
 
@@ -501,7 +502,7 @@ datos_it2 %>%
 
 
 ```{r}
-kbl(table(DBS = datos_it2$genero)) %>% 
+kbl(table(genero = datos_it2$genero)) %>% 
   kable_classic_2(full_width = FALSE, font_size = 20)
 ```
 
@@ -513,7 +514,6 @@ datos_it2 %>%
   geom_bar(alpha = .6, show.legend = FALSE) +
   ylab("") +
   scale_y_continuous(labels = label_percent(2))
-
 ```
 
 
@@ -521,221 +521,299 @@ datos_it2 %>%
 
 
 ```{r}
+kbl(table(estado_civil = datos_it2$estado_civil)) %>% 
+  kable_classic_2(full_width = FALSE, font_size = 20)
+```
+
+
+```{r}
 datos_it2 %>% 
   filter(!is.na(estado_civil)) %>% 
-  ggplot() + 
-  ylab("") + 
-  geom_bar(aes(estado_civil, y = ..count.. / sum(..count..))) + 
-  coord_flip()
-
-kable(table(datos_it2$estado_civil))
+  ggplot(aes(y = estado_civil, x = ..count.. / sum(..count..), fill = estado_civil)) + 
+  geom_bar(alpha = .6, show.legend = FALSE) +
+  xlab("") +
+  scale_x_continuous(labels = label_percent(2))
 ```
-En **estado_civil**  casi el 80% de los datos se enceuntran en "Married or domestic partnership". Luego, siguen "Single never married" y "Divorced" con menos del 10% cada uno. El resto se distribuyo entre el resto de categorías.
+
+
+* En **estado_civil**  casi el 80% de los datos se enceuntran en "Married or domestic partnership". Luego, siguen "Single never married" y "Divorced" con menos del 10% cada uno. El resto se distribuyo entre el resto de categorías.
+
+
+```{r}
+kbl(table(facilidad_celular = datos_it2$facilidad_celular)) %>% 
+  kable_classic_2(full_width = FALSE, font_size = 20)
+```
+
 
 ```{r}
 datos_it2 %>% 
   filter(!is.na(facilidad_celular)) %>% 
-  ggplot() + 
-  ylab("") + 
-  geom_bar(aes(facilidad_celular, y = ..count.. / sum(..count..))) + 
-  coord_flip()
-
-kable(table(datos_it2$facilidad_celular))
+  ggplot(aes(y = facilidad_celular, x = ..count.. / sum(..count..), fill = facilidad_celular)) + 
+  geom_bar(alpha = .6, show.legend = FALSE) +
+  xlab("") +
+  scale_x_continuous(labels = label_percent(2))
 ```
-En **facilidad_celular** el 70% de los datos coresponden a "Very easy", un 20% a "Easy", menos del 10% a "Neither easy nor dificult" y el resto a las demás categorías.
+
+
+* En **facilidad_celular** el 70% de los datos coresponden a "Very easy", un 20% a "Easy", menos del 10% a "Neither easy nor dificult" y el resto a las demás categorías.
+
+
+```{r}
+kbl(table(fumo = datos_it2$fumo)) %>% 
+  kable_classic_2(full_width = FALSE, font_size = 20)
+```
+
 
 ```{r}
 datos_it2 %>% 
   filter(!is.na(fumo)) %>% 
-  ggplot() + 
-  ylab("") + 
-  geom_bar(aes(fumo, y = ..count.. / sum(..count..)))
-
-kable(table(datos_it2$fumo))
+  ggplot(aes(x = fumo, y = ..count.. / sum(..count..), fill = fumo)) + 
+  geom_bar(alpha = .6, show.legend = FALSE) +
+  ylab("") +
+  scale_y_continuous(labels = label_percent(2))
 ```
-En **fumo** encontramos que más del 60% de los datos corresponden a falso y un poco más del 30% a verdadero.
+
+
+* En **fumo** encontramos que más del 60% de los datos corresponden a falso y un poco más del 30% a verdadero.
+
+
+```{r}
+kbl(table(cirugias = datos_it2$cirugias)) %>% 
+  kable_classic_2(full_width = FALSE, font_size = 20)
+```
+
 
 ```{r}
 datos_it2 %>% 
   filter(!is.na(cirugias)) %>% 
-  ggplot() + 
+  ggplot(aes(x = cirugias, y = ..count.. / sum(..count..), fill = cirugias)) + 
+  geom_bar(alpha = .6, show.legend = FALSE) +
   ylab("") +
-  geom_bar(aes(cirugias, y = ..count.. / sum(..count..)))
-
-kable(table(datos_it2$cirugias))
+  scale_y_continuous(labels = label_percent(2))
 ```
-En **cirugas** casi el 100% de los resultados corresponden a falos y un pequeño porcentaje a verdadero.
+
+
+* En **cirugas** casi el 100% de los resultados corresponden a falos y un pequeño porcentaje a verdadero.
+
 
 ## Análisis Multivariado
 
+
 ### Cualitativa vs cuantitativa
+
 
 ```{r}
 g0 <- datos_it2 %>% 
   mutate(diagnostico = factor(diagnostico, levels = c(0, 1), labels = c("Negativo", "Positivo"))) %>% 
-  ggplot(aes(x = diagnostico, fill = diagnostico)) +
+  ggplot(aes(x = diagnostico, fill = diagnostico, color = diagnostico)) +
   xlab("")
 
-g1 <- g0 + geom_boxplot(aes(y = edad), na.rm = TRUE)
-g2 <- g0 + geom_boxplot(aes(y = anios_fumo), na.rm = TRUE)
+g1 <- g0 + geom_boxplot(aes(y = edad), na.rm = TRUE, alpha = .4)
+g2 <- g0 + geom_boxplot(aes(y = anios_fumo), na.rm = TRUE, alpha = .4)
 
 arrange <- ggarrange(g1, g2, nrow = 1, ncol = 2, common.legend = TRUE, legend = "none")
 
-annotate_figure(arrange, top = text_grob("Boxplot contra diangostico"))
+annotate_figure(arrange, top = text_grob("Boxplot contra diangostico", family = familia_texto, face = face_titulo, size = tamanio_titulo))
 
 rm(g0, g1, g2, arrange)
 ```
-Se sugiere que la **edad** de las personas con diagnostico positivo es mayor a la edad con diagnostico negativo. Siendo la mediana de los primeros un poco superior a 60 años y 45 años para los segundos. Por el otro lado, **anios_fumo** no parece tener diferencia entre los paciente con diagnostico positivos y negativo. 
+
+
+* Se sugiere que la **edad** de las personas con diagnostico positivo es mayor a la edad con diagnostico negativo. Siendo la mediana de los primeros un poco superior a 60 años y 45 años para los segundos. Por el otro lado, **anios_fumo** no parece tener diferencia entre los paciente con diagnostico positivos y negativo. 
+
 
 ```{r}
 datos_it2 %>% 
   filter(!is.na(punto_medicacion)) %>% 
-  ggplot(aes(x = edad, y = punto_medicacion, fill = punto_medicacion)) +
-  geom_boxplot(na.rm = TRUE, show.legend = FALSE) 
+  ggplot(aes(x = edad, y = punto_medicacion, fill = punto_medicacion, color = punto_medicacion)) +
+  geom_boxplot(na.rm = TRUE, show.legend = FALSE, alpha = .4) 
 ```
-Se observa como la **edad** parece ser menor en el caso de "I don't take Parkinsons medications" y los demás niveles son casi idénticos. Sin embargo, comparando con el gráfico previo de **edad** vs **diagnostico** se observa como las edades de las personas que tienen un diagnostico negativo son bastante similares a las edades de este grupo en particular. Entonces capaz que las personas de este grupo sean las que tienen un diagnostico negativo.
+
+
+* Se observa como la **edad** parece ser menor en el caso de "I don't take Parkinsons medications" y los demás niveles son casi idénticos. Sin embargo, comparando con el gráfico previo de **edad** vs **diagnostico** se observa como las edades de las personas que tienen un diagnostico negativo son bastante similares a las edades de este grupo en particular. Entonces capaz que las personas de este grupo sean las que tienen un diagnostico negativo.
 
 Realizamos la tabla de contingencia entre **diagnostico** contra **punto_medicacion** para verificar que las personas de "I don't take Parkinsons medications" son las que tienen un diagnostico negativo.
 
+
 ```{r}
-table(datos_it2$punto_medicacion, datos_it2$diagnostico)
+kbl(table(datos_it2$punto_medicacion, datos_it2$diagnostico)) %>% 
+  kable_classic_2(full_width = FALSE, font_size = 15) 
 ```
+
 Aqui verificamos que la gran mayoría del segundo grupo tienen diagnóstico negativo (casi el 95%) y el resto positivo.
+
 
 ```{r}
 datos_it2 %>% 
   filter(!is.na(cuidado)) %>% 
-  ggplot(aes(x = cuidado, y = edad, fill = cuidado)) +
-  geom_boxplot(na.rm = TRUE)
+  ggplot(aes(x = cuidado, y = edad, fill = cuidado, color = cuidado)) +
+  geom_boxplot(na.rm = TRUE, show.legend = FALSE, alpha = .4)
 ```
-No parece existir diferencia de edades entre los dos grupos.
+
+
+* No parece existir diferencia de edades entre los dos grupos.
+
 
 ```{r}
 datos_it2 %>% 
   filter(!is.na(estimulacion_cerebral)) %>% 
-  ggplot(aes(x = estimulacion_cerebral, y = edad, fill =  estimulacion_cerebral)) + 
-  geom_boxplot(na.rm = TRUE)
+  ggplot(aes(x = estimulacion_cerebral, y = edad, fill =  estimulacion_cerebral, color = estimulacion_cerebral)) + 
+  geom_boxplot(na.rm = TRUE, alpha = .6, show.legend = FALSE)
 ```
-La variabilidad de edades del grupo con el tratamiento deep brain parece ser menor que el otro grupo. Además, la edad mediana del grupo sin el tratamiento es menor al 75% del otro grupo (datos a partir del primer cuartil).
+
+
+* La variabilidad de edades del grupo con el tratamiento deep brain parece ser menor que el otro grupo. Además, la edad mediana del grupo sin el tratamiento es menor al 75% del otro grupo (datos a partir del primer cuartil).
+
 
 ```{r}
 g0 <- datos_it2 %>% 
   filter(!is.na(educacion)) %>% 
-  ggplot(aes(y = educacion, fill = educacion)) +
+  ggplot(aes(y = educacion, fill = educacion, color = educacion)) +
   ylab("")
   
 
-g1 <- g0 + geom_boxplot(aes(x = edad), na.rm = TRUE)
-g2 <- g0 + geom_boxplot(aes(x = anios_fumo), na.rm = TRUE)
+g1 <- g0 + geom_boxplot(aes(x = edad), na.rm = TRUE, alpha = .6)
+g2 <- g0 + geom_boxplot(aes(x = anios_fumo), na.rm = TRUE, alpha = .6) + theme(axis.text.y = element_blank())
 
-arrange <- ggarrange(g1, g2, nrow = 1, ncol = 2, common.legend = TRUE, legend = "none")
+arrange <- ggarrange(g1, g2, nrow = 1, ncol = 2, common.legend = TRUE, legend = "none", widths = c(2, 1))
 
-annotate_figure(arrange, top = text_grob("Boxplot vs educacion"))
+annotate_figure(arrange, top = text_grob("Boxplot vs educacion", family = familia_texto, face = face_titulo, size = tamanio_titulo))
 
 rm(g0, g1, g2, arrange)
 ```
-En general, parece que todos los grupos presentan edades similares, aunque "Some graduate school" pareciera que la variabilidad es mayor.
 
-Para **anios_fumo** parece que es similar para todos los grupos, pero el grupo "Masters Degree" presenta menor variablidad. En contraste "2-year college degree" es el grupo con mayor variabilidad.
+
+* En general, parece que todos los grupos presentan edades similares, aunque "Some graduate school" pareciera que la variabilidad es mayor.
+* Para **anios_fumo** parece que es similar para todos los grupos, pero el grupo "Masters Degree" presenta menor variablidad. En contraste "2-year college degree" es el grupo con mayor variabilidad.
+
 
 ```{r}
 g0 <- datos_it2 %>% 
   filter(!is.na(trabajo)) %>% 
-  ggplot(aes(y = trabajo, fill = trabajo)) +
+  ggplot(aes(y = trabajo, fill = trabajo, color = trabajo)) +
   ylab("")
   
 
-g1 <- g0 + geom_boxplot(aes(x = edad), na.rm = TRUE)
-g2 <- g0 + geom_boxplot(aes(x = anios_fumo), na.rm = TRUE)
+g1 <- g0 + geom_boxplot(aes(x = edad), na.rm = TRUE, alpha = .4)
+g2 <- g0 + geom_boxplot(aes(x = anios_fumo), na.rm = TRUE, alpha = .4) + theme(axis.text.y = element_blank())
 
-arrange <- ggarrange(g1, g2, nrow = 1, ncol = 2, common.legend = TRUE, legend = "none")
+arrange <- ggarrange(g1, g2, nrow = 1, ncol = 2, common.legend = TRUE, legend = "none", widths = c(2, 1))
 
-annotate_figure(arrange, top = text_grob("Boxplot vs trabajo"))
+annotate_figure(arrange, top = text_grob("Boxplot vs trabajo", family = familia_texto, face = face_titulo, size = tamanio_titulo))
 
 rm(g0, g1, g2, arrange)
 ```
-El grupo de "A student" pareciera presentar edades menores al resto de grupos. A su vez "Retired" son los que tienen mayor edad, aunque encontramos varios valores extremos. El resto de grupos tienen edades intermedias, y en general presentan valores parecidos aunque la variabilidad cambia.
 
-En el segundo gráfico, todos los grupos presentan una cantidad de años que fumo similares. Aunque el grupo "A student" presenta edades menores al resto, **anios_fumo** es similar al de resto de grupos.
+
+* El grupo de "A student" pareciera presentar edades menores al resto de grupos. A su vez "Retired" son los que tienen mayor edad, aunque encontramos varios valores extremos. El resto de grupos tienen edades intermedias, y en general presentan valores parecidos aunque la variabilidad cambia.
+* En el segundo gráfico, todos los grupos presentan una cantidad de años que fumo similares. Aunque el grupo "A student" presenta edades menores al resto, **anios_fumo** es similar al de resto de grupos.
+
 
 ```{r, warning = FALSE}
 g0 <- datos_it2 %>% 
   filter(!is.na(genero)) %>% 
-  ggplot(aes(x = genero, fill = genero))
+  ggplot(aes(x = genero, fill = genero, color = genero))
 
-g1 <- g0 + geom_boxplot(aes(y = edad))
-g2 <- g0 + geom_boxplot(aes(y = anios_fumo))
+g1 <- g0 + geom_boxplot(aes(y = edad, alpha = .4))
+g2 <- g0 + geom_boxplot(aes(y = anios_fumo, alpha = .4))
 
 arrange <- ggarrange(g1, g2, nrow = 1, ncol = 2, legend = "none")
 
-annotate_figure(arrange, top = text_grob("Cuanti vs genero"))
+annotate_figure(arrange, top = text_grob("Cuanti vs genero", family = familia_texto, face = face_titulo, size = tamanio_titulo))
 
 rm(g0, g1, g2, arrange)
 
 ```
-No parece haber diferencia entre hombres y  mueres en cuanto a la **edad** y **anios_fumo**
+
+
+* No parece haber diferencia entre hombres y  mueres en cuanto a la **edad** y **anios_fumo**
+
 
 ```{r}
 datos_it2 %>% 
   filter(!is.na(estado_civil)) %>% 
-  ggplot(aes(x = edad, y = estado_civil, fill = estado_civil)) +
-  geom_boxplot(show.legend = FALSE)
+  ggplot(aes(x = edad, y = estado_civil, fill = estado_civil, color = estado_civil)) +
+  geom_boxplot(show.legend = FALSE, alpha = .4)
 ```
-El grupo "Single never married" presenta una edad mediana menor al primer cuartil del resto de los grupos. A su vez el grupo "widowed" presenta el primer cuartil superior al tercer cuartil del resto de grupos, excepto "Other".
+
+
+* El grupo "Single never married" presenta una edad mediana menor al primer cuartil del resto de los grupos. A su vez el grupo "widowed" presenta el primer cuartil superior al tercer cuartil del resto de grupos, excepto "Other".
+
 
 ```{r}
 datos_it2 %>% 
   filter(!is.na(facilidad_celular)) %>% 
-  ggplot(aes(x = edad, y = facilidad_celular, fill = facilidad_celular)) +
-  geom_boxplot(show.legend = FALSE)
+  ggplot(aes(x = edad, y = facilidad_celular, fill = facilidad_celular, color = facilidad_celular)) +
+  geom_boxplot(show.legend = FALSE, alpha = .4)
 ```
-El grupo "Very easy" presenta una edad mediana menor al primer cuartil del resto de los grupos. En cambio, el grupo "Very Difficult" presenta una edad mediana mayor al tercer cuartil del resto de grupos. Sin embargo, los tres grupos restantes presentan edades similares, teniendo a los grupos de "Easy" y "Difficult" aqui.
+
+
+* El grupo "Very easy" presenta una edad mediana menor al primer cuartil del resto de los grupos. En cambio, el grupo "Very Difficult" presenta una edad mediana mayor al tercer cuartil del resto de grupos. Sin embargo, los tres grupos restantes presentan edades similares, teniendo a los grupos de "Easy" y "Difficult" aqui.
+
 
 ```{r}
 datos_it2 %>% 
   filter(!is.na(fumo)) %>% 
-  ggplot(aes(x = fumo, y = edad, fill = fumo)) +
-  geom_boxplot(show.legend = FALSE)
+  ggplot(aes(x = fumo, y = edad, fill = fumo, color = fumo)) +
+  geom_boxplot(show.legend = FALSE, alpha = .4)
 
 ```
-No parece haber diferencia de edades entre ambos grupos.
+
+
+* No parece haber diferencia de edades entre ambos grupos.
+
 
 ```{r}
 datos_it2 %>% 
   filter(!is.na(cirugias)) %>% 
-  ggplot(aes(x = cirugias, y = edad, fill = cirugias)) +
-  geom_boxplot(show.legend = FALSE)
+  ggplot(aes(x = cirugias, y = edad, fill = cirugias, color = cirugias)) +
+  geom_boxplot(show.legend = FALSE, alpha = .4)
 
 ```
 
-No parece haber diferencias de edades entre ambos grupos, pero el grupo que si tiene cirugías presenta menor variabilidad que el otro.
+
+* No parece haber diferencias de edades entre ambos grupos, pero el grupo que si tiene cirugías presenta menor variabilidad que el otro.
+
 
 ### Cualitativa vs Cualitativa
 
-Realizamos algunas tablas de contigencias entre variables
 
 ```{r}
 table(datos_it2$cuidado, datos_it2$diagnostico) %>% 
-  addmargins(c(1, 2))
+  addmargins(c(1, 2)) %>% 
+  kbl() %>% 
+  kable_classic_2(full_width = FALSE, font_size = 20)
 ```
-Del grupo con diagnóstico negativo, el 94.45% no presenta cuidados y el resto si. Por le otro lado, para el grupo con diagnostico positivo presenta un 92.25% no presenta cuidado y el resto si.
 
-Del grupo que no tiene cuidado, el 58.12% presenta diangostico negativo, y el resto diagnóstico positivo. Por el otro lado, para el caso del grupo con cuidado, los datos se reparten exactamente a la mitad entre personas con diagnóstico positivo y negativo, es decir que hay un 50% para cada uno. Se observa como en estos casos la distribución de observaciones es más equitativa que cuando se miraban las columnas.
+
+* Del grupo con diagnóstico negativo, el 94.45% no presenta cuidados y el resto si. Por le otro lado, para el grupo con diagnostico positivo presenta un 92.25% no presenta cuidado y el resto si.
+* Del grupo que no tiene cuidado, el 58.12% presenta diangostico negativo, y el resto diagnóstico positivo. Por el otro lado, para el caso del grupo con cuidado, los datos se reparten exactamente a la mitad entre personas con diagnóstico positivo y negativo, es decir que hay un 50% para cada uno. Se observa como en estos casos la distribución de observaciones es más equitativa que cuando se miraban las columnas.
+
 
 ```{r}
 table(datos_it2$estimulacion_cerebral, datos_it2$diagnostico) %>% 
-  addmargins(c(1, 2))
+  addmargins(c(1, 2)) %>% 
+  kbl() %>% 
+  kable_classic_2(full_width = FALSE, font_size = 20)
 ```
+
+
 * Del grupo con diagnóstico negativo, el 99.4% no se realiza el tratamiento DBS y el resto si. 
 * Del grupo con diagnóstico positivo, el 89.96% no realiza el tratamiento de DBS y el resto sí.
 * Del grupo que no realiza el tratamiento DBS, el 54.43% presenta diágnostico negativo y el resto positivo. La distribución de las osbservaciones es más equitativa en este caso.
-Del grupo que si realiza el tratamiento DBS, el 94% presenta diágnostico postivo y el resto negativo. Esto puede tener causa en que este tratamiento es usado generalmente en pacientes de Parkinson.
+* Del grupo que si realiza el tratamiento DBS, el 94% presenta diágnostico postivo y el resto negativo. Esto puede tener causa en que este tratamiento es usado generalmente en pacientes de Parkinson.
+
 
 ```{r}
 table(datos_it2$educacion, datos_it2$diagnostico) %>% 
-  addmargins(c(1, 2)) 
+  addmargins(c(1, 2)) %>% 
+  kbl() %>% 
+  kable_classic_2(full_width = FALSE, font_size = 20)
 ```
-En este caso, vamos a realizar dos diagramas de barras para mostrar como son la distribución de observaciones cuando se agrupa según el **diagnostico**
+
+
+* En este caso, vamos a realizar dos diagramas de barras para mostrar como son la distribución de observaciones cuando se agrupa según el **diagnostico**
+
 
 ```{r, message = FALSE}
 datos_it2 %>% 
@@ -753,7 +831,10 @@ datos_it2 %>%
 
 ```
 
-Se observa como los grupos de "Masters Degree" y "4-year collegye degree" acumulan el 50% de las observaciones. Luego, entre el grupo de "Doctoral Degree" y "Some college" acumulan otro 20% más. El resto se reparte entre las categorias restantes.
+
+* Se observa como los grupos de "Masters Degree" y "4-year collegye degree" acumulan el 50% de las observaciones. Luego, entre el grupo de "Doctoral Degree" y "Some college" acumulan otro 20% más. El resto se reparte entre las categorias restantes.
+
+
 
 ```{r, message = FALSE}
 datos_it2 %>% 
@@ -769,32 +850,47 @@ datos_it2 %>%
   ggtitle("Grupo con diagnóstico negativo") +
   scale_x_continuous(labels = label_percent(2))
 ```
-Se presentan resultados similares que en el caso de grupo con diagnóstico positivo. 
+
+
+* Se presentan resultados similares que en el caso de grupo con diagnóstico positivo. 
+
 
 ```{r}
 datos_it2 %>% 
   filter(!is.na(educacion)) %>% 
+  mutate(diagnostico = factor(diagnostico, levels = c(0, 1), labels = c("Negativo", "Positivo"))) %>% 
   ggplot(aes(y = educacion, x = ..count.. / sum(..count..), fill = diagnostico)) +
   geom_bar(position = "fill", alpha = .6) +
   xlab("") +
-  ggtitle("Diagnosticos postivios/negativos\nsegún nivel de educación") +
   scale_x_continuous(labels = label_percent(2))
 ```
-Se observa como todos los niveles de educación presentan porcentajes parecidos de personas con porcentajes negativos/postivos. El caso de "High School Diploma" que tiene los datos repartidos equitativamente.
+
+
+* Se observa como todos los niveles de educación presentan porcentajes parecidos de personas con porcentajes negativos/postivos. El caso de "High School Diploma" que tiene los datos repartidos equitativamente.
+
 
 ```{r}
 table(datos_it2$genero, datos_it2$diagnostico) %>% 
-  addmargins(c(1, 2))
+  addmargins(c(1, 2)) %>% 
+  kbl() %>% 
+  kable_classic_2(full_width = FALSE, font_size = 20)
 ```
+
+
 * Del grupo con diagnóstico negativo, el 19.73% son mujeres y el resto son hombres. Hay mayor presencias de hombres.
 * Del grupo con diagnóstico postico, el 35.35% son mujeres y el resto hombres, al igual que el caso anterior hay mayor presencias de hombres.
 * Del grupo de mujeres, el 42.16% tienen diagnóstico negativo y 57.89% postiivo. LOs datos se encuentran distribuidos de forma parecida en este caso.
 * Del grupo de hombres, el 63.01 tiene diagnóstico negativo y 36.99% positivo. En este caso encontramos más hombres con diagnóstico negativo que positivos, mientras que en las mujeres era el caso inverso.
 
+
 ```{r}
 table(datos_it2$facilidad_celular, datos_it2$diagnostico) %>% 
-  addmargins(c(1, 2))
+  addmargins(c(1, 2)) %>% 
+  kbl() %>% 
+  kable_classic_2(full_width = FALSE, font_size = 20)
 ```
+
+
 ```{r, message = FALSE}
 datos_it2 %>% 
   filter(diagnostico == 0 & !is.na(facilidad_celular)) %>% 
@@ -809,7 +905,10 @@ datos_it2 %>%
   ggtitle("Diagnostico Negativo")
   
 ```
-Se observa que casi el 90% de las personas con diagnóstico negativo se encuentran en "Very easy" y casi un 10% en "easy".
+
+
+* Se observa que casi el 90% de las personas con diagnóstico negativo se encuentran en "Very easy" y casi un 10% en "easy".
+
 
 ```{r, message = FALSE}
 datos_it2 %>% 
@@ -824,39 +923,50 @@ datos_it2 %>%
   scale_x_continuous(labels = label_percent(2), breaks = seq(0, 1, .1)) +
   ggtitle("Diagnostico Positivo")
 ```
-Si bien se presenta un orden de grupos idéntico al caso anterior, aquí los grupos "Neither easy nor difficult", "Difficult" y "Very difficult" adquirien más relevancia en este grupo.
+
+
+* Si bien se presenta un orden de grupos idéntico al caso anterior, aquí los grupos "Neither easy nor difficult", "Difficult" y "Very difficult" adquirien más relevancia en este grupo.
+
 
 ```{r}
 datos_it2 %>% 
   filter(!is.na(facilidad_celular)) %>% 
+  mutate(diagnostico = factor(diagnostico, levels = c(0, 1), labels = c("Negativo", "Positivo"))) %>% 
   ggplot(aes(y = facilidad_celular, x = ..count.. / sum(..count..), fill = diagnostico)) + 
   geom_bar(alpha = .6, position = "fill") +
   scale_x_continuous(labels = label_percent(2), breaks = seq(0, 1, .2)) +
   xlab("")
 ```
-Se observa como en todos los grupos, menos en "Very easy", se más del 60% de las personas con diagnóstico postivo. En "Very easy" ocurre lo contrario, la mayoría de las personas corresponden a diagnóstico negativo.
+
+
+* Se observa como en todos los grupos, menos en "Very easy", se más del 60% de las personas con diagnóstico postivo. En "Very easy" ocurre lo contrario, la mayoría de las personas corresponden a diagnóstico negativo.
+
 
 ```{r}
 table(datos_it2$fumo, datos_it2$diagnostico) %>% 
-  addmargins(c(1, 2))
+  addmargins(c(1, 2)) %>% 
+  kbl() %>% 
+  kable_classic_2(full_width = FALSE, font_size = 20)
 ```
+
 
 * Del grupo con diagnóstico negativo, el 62.52% no fumo y el 37.48% si. 
 * Del grupo con diagnóstico positivo, el 65.6% no fumo y el 34.4% si. Resultados similares al grupo anterior
 * Del grupo que no fumo, el 55.2% tiene diagnóstico positivo y el 44.8% negativo. Encontramos que los datos estan distribuidos de forma equitativa.
 * Del grupo que sí fumo, el 58.48% tiene diagnóstico positivo y el 41.52% negativo. Situación similar al caso anterior.
 
+
 ```{r}
 table(datos_it2$cirugias, datos_it2$diagnostico) %>% 
-  addmargins(c(1, 2))
+  addmargins(c(1, 2)) %>% 
+  kbl() %>% 
+  kable_classic_2(full_width = FALSE, font_size = 20)
 ```
+
 * Del grupo con diagnóstico negativo el 99.77% no presenta cirugías. En el grupo con diagnóstico positivo ocurre algo similar, hay un 98.82% de las personas sin cirugías. 
 * Del grupo sin cirugías, el 49.06% tienen diagnóstico negativo y el resto positivo. Se observa que los datos se encuentran repartidos equitativamente.
 * Del grupo con cirugías, el 15.38% tienen diagnóstico negativo y el resto postivio. Aqui encontramos que predominan las personas con Parkinson.
 
-```{r}
-table(datos_it2$trabajo, datos_it2$fumo)
-```
 
 ## Análisis cuanti vs cuanti
 
@@ -866,9 +976,11 @@ table(datos_it2$trabajo, datos_it2$fumo)
   group_by(anio_diagnostico) %>% 
   summarise(edad_media = mean(edad)) %>% 
   ggplot(aes(y = edad_media, x = anio_diagnostico)) +  
-  geom_point() +
-  geom_line()
+  geom_point(color = "firebrick", size = 1.5) +
+  geom_line(color = "firebrick", alpha = .8, linetype = "dashed")
 ```
+
+* Parece que al comienzo las edades medias varían considerablemente, desde casos con edades medias bajas o muy grandes. A partir del 200 parece que se estabiliza la edad media.
 
 
 ```{r, message = FALSE}
@@ -877,19 +989,26 @@ datos_it2 %>%
   group_by(anios_fumo) %>% 
   summarise(edad_media = mean(edad)) %>% 
   ggplot(aes(y = edad_media, x = anios_fumo)) +  
-  geom_point() +
-  geom_line() +
+  geom_point(color = "firebrick", size = 1.5) +
+  geom_line(color = "firebrick", alpha = .8, linetype = "dashed") +
   scale_x_continuous(breaks = seq(0, 50, 5))
 ```
+
+
+
 ```{r}
 datos_it2 %>% 
   filter(!is.na(anio_diagnostico) & !is.na(anio_enfermedad)) %>% 
-  ggplot(aes(x = anio_diagnostico, y = anio_enfermedad)) +
-  geom_point() +
-  geom_point(data = )
+  ggplot(aes(x = anio_diagnostico, y = anio_enfermedad, color = anio_enfermedad >= anio_diagnostico)) +
+  geom_point(show.legend = FALSE)
+
   
 ```
 
+
+* Se observa que los puntos rojos pertenecen a los casos en que la persona recibió un diagnóstico luego de que se manisfestará la enferemdad.
+
+Definimos una nueva variable lamada **punto_enfermedad** para boservar la cantidad de casos en que el diagnóstico ocurrió luego de que se manifestará la enfermedad.
 
 
 ```{r}
@@ -898,6 +1017,9 @@ datos_it2 %>%
   mutate(punto_enfemedad = ifelse(anio_enfermedad < anio_diagnostico, "Antes", ifelse(anio_enfermedad > anio_diagnostico, "Despues", "Igual"))) %>% 
   ggplot(aes(x = punto_enfemedad, y = ..count.. / sum(..count..))) + 
   geom_bar(fill = "darkblue", alpha = 0.6) +
-  ylab("")
+  ylab("") +
+  scale_y_continuous(labels = label_percent(2))
 ```
 
+
+* Más de la mitad de los casos recibieron el diagnóstico en años posetirores a que se manifesterá la enfermedad. En aproximadamente el 30% de los casos estos eventos ocurrieron en el mismo año. Y un pequeño procentaje primero recibio el diagnóstico.
