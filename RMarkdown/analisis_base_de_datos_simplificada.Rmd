@@ -244,7 +244,7 @@ nrow(datos_it1 %>% filter(fumo == "false") %>% filter(anios_fumo != 0))
 ```
 
 
-Por la presencia de los 0s en la variable **anios_fumo** decidimos reemplazarlos por NAs. Además, completamos con NAs aquellos valores que sean anteriores a 1980 en la variable **anio_medicacion**.
+Por la presencia de los 0s en la variable **anios_fumo** decidimos reemplazarlos por NAs. Además, completamos con NAs aquellos valores que sean anteriores a 1960 en la variable **anio_medicacion**.
 
 
 ```{r}
@@ -452,29 +452,10 @@ kbl(table(educacion = datos_it2$educacion)) %>%
 ```
 
 
-```{r}
+```{r, message = FALSE}
 datos_it2 %>% 
   filter(!is.na(educacion)) %>% 
   ggplot(aes(y = educacion, x = ..count.. / sum(..count..), fill = educacion)) + 
-  geom_bar(alpha = .6, show.legend = FALSE) +
-  xlab("") +
-  scale_x_continuous(labels = label_percent(2))
-```
-
-
-* En **educacion** se presenta la mayor cantidad de observaciones con "4-year college degree", seguido por "Masters Degree". En tercer lugar se tiene "Some college" y en cuarto "Doctoral Degree".
-
-
-```{r}
-kbl(table(trabajo = datos_it2$trabajo)) %>% 
-  kable_classic_2(full_width = FALSE, font_size = 20)
-```
-
-
-```{r, message = FALSE}
-datos_it2 %>% 
-  filter(!is.na(trabajo)) %>% 
-  ggplot(aes(y = trabajo, x = ..count.. / sum(..count..), fill = trabajo)) + 
   geom_bar(alpha = .6, show.legend = FALSE) +
   xlab("") +
   scale_x_continuous(labels = label_percent(2))
@@ -498,8 +479,28 @@ datos_it2 %>%
 ```
 
 
-* En **educacion** la mayor cantidad de los datos corresponden por "Empoyment for wages", seguido por "Retired" y "Self-employed". Además, en el gráfico de barra se ordeno por el nivel de educación, para observar como son la distribución de los datos. Aquí encontramos que hasta "2-year college degree", es decir que tienen un título universitario, se acumula casi el 80% de los datos. Luego, si contamos "Some college" ya obtenemos más de los 90% de los datos. 
+* En **educacion** se presenta la mayor cantidad de observaciones con "4-year college degree", seguido por "Masters Degree". En tercer lugar se tiene "Some college" y en cuarto "Doctoral Degree".
+* Además, en el gráfico de barra se ordeno por el nivel de educación, para observar como son la distribución de los datos. Aquí encontramos que hasta "2-year college degree", es decir que tienen un título universitario, se acumula casi el 80% de los datos. Luego, si contamos "Some college" ya obtenemos más de los 90% de los datos. 
 
+
+
+```{r}
+kbl(table(trabajo = datos_it2$trabajo)) %>% 
+  kable_classic_2(full_width = FALSE, font_size = 20)
+```
+
+
+```{r, message = FALSE}
+datos_it2 %>% 
+  filter(!is.na(trabajo)) %>% 
+  ggplot(aes(y = trabajo, x = ..count.. / sum(..count..), fill = trabajo)) + 
+  geom_bar(alpha = .6, show.legend = FALSE) +
+  xlab("") +
+  scale_x_continuous(labels = label_percent(2))
+```
+
+
+* En **trabajo** la mayor cantidad de los datos corresponden por "Empoyment for wages", seguido por "Retired" y "Self-employed". 
 
 ```{r}
 kbl(table(genero = datos_it2$genero)) %>% 
