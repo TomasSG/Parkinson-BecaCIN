@@ -2,16 +2,13 @@
 title: "Análisis Base de Datos Simplificada"
 author: "Tomás Sánchez Grigioni"
 date: "13/9/2020"
-output: html_document
+output:
+  pdf_document: default
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(echo = FALSE, fig.align = "center")
-options(knitr.kable.NA = " ")
-```
-
-```{r, include = FALSE}
 # Bibliotecas
+library(tinytex)
 library(knitr)
 library(readxl)
 library(dplyr)
@@ -23,6 +20,11 @@ library(extrafont)
 library(scales)
 library(kableExtra)
 
+knitr::opts_chunk$set(echo = FALSE, fig.align = "center")
+options(knitr.kable.NA = " ")
+```
+
+```{r, include = FALSE}
 # Para no tener problemas con las fuentes
 loadfonts(device = "win")
 
@@ -78,7 +80,7 @@ Primero cargamos los datos, luego observamos como los trata R.
 datos_izq <- read_excel("../data/bd_acotada.xlsx") %>% 
   select(ROW_ID, DIAGNOSTICO, d1, d2, d3, d4, d5)
 
-datos_der <- read_excel("../data/bd.xlsx") %>% 
+datos_der <- read_excel("../data/bd_completa.xlsx") %>% 
    select(healthCode1, 
           medTimepoint, 
           "F0semitoneFrom27#5Hz_sma3nz_amean", 
