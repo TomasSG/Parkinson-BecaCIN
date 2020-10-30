@@ -3,11 +3,57 @@ title: "Regresion Logistica"
 output: pdf_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, message = FALSE)
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, message = FALSE, warning = FALSE, error = FALSE)
 
 # Bibliotecas
 library(ggplot2)
 library(dplyr)
+library(knitr)
+library(kableExtra)
+```
+
+```{r administrativas, include = FALSE}
+source("../R/Utils.R")
+```
+
+# Cargar los datos
+
+Cargamos los datos que se usaron durante el análisis descriptivo de los datos y mostramos las variables a usar.
+
+```{r}
+datos_it0 <- read.csv("../data/bd_trabajo.csv")
+names(datos_it0)
+```
+
+No vamos a mostrar las medidas resumenes o los gráficos de todas las variables ya que lo hicimos durante el análisis descriptivo. A lo largo del trabajo solo mostraremos los gráficos pertinentes.
+
+# Regresion Logística
+
+En esta regresión vamos a utilizar como variable respuesta a **diagnostico**, usando las variables **d1**, **d2**, **d3**, **d4**, **d5** y **edad**. Para trabajar vamos a quedarnos únicamente con estas variables en el dataset.
+
+```{r}
+datos_it1 <- datos_it0 %>% 
+  select(diagnostico, d1, d2, d3, d4, d5, edad)
+names(datos_it1)
+```
+
+Comenzamos realizando el modelo 0, donde se incluyen todas las variables posibles
+
+```{r, collapse = TRUE}
+modelo_it0 <- glm(diagnostico ~ ., data = datos_it1, family = "binomial")
+summary(modelo_it0)
+
+r2 <- calcular_pseudo_R2(modelo_it0)
+r2
+```
+Además, armaremos una tabla donde se especificara el AIC, R2 y alguna de observación de cada modelo armado, a manera comparación.
+
+```{r}
+tabla_resumen_modelos <- data.frame(row.names = "modelo_it0", 
+                                    AIC = modelo_it0$aic,
+                                    R2 = r2[1],
+                                    Observacion = "Todas las variables")
+rm(r2)
 ```
 
