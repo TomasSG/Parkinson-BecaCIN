@@ -47,13 +47,73 @@ summary(modelo_it0)
 r2 <- calcular_pseudo_R2(modelo_it0)
 r2
 ```
+Observamos que las variables **d1**, **d2** y **edad** resultan significativas, pero **d3**, **d4** y **d5** no.
+
 Además, armaremos una tabla donde se especificara el AIC, R2 y alguna de observación de cada modelo armado, a manera comparación.
 
 ```{r}
-tabla_resumen_modelos <- data.frame(row.names = "modelo_it0", 
+tabla_resumen_modelos <- data.frame(Nombre = "modelo_it0", 
                                     AIC = modelo_it0$aic,
                                     R2 = r2[1],
-                                    Observacion = "Todas las variables")
+                                    Observacion = "Todas las variables",
+                                    row.names = NULL)
 rm(r2)
 ```
 
+Usamos la función step() para seleccionar aquellas variables más importantes.
+
+```{r}
+step(modelo_it0, direction = "both")
+```
+
+A partir del resultado creamos el primer modelo
+
+```{r, collapse = TRUE}
+modelo_it1 <- glm(formula = diagnostico ~ d1 + d2 + edad, family = "binomial", 
+    data = datos_it1)
+summary(modelo_it1)
+
+r2 <- calcular_pseudo_R2(modelo_it1)
+r2
+```
+Todas las variables resultan significativas. El AIC es de `r round(modelo_it1$aic, 2)`, que es levemente mejor al modelo 0. De aquí notamos que:
+
+* Por cada incremento de una unidad en **d1**, los odds de tener un diagnóstico positivo se incrementan en `r  round(exp(.086348) * 100, 2)`%, manteniendo el resto de variables constantes.
+* Por cada incremento de una unidad de **d2**, los odss de tener un diagnóstico positivo se reducen en `r round((1 - exp(-.004163)) * 100, 2)`%, manteniendo el resto de variables constantes.
+* Por cada incremento de un año en la **edad**, los odds de tener un diagnóstico positivo se incrementan en `r  round(exp(.104027) * 100, 2)`%, manteniendo el resto de variables constantes.
+
+```{r}
+tabla_resumen_modelos <- tabla_resumen_modelos %>% 
+  add_row(Nombre = "modeo_it1", AIC = modelo_it1$aic, R2 = r2[1], Observacion = "Primer modelo con selección de variables")
+rm(r2)
+```
+
+## Puntos Influyentes
+
+Empezamos buscando los puntos influyentes con la distancia_cook
+
+```{r}
+puntos_influyentes <- data.frame(d_cook = cooks.distance(modelo_it1)) %>% arrange(-d_cook)
+head(puntos_influyentes, n = 15)
+```
+
+En general, las distancias son menores a uno por lo que no se consideran influyentes. Sin embargo, analizsamos la observación nro 368 por se la que presta una distancia de cook mucho mayor al resto.
+
+```{r}
+datos_it1[368,]
+```
+
+Esta observación presenta un valor de d2 muy bajo. Vamos a calcular los hatvalues para saber si es un outlier
+
+```{r}
+puntos_outliers <- data.frame(v_hat = hatvalues(modelo_it1)) %>% arrange(-v_hat)
+head(puntos_outliers, n = 15)
+```
+
+Como la observación tiene un hatvalue de 0.02414641, que es mayor a `r 2 * 3 / nrow(datos_it1)` lo consideramos atípico. 
+
+```{r}
+datos_it2 <- datos_it1[-368,]
+```
+
+Volvemos a realizar los modelos para observar si conseguimos una mejoría excluyendo esta observación.
