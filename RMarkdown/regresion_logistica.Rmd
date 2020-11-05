@@ -193,4 +193,16 @@ head(puntos_influyentes, n = 15)
 
 Observamos que ninguna d_cook es mayor a 1 y tampoco que haya algunos puntos más alejados que otros. Por esto, no eleminamos ninguna observación.
 
+## Residuos
+
+Ahora que tenemos un modelo definido, graficamos los residuos 
+
+```{r}
+df_residuos <- data.frame(d_residuos = residuals(modelo_it3, type = "deviance"),
+                          residuos = modelo_it3$residuals,
+                          valores_ajustados = modelo_it3$fitted.values)
+
+ggplot(df_residuos, aes(x = valores_ajustados, y = abs(d_residuos))) + geom_point() + geom_hline(yintercept = 2, color = "red")
+
+```
 
