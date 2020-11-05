@@ -78,9 +78,9 @@ r2
 ```
 Todas las variables resultan significativas. El AIC es de `r round(modelo_it1$aic, 2)`, que es levemente mejor al modelo 0. De aquí notamos que:
 
-* Por cada incremento de una unidad en **d1**, los odds de tener un diagnóstico positivo se incrementan en `r  round(exp(.086348) * 100, 2)`%, manteniendo el resto de variables constantes.
-* Por cada incremento de una unidad de **d2**, los odss de tener un diagnóstico positivo se reducen en `r round((1 - exp(-.004163)) * 100, 2)`%, manteniendo el resto de variables constantes.
-* Por cada incremento de un año en la **edad**, los odds de tener un diagnóstico positivo se incrementan en `r  round(exp(.104027) * 100, 2)`%, manteniendo el resto de variables constantes.
+* Por cada incremento de una unidad en **d1**, los odds de tener un diagnóstico positivo se incrementan en `r  round(exp(.086348) * 100 - 100, 2)`%, manteniendo el resto de variables constantes.
+* Por cada incremento de una unidad de **d2**, los odss de tener un diagnóstico positivo se reducen en `r round(100 - exp(-.004163) * 100, 2)`%, manteniendo el resto de variables constantes.
+* Por cada incremento de un año en la **edad**, los odds de tener un diagnóstico positivo se incrementan en `r  round(exp(.104027) * 100 - 100, 2)`%, manteniendo el resto de variables constantes.
 
 ```{r}
 tabla_resumen_modelos <- tabla_resumen_modelos %>% 
@@ -117,3 +117,42 @@ datos_it2 <- datos_it1[-368,]
 ```
 
 Volvemos a realizar los modelos para observar si conseguimos una mejoría excluyendo esta observación.
+
+```{r, collapse = TRUE}
+modelo_it2 <- glm(diagnostico ~ ., data = datos_it2, family = "binomial")
+summary(modelo_it2)
+
+r2 <- calcular_pseudo_R2(modelo_it2)
+r2
+```
+
+Para este modelo resultan **d1**, **d2** y **edad** significativas.
+
+```{r}
+tabla_resumen_modelos <- tabla_resumen_modelos %>% 
+  add_row(Nombre = "modelo_it2", AIC = modelo_it2$aic, R2 = r2[1], Observacion = "Modelo todas variables, excluimos observacion 368")
+rm(r2)
+```
+
+Ahora seleccionamos variables con stepwise
+
+```{r}
+step(modelo_it2, direction = "both")
+```
+Creamos el modelo con los resultados
+
+```{r}
+modelo_it3 <- glm(formula = diagnostico ~ d1 + d2 + edad, family = "binomial", data = datos_it2)
+summary(modelo_it3)
+
+r2 <- calcular_pseudo_R2(modelo_it3)
+r2
+```
+Se obtiene que todas las variables son significativas. Se observa un AIC de `r round(modelo_it3$aic, 2)`, que es el mejor obtenido hasta ahora. 
+
+  * Por cada incremento de una unidad en **d1**, los odds de tener un diagnóstico postivo incrementan en `r round(exp(0.085258) * 100 - 100, 2)`%, manteniendo el resto de variables constantes.
+  * Por cada incremento de una unidad en **d2**, los odds de tener un diagnóstico positivo se reducen en `r round(100 - exp(-0.004821) * 100, 2)`%, manteniendo el resto de variables constantes.
+  * Por cada incremento de un año en la **edad**, los odds de tener un diagnóstico positivo se incrementan en `r round(exp(0.104276) * 100 - 100, 2)`% manteniendo el resto de variables constantes.
+  
+  
+
