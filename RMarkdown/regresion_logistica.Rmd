@@ -11,6 +11,8 @@ library(ggplot2)
 library(dplyr)
 library(knitr)
 library(kableExtra)
+library(ggcorrplot)
+library(car)
 ```
 
 ```{r administrativas, include = FALSE}
@@ -26,7 +28,8 @@ datos_it0 <- read.csv("../data/bd_trabajo.csv")
 names(datos_it0)
 ```
 
-No vamos a mostrar las medidas resumenes o los gráficos de todas las variables ya que lo hicimos durante el análisis descriptivo. A lo largo del trabajo solo mostraremos los gráficos pertinentes.
+No vamos a mostrar las medidas resumenes o los gráficos de todas las variables ya que lo hicimos durante el análisis descriptivo.
+
 
 # Regresion Logística
 
@@ -37,6 +40,26 @@ datos_it1 <- datos_it0 %>%
   select(diagnostico, d1, d2, d3, d4, d5, edad)
 names(datos_it1)
 ```
+
+## ¿Colinealidad/Multicolinealidad?
+
+Empezamos realizando la matriz de correlación de las varaibles para descartar la colinealidad
+
+```{r}
+datos_it1 %>% 
+  select(-diagnostico) %>% 
+  cor() %>% 
+  ggcorrplot(lab = TRUE)
+```
+
+No se observa ningun coeficiente de correlación mayor/menor a .5/-.5. Ahora, buscamos multicolinealidad usando el VIF. Para esto creamos una regresión lineal múltiple para verficiar si existe multicolinealidad entre todas las variables predictoras. **¿Esta bien?**
+
+```{r}
+vif(lm(d1 ~ edad + d2 + d3 + d4 + d5, data = datos_it1))
+```
+Se descarta multicolinealidad porque ningún VIF supera el valor de 10.
+
+## Empezando con los modelos
 
 Comenzamos realizando el modelo 0, donde se incluyen todas las variables posibles
 
@@ -110,7 +133,7 @@ puntos_outliers <- data.frame(v_hat = hatvalues(modelo_it1)) %>% arrange(-v_hat)
 head(puntos_outliers, n = 15)
 ```
 
-Como la observación tiene un hatvalue de 0.02414641, que es mayor a `r 2 * 3 / nrow(datos_it1)` lo consideramos atípico. 
+Como la observación tiene un hatvalue de 0.02414641, que es mayor a `r 2 * 3 / nrow(datos_it1)` lo consideramos atípico. **¿No habría que eliminarlo, no?**
 
 ```{r}
 datos_it2 <- datos_it1[-368,]
@@ -154,5 +177,20 @@ Se obtiene que todas las variables son significativas. Se observa un AIC de `r r
   * Por cada incremento de una unidad en **d2**, los odds de tener un diagnóstico positivo se reducen en `r round(100 - exp(-0.004821) * 100, 2)`%, manteniendo el resto de variables constantes.
   * Por cada incremento de un año en la **edad**, los odds de tener un diagnóstico positivo se incrementan en `r round(exp(0.104276) * 100 - 100, 2)`% manteniendo el resto de variables constantes.
   
+```{r}
+tabla_resumen_modelos <- tabla_resumen_modelos %>% 
+  add_row(Nombre = "modelo_it3", AIC = modelo_it3$aic, R2 = r2[1], Observacion = "Se selecciono variables")
+
+rm(r2)
+```
   
+Volvemos a buscar puntos influyentes
+
+```{r}
+puntos_influyentes <- data.frame(d_cook = cooks.distance(modelo_it3)) %>% arrange(-d_cook)
+head(puntos_influyentes, n = 15)
+```
+
+Observamos que ninguna d_cook es mayor a 1 y tampoco que haya algunos puntos más alejados que otros. Por esto, no eleminamos ninguna observación.
+
 
