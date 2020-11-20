@@ -52,7 +52,7 @@ datos_it1 %>%
   ggcorrplot(lab = TRUE)
 ```
 
-No se observa ningun coeficiente de correlación mayor/menor a .5/-.5. Ahora, buscamos multicolinealidad usando el VIF. Para esto creamos una regresión lineal múltiple para verficiar si existe multicolinealidad entre todas las variables predictoras. **¿Esta bien?**
+No se observa ningun coeficiente de correlación mayor/menor a .5/-.5. Ahora, buscamos multicolinealidad usando el VIF. Para esto creamos una regresión lineal múltiple para verficiar si existe multicolinealidad entre todas las variables predictoras.
 
 ```{r}
 vif(lm(d1 ~ edad + d2 + d3 + d4 + d5, data = datos_it1))
@@ -88,6 +88,7 @@ Usamos la función step() para seleccionar aquellas variables más importantes.
 ```{r}
 step(modelo_it0, direction = "both")
 ```
+Aqui tenemos dos opciones: la primera es mantener las varaibles **d3**, **d4** y **d5** porque nos interesean manetenerlas en el modelo. En cambio, el segundo es exlcuirlas. Nosotros decidimos tomar la segunda decición.
 
 A partir del resultado creamos el primer modelo
 
@@ -126,20 +127,15 @@ En general, las distancias son menores a uno por lo que no se consideran influye
 datos_it1[368,]
 ```
 
-Esta observación presenta un valor de d2 muy bajo. Vamos a calcular los hatvalues para saber si es un outlier
+Esta observación presenta un valor de d2 muy bajo. 
 
-```{r}
-puntos_outliers <- data.frame(v_hat = hatvalues(modelo_it1)) %>% arrange(-v_hat)
-head(puntos_outliers, n = 15)
-```
-
-Como la observación tiene un hatvalue de 0.02414641, que es mayor a `r 2 * 3 / nrow(datos_it1)` lo consideramos atípico. **¿No habría que eliminarlo, no?**
+Vamos a explorar los modelos si excluimos dicha observación.
 
 ```{r}
 datos_it2 <- datos_it1[-368,]
 ```
 
-Volvemos a realizar los modelos para observar si conseguimos una mejoría excluyendo esta observación.
+Volvemos a realizar los modelos.
 
 ```{r, collapse = TRUE}
 modelo_it2 <- glm(diagnostico ~ ., data = datos_it2, family = "binomial")
@@ -193,16 +189,9 @@ head(puntos_influyentes, n = 15)
 
 Observamos que ninguna d_cook es mayor a 1 y tampoco que haya algunos puntos más alejados que otros. Por esto, no eleminamos ninguna observación.
 
-## Residuos
-
-Ahora que tenemos un modelo definido, graficamos los residuos 
+Como no se observaron cambios significativos al excluir la observación 368, vamos a seguir el análisis con los datos completos (datos_it1 y modelo_it1).
 
 ```{r}
-df_residuos <- data.frame(d_residuos = residuals(modelo_it3, type = "deviance"),
-                          residuos = modelo_it3$residuals,
-                          valores_ajustados = modelo_it3$fitted.values)
-
-ggplot(df_residuos, aes(x = valores_ajustados, y = abs(d_residuos))) + geom_point() + geom_hline(yintercept = 2, color = "red")
-
+rm(datos_it2)
 ```
 
