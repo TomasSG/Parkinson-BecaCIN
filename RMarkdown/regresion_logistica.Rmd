@@ -43,7 +43,9 @@ names(datos_it1)
 
 ## ¿Colinealidad/Multicolinealidad?
 
-Empezamos realizando la matriz de correlación de las varaibles para descartar la colinealidad
+En realidad no es 100% necesario hacer esto, pero lo hacemos igual para llegar a detectarlo antes de que cause problemas.
+
+Empezamos realizando la matriz de correlación de las varaibles para descartar la colinealidad.
 
 ```{r}
 datos_it1 %>% 
