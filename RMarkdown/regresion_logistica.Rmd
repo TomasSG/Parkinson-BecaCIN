@@ -13,6 +13,7 @@ library(knitr)
 library(kableExtra)
 library(ggcorrplot)
 library(car)
+library(pROC)
 ```
 
 ```{r administrativas, include = FALSE}
@@ -195,5 +196,22 @@ Como no se observaron cambios significativos al excluir la observación 368, vam
 
 ```{r}
 rm(datos_it2)
+```
+
+## Curva ROC y AUC
+
+Comenzamos por realizar las predicciones de las probabilidades usando el modelo_it1, usando el paquete pROC y ggplot2 obtenemos las curva ROC.
+
+```{r}
+# Obtenemos las predicciones
+predicciones <- predict(modelo_it1, newdata = datos_it1, type = "response")
+
+# Creamos el objeto a plotear
+roc_obj <- roc(datos_it1$diagnostico, predicciones)
+
+# Graficamos usando ggroc
+ggroc(roc_obj)
+
+
 ```
 
