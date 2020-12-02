@@ -14,6 +14,7 @@ library(kableExtra)
 library(ggcorrplot)
 library(car)
 library(pROC)
+library(ggthemes)
 ```
 
 ```{r administrativas, include = FALSE}
@@ -209,9 +210,22 @@ predicciones <- predict(modelo_it1, newdata = datos_it1, type = "response")
 # Creamos el objeto a plotear
 roc_obj <- roc(datos_it1$diagnostico, predicciones)
 
-# Graficamos usando ggroc
-ggroc(roc_obj)
+# Creamos un data frame auxiliar para manejarnos
+df_aux <- data.frame(sensibilidad = roc_obj$sensitivities, 
+                     especificidad = roc_obj$specificities)
 
+
+# Graficamos usando ggplot
+ggplot(df_aux, aes(x = 1 - especificidad, y = sensibilidad)) +
+  geom_line(size = 1.2, color = "firebrick") +
+  geom_text(x = .75, y = .75, label = paste("AUC =", round(roc_obj$auc, 2)), size = 5, color = "firebrick") +
+  ggtitle("Curva ROC") +
+  xlab("1 - Especificidad") +
+  ylab("Sensibilidad") +
+  theme_gdocs() +
+  theme( plot.title = element_text(hjust = 0.5, face = "bold"))
+  
+rm(roc_obj, df_aux)
 
 ```
 
