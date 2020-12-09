@@ -1,16 +1,35 @@
 # --------------------------------------Funciones------------------------------------
 
+contar_ids_repetidos <- function(data, id){
+  data %>% dplyr::count({{id}}) %>% dplyr::filter(n > 1) %>% nrow()
+}
+
+calcular_cant_bins <- function(n) 1 + 3.333 * log10(n)
+
+calcular_pseudo_R2 <- function(modelo) {
+  
+  # Usamos el McFadden pseudo R2
+  pseudo_R2 <- 1 -(modelo$deviance / modelo$null.deviance)
+  p_valor <- pchisq(2*(modelo$deviance - modelo$null.deviance), df = length(modelo$coefficients) - 1)
+  c("pseudo_R2" = pseudo_R2, "p_valor" = p_valor)
+}
+
+calcular_medidas_resumen <- function(data, na.rm = FALSE){
+  
+  df_aux <- map_dfr(data, ~ data.frame("Media" = mean(., na.rm = na.rm),
+                             "Mediana" = median(., na.rm = na.rm),
+                             "Primer_Cuartil" = quantile(., probs = .25, na.rm = na.rm),
+                             "Tercer_Cuartil" = quantile(., probs = .75, na.rm = na.rm),
+                             "Desvio" = sd(., na.rm = na.rm),
+                             "NAs" = sum(is.na(.))))
+  row.names(df_aux) <- names(data)
+  return(df_aux)
+}
 
 
 # --------------------------------------Funciones Viejas------------------------------------
 
-ver_variables_con_na <- function(df){
-  map_lgl(df, anyNA) %>% 
-    which() %>% 
-    names()
-}
 
-calcular_cant_bins <- function(n) 1 + 3.333 * log10(n)
 
 hacer_barplot_con_dos_cuantitativas <- function(datos, var1, var2, min = 0, max = 1, paso = 0.1){
   
@@ -77,24 +96,4 @@ obtener_resultados_matriz_confusion <- function(valor_corte = .5,
   return(df_resultado)
 }
 
-
-calcular_pseudo_R2 <- function(modelo) {
-  # Usamos el McFadden pseudo R2
-  
-  pseudo_R2 <- 1 -(modelo$deviance / modelo$null.deviance)
-  p_valor <- pchisq(2*(modelo$deviance - modelo$null.deviance), df = length(modelo$coefficients) - 1)
-  return(c("pseudo_R2" = pseudo_R2, "p_valor" = p_valor))
-}
-
-medidas_resumen <- function(data, nombre_var, remover_na = FALSE) {
-  data_frame_resultado <- data.frame("Variable" = nombre_var,
-                                     "Media" = mean(data, na.rm = remover_na),
-                                     "Mediana" = median(data, na.rm = remover_na),
-                                     "Primer_Cuartil" = quantile(data, probs = .25, na.rm = remover_na),
-                                     "Tercer_Cuartil" = quantile(data, probs = .75, na.rm = remover_na),
-                                     "Desvio" = sd(data, na.rm = remover_na),
-                                     "NAs" = sum(is.na(data)),
-                                     row.names = NULL)
-  return(data_frame_resultado)
-}
 

@@ -120,8 +120,8 @@ datos_der <- read_excel("../data/bd_completa.xlsx") %>%
   rename(ROW_ID = ROW_ID2)
 
 # Lo primero que hacemos es verificar si existen claves duplicadas
-datos_izq %>% count(ROW_ID) %>% filter(n > 1) %>% nrow()
-datos_der %>% count(ROW_ID) %>% filter(n > 1) %>% nrow()
+contar_ids_repetidos(datos_izq, ROW_ID)
+contar_ids_repetidos(datos_der, ROW_ID)
 
 # Observamos que en el conjunto de datos a la bd completa tenemos datos duplicados, vamos a obtener los ROW_ID duplicados y observar si las observaciones difieren en algo.
 row_id_duplicado <- datos_der %>% 
@@ -135,17 +135,14 @@ datos_der %>%
   filter(ROW_ID %in% row_id_duplicado) %>% 
   arrange(ROW_ID)
 
-# Observamos que los datos son en su mayoría dupicados, entonces lo qe haces es quedarnos es quedarnos con una observación de cada ROW_ID y desechar los otros.
-datos_der <- datos_der %>% distinct(ROW_ID)
+# Observamos que los datos son en su mayoría dupicados, entonces lo qe haces es quedarnos es con una observación de cada ROW_ID y desechar los otros.
+datos_der <- datos_der %>% distinct(ROW_ID, .keep_all = TRUE)
 
 # Volvemos a verificar que lo hayamos realizados correctamente
-datos_der %>% count(ROW_ID) %>% filter(n > 1) %>% nrow()
+contar_ids_repetidos(datos_der, ROW_ID)
 
 # Finalmente, hacemos el left join
 datos_crudos <- left_join(datos_izq, datos_der, by = "ROW_ID")
-
-# Para limpiar el entorno de trabajo
-rm(datos_izq, datos_der, row_id_duplicado)
 
 # Cambiamos los nombres para que concida con la tabla
 datos_it0 <- datos_crudos %>%
@@ -168,8 +165,10 @@ datos_it0 <- datos_crudos %>%
          anios_fumo = "years-smoking") 
 
 
+map(datos_it0, class)
 
-str(datos_it0)
+# Para limpiar el entorno de trabajo
+rm(datos_izq, datos_der, row_id_duplicado)
 ```
 
 
@@ -215,7 +214,7 @@ datos_it1 <- datos_it0 %>%
          anio_diagnostico = as.numeric(anio_diagnostico),
          anios_fumo = as.numeric(anios_fumo))
 
-str(datos_it1)
+map(datos_it1, class)
 ```
 
 
@@ -224,18 +223,12 @@ Ahora las variables se tratan correctamente. Calculamos las medidas resumen para
 
 ```{r}
 # Para variables cuantitativas
-df_aux_cuanti <- datos_it1 %>%
+datos_it1 %>%
   select(where(is.numeric)) %>%
-  mutate(id = NULL)
-
-lista_aux <- list(data = df_aux_cuanti, nombre_var = names(df_aux_cuanti))
-
-kbl(pmap_dfr(lista_aux, medidas_resumen, remover_na = TRUE), 
-      caption = "Medidas Resumen de Variables Cuantitativas", digits = 2) %>% 
+  mutate(id = NULL) %>%
+  calcular_medidas_resumen(na.rm = TRUE) %>% 
+  kbl(caption = "Medidas Resumen de Variables Cuantitativas", digits = 2) %>% 
   kable_classic_2(font_size = 15)
-
-
-rm(df_aux_cuanti, lista_aux)
 
 ```
 
