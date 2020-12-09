@@ -80,6 +80,7 @@ Primero cargamos los datos, luego observamos como los trata R.
 
 
 ```{r, message = FALSE}
+
 # Código hacer join entre las tablas
 datos_izq <- read_excel("../data/bd_acotada.xlsx") %>% 
   select(ROW_ID, DIAGNOSTICO, d1, d2, d3, d4, d5)
@@ -117,12 +118,34 @@ datos_der <- read_excel("../data/bd_completa.xlsx") %>%
           "years-smoking", 
           healthCode) %>% 
   rename(ROW_ID = ROW_ID2)
- 
-datos_crudos <- inner_join(datos_izq, datos_der, by = "ROW_ID") %>% distinct()
 
+# Lo primero que hacemos es verificar si existen claves duplicadas
+datos_izq %>% count(ROW_ID) %>% filter(n > 1) %>% nrow()
+datos_der %>% count(ROW_ID) %>% filter(n > 1) %>% nrow()
 
-rm(datos_izq,datos_der)
+# Observamos que en el conjunto de datos a la bd completa tenemos datos duplicados, vamos a obtener los ROW_ID duplicados y observar si las observaciones difieren en algo.
+row_id_duplicado <- datos_der %>% 
+  count(ROW_ID) %>% 
+  filter(n > 1) %>% 
+  select(ROW_ID) %>% 
+  unlist() %>% 
+  unname()
 
+datos_der %>% 
+  filter(ROW_ID %in% row_id_duplicado) %>% 
+  arrange(ROW_ID)
+
+# Observamos que los datos son en su mayoría dupicados, entonces lo qe haces es quedarnos es quedarnos con una observación de cada ROW_ID y desechar los otros.
+datos_der <- datos_der %>% distinct(ROW_ID)
+
+# Volvemos a verificar que lo hayamos realizados correctamente
+datos_der %>% count(ROW_ID) %>% filter(n > 1) %>% nrow()
+
+# Finalmente, hacemos el left join
+datos_crudos <- left_join(datos_izq, datos_der, by = "ROW_ID")
+
+# Para limpiar el entorno de trabajo
+rm(datos_izq, datos_der, row_id_duplicado)
 
 # Cambiamos los nombres para que concida con la tabla
 datos_it0 <- datos_crudos %>%

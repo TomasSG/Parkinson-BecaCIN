@@ -1,10 +1,8 @@
-# --------------------------------------Bibliotecas------------------------------------
-
-library(purrr)
-library(rlang)
-library(caret) #confusionMatrix
-
 # --------------------------------------Funciones------------------------------------
+
+
+
+# --------------------------------------Funciones Viejas------------------------------------
 
 ver_variables_con_na <- function(df){
   map_lgl(df, anyNA) %>% 
