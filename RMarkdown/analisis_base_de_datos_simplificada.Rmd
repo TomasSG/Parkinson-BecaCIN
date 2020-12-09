@@ -36,7 +36,7 @@ options(knitr.kable.NA = " ")
 source("../R/Utils.R")
 
 # Poniendo un tema por defecto
-familia_texto <- "ArialMT"
+familia_texto <- "Calibri"
 tamanio_titulo <- 20
 face_titulo <- "bold"
 theme_set(theme_gdocs() + theme(plot.title = element_text(family = familia_texto, size = 20, face = "bold"),
@@ -226,7 +226,7 @@ Ahora las variables se tratan correctamente. Calculamos las medidas resumen para
 datos_it1 %>%
   select(where(is.numeric)) %>%
   mutate(id = NULL) %>%
-  calcular_medidas_resumen(na.rm = TRUE) %>% 
+  calcular_medidas_resumen_cuanti(na.rm = TRUE) %>% 
   kbl(caption = "Medidas Resumen de Variables Cuantitativas", digits = 2) %>% 
   kable_classic_2(font_size = 15)
 
@@ -279,22 +279,29 @@ datos_it2$anio_medicacion[datos_it2$anio_medicacion < 1960] <- NA
 
 ```{r}
 
-g0 <- datos_it2 %>% ggplot() + ylab("")
+dibujar_histograma <- function(datos, variable){
+  datos %>% 
+    ggplot(aes_string(variable)) +
+    geom_histogram(bins = calcular_cant_bins(sum(!is.na(datos_it1[[variable]]))), 
+                   alpha = 0.4, 
+                   color = "firebrick", 
+                   fill = "white") +
+    ylab("")
+}
 
+nombres_variables <- c("d1", "d2", "d3", "d4", "d5")
 
 # Histogramas de variables di
-g1 <- g0 + geom_histogram(aes(d1), bins = calcular_cant_bins(sum(!is.na(datos_it1$d1))), alpha = 0.4, color = "firebrick", fill = "white")
-g2 <- g0 + geom_histogram(aes(d2), bins = calcular_cant_bins(sum(!is.na(datos_it1$d2))), alpha = 0.4, color = "firebrick", fill = "white") + 
-  scale_x_continuous(breaks = seq(-200, 0, 100))
-g3 <- g0 + geom_histogram(aes(d3), bins = calcular_cant_bins(sum(!is.na(datos_it1$d3))), alpha = 0.4, color = "firebrick", fill = "white")
-g4 <- g0 + geom_histogram(aes(d4), bins = calcular_cant_bins(sum(!is.na(datos_it1$d4))), alpha = 0.4, color = "firebrick", fill = "white")
-g5 <- g0 + geom_histogram(aes(d5), bins = calcular_cant_bins(sum(!is.na(datos_it1$d5))), alpha = 0.4, color = "firebrick", fill = "white")
+graficos <- map(nombres_variables, dibujar_histograma, datos = datos_it2)
 
-arrange <- ggarrange(g1, g2, g3, g4, g5, nrow = 2, ncol = 3)
+arrange <- ggarrange(plotlist = graficos, nrow = 2, ncol = 3)
 
-annotate_figure(arrange,top = text_grob("Histograma variables di", family = familia_texto, face = face_titulo, size = tamanio_titulo))
+annotate_figure(arrange,
+                top = text_grob("Histograma variables di", 
+                                face = face_titulo, 
+                                size = tamanio_titulo))
 
-rm(g1, g2, g3, g4, g5, arrange)
+rm(dibujar_histograma, graficos, arrange)
 ```
 
 

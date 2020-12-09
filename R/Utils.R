@@ -14,9 +14,9 @@ calcular_pseudo_R2 <- function(modelo) {
   c("pseudo_R2" = pseudo_R2, "p_valor" = p_valor)
 }
 
-calcular_medidas_resumen <- function(data, na.rm = FALSE){
+calcular_medidas_resumen_cuanti <- function(data, na.rm = FALSE){
   
-  df_aux <- map_dfr(data, ~ data.frame("Media" = mean(., na.rm = na.rm),
+  df_aux <- purrr::map_dfr(data, ~ data.frame("Media" = mean(., na.rm = na.rm),
                              "Mediana" = median(., na.rm = na.rm),
                              "Primer_Cuartil" = quantile(., probs = .25, na.rm = na.rm),
                              "Tercer_Cuartil" = quantile(., probs = .75, na.rm = na.rm),
