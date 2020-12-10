@@ -26,6 +26,14 @@ calcular_medidas_resumen_cuanti <- function(data, na.rm = FALSE){
   return(df_aux)
 }
 
+dibujar_barplot_prop <- function(data, var){
+  data %>% 
+    filter(!is.na({{var}})) %>% 
+    ggplot(aes(x = {{var}}, y = stat(prop), group = 1)) + 
+    geom_bar(alpha = .6, show.legend = FALSE, fill = "firebrick") +
+    ylab("") +
+    scale_y_continuous(labels = label_percent(2))
+}
 
 # --------------------------------------Funciones Viejas------------------------------------
 

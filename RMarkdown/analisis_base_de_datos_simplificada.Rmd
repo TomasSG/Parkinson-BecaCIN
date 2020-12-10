@@ -423,12 +423,7 @@ kbl(table(diagnostico = datos_it2$diagnostico)) %>%
 
 
 ```{r}
-datos_it2 %>% 
-  filter(!is.na(diagnostico)) %>% 
-  ggplot(aes(diagnostico, y = ..count.. / sum(..count..), fill = diagnostico)) + 
-  geom_bar(alpha = .6, show.legend = FALSE) +
-  ylab("") + 
-  scale_y_continuous(labels = label_percent(2))
+dibujar_barplot_prop(datos_it2, diagnostico)
 ```
 
 
@@ -443,12 +438,7 @@ kbl(table(punto_medicacion = datos_it2$punto_medicacion)) %>%
 
 
 ```{r}
-datos_it2 %>% 
-  filter(!is.na(punto_medicacion)) %>% 
-  ggplot(aes(y = punto_medicacion, x = ..count.. / sum(..count..), fill = punto_medicacion)) + 
-  geom_bar(alpha = .6, show.legend = FALSE) + 
-  xlab("") + 
-  scale_x_continuous(labels = label_percent(2))
+dibujar_barplot_prop(datos_it2, punto_medicacion) + coord_flip()
   
 ```
 
@@ -464,12 +454,7 @@ kbl(table(cuidado = datos_it2$cuidado)) %>%
 
 
 ```{r}
-datos_it2 %>% 
-  filter(!is.na(cuidado)) %>% 
-  ggplot(aes(x = cuidado, y = ..count.. / sum(..count..), fill = cuidado)) + 
-  geom_bar(alpha = .6, show.legend = FALSE) +
-  ylab("") +
-  scale_y_continuous(labels = label_percent(2))
+dibujar_barplot_prop(datos_it2, cuidado)
 ```
 
 
@@ -483,12 +468,7 @@ kbl(table(DBS = datos_it2$estimulacion_cerebral)) %>%
 
 
 ```{r}
-datos_it2 %>% 
-  filter(!is.na(estimulacion_cerebral)) %>% 
-  ggplot(aes(x = estimulacion_cerebral, y = ..count.. / sum(..count..), fill = estimulacion_cerebral)) + 
-  geom_bar(alpha = .6, show.legend = FALSE) +
-  ylab("") +
-  scale_y_continuous(labels = label_percent(2))
+dibujar_barplot_prop(datos_it2, estimulacion_cerebral)
 ```
 
 * En **estimulacion_cerebral** más del 80% de los datos respondieron fallos y el resto verdadero.
@@ -501,12 +481,7 @@ kbl(table(educacion = datos_it2$educacion)) %>%
 
 
 ```{r, message = FALSE}
-datos_it2 %>% 
-  filter(!is.na(educacion)) %>% 
-  ggplot(aes(y = educacion, x = ..count.. / sum(..count..), fill = educacion)) + 
-  geom_bar(alpha = .6, show.legend = FALSE) +
-  xlab("") +
-  scale_x_continuous(labels = label_percent(2))
+dibujar_barplot_prop(datos_it2, educacion) + coord_flip()
 
 
 datos_it2 %>% 
@@ -539,12 +514,7 @@ kbl(table(trabajo = datos_it2$trabajo)) %>%
 
 
 ```{r, message = FALSE}
-datos_it2 %>% 
-  filter(!is.na(trabajo)) %>% 
-  ggplot(aes(y = trabajo, x = ..count.. / sum(..count..), fill = trabajo)) + 
-  geom_bar(alpha = .6, show.legend = FALSE) +
-  xlab("") +
-  scale_x_continuous(labels = label_percent(2))
+dibujar_barplot_prop(datos_it2, trabajo) + coord_flip()
 ```
 
 
@@ -557,12 +527,7 @@ kbl(table(genero = datos_it2$genero)) %>%
 
 
 ```{r}
-datos_it2 %>% 
-  filter(!is.na(genero)) %>% 
-  ggplot(aes(x = genero, y = ..count.. / sum(..count..), fill = genero)) + 
-  geom_bar(alpha = .6, show.legend = FALSE) +
-  ylab("") +
-  scale_y_continuous(labels = label_percent(2))
+dibujar_barplot_prop(datos_it2, genero)
 ```
 
 
@@ -576,12 +541,7 @@ kbl(table(estado_civil = datos_it2$estado_civil)) %>%
 
 
 ```{r}
-datos_it2 %>% 
-  filter(!is.na(estado_civil)) %>% 
-  ggplot(aes(y = estado_civil, x = ..count.. / sum(..count..), fill = estado_civil)) + 
-  geom_bar(alpha = .6, show.legend = FALSE) +
-  xlab("") +
-  scale_x_continuous(labels = label_percent(2))
+dibujar_barplot_prop(datos_it2, estado_civil) + coord_flip()
 ```
 
 
@@ -595,12 +555,7 @@ kbl(table(facilidad_celular = datos_it2$facilidad_celular)) %>%
 
 
 ```{r}
-datos_it2 %>% 
-  filter(!is.na(facilidad_celular)) %>% 
-  ggplot(aes(y = facilidad_celular, x = ..count.. / sum(..count..), fill = facilidad_celular)) + 
-  geom_bar(alpha = .6, show.legend = FALSE) +
-  xlab("") +
-  scale_x_continuous(labels = label_percent(2))
+dibujar_barplot_prop(datos_it2, facilidad_celular) + coord_flip()
 ```
 
 
@@ -614,12 +569,7 @@ kbl(table(fumo = datos_it2$fumo)) %>%
 
 
 ```{r}
-datos_it2 %>% 
-  filter(!is.na(fumo)) %>% 
-  ggplot(aes(x = fumo, y = ..count.. / sum(..count..), fill = fumo)) + 
-  geom_bar(alpha = .6, show.legend = FALSE) +
-  ylab("") +
-  scale_y_continuous(labels = label_percent(2))
+dibujar_barplot_prop(datos_it2, fumo)
 ```
 
 
@@ -633,12 +583,7 @@ kbl(table(cirugias = datos_it2$cirugias)) %>%
 
 
 ```{r}
-datos_it2 %>% 
-  filter(!is.na(cirugias)) %>% 
-  ggplot(aes(x = cirugias, y = ..count.. / sum(..count..), fill = cirugias)) + 
-  geom_bar(alpha = .6, show.legend = FALSE) +
-  ylab("") +
-  scale_y_continuous(labels = label_percent(2))
+dibujar_barplot_prop(datos_it2, cirugias)
 ```
 
 
