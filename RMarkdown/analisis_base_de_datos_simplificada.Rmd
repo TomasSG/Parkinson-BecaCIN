@@ -3,7 +3,7 @@ title: "Análisis Base de Datos Simplificada"
 author: "Tomás Sánchez Grigioni"
 date: "13/9/2020"
 output:
-  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include = FALSE}
@@ -36,11 +36,16 @@ options(knitr.kable.NA = " ")
 source("../R/Utils.R")
 
 # Poniendo un tema por defecto
-familia_texto <- "Calibri"
-tamanio_titulo <- 20
+familia_texto <- "Arial"
+tamanio_titulo <- 10
 face_titulo <- "bold"
-theme_set(theme_gdocs() + theme(plot.title = element_text(family = familia_texto, size = 20, face = "bold"),
-                                axis.title = element_text(family = familia_texto, face = "bold", size = 15)))
+theme_set(theme_gdocs() + 
+            theme(plot.title = element_text(family = familia_texto, 
+                                            size = 15, 
+                                            face = "bold"),
+                  axis.title = element_text(family = familia_texto, 
+                                            face = "bold", 
+                                            size = 10)))
 
 ```
 
@@ -278,16 +283,16 @@ datos_it2$anio_medicacion[datos_it2$anio_medicacion < 1960] <- NA
 ## Análisis Univariado
 
 ```{r}
-nombres_variables <- c("d1", "d2", "d3", "d4", "d5")
-
 # Histogramas de variables di
-graficos <- map(nombres_variables, ~ ggplot(datos_it2, aes_string(.)) +
-                                        geom_histogram(
-                                          bins = calcular_cant_bins(sum(!is.na(datos_it2[[.]]))), 
-                                          alpha = 0.4, 
-                                          color = "firebrick", 
-                                          fill = "white") +
-                                        ylab(""))
+
+graficos <- c("d1", "d2", "d3", "d4", "d5") %>% 
+  map(~ ggplot(datos_it2, aes_string(.)) +
+        geom_histogram(
+          bins = calcular_cant_bins(sum(!is.na(datos_it2[[.]]))),
+          alpha = 0.4,
+          color = "firebrick", 
+          fill = "white") +
+        ylab(""))
 
 arrange <- ggarrange(plotlist = graficos, nrow = 2, ncol = 3)
 
@@ -310,9 +315,10 @@ rm(graficos, arrange)
 ```{r}
 
 # Boxplot de variables di
-graficos <- map(nombres_variables, ~ ggplot(datos_it2, aes_string(.)) +
-                                        geom_boxplot(color = "darkblue", fill = "blue", alpha = .6) +
-                                        ylab(""))
+graficos <-  c("d1", "d2", "d3", "d4", "d5") %>%
+  map(~ ggplot(datos_it2, aes_string(.)) +
+        geom_boxplot(color = "darkblue", fill = "blue", alpha = .6) +
+        ylab(""))
 
 arrange <- ggarrange(plotlist = graficos, nrow = 2, ncol = 3)
 
@@ -321,7 +327,7 @@ annotate_figure(arrange,
                                 face = face_titulo, 
                                 size = tamanio_titulo))
 
-rm(arrange, nombres_variables)
+rm(arrange)
 ```
 
 * En **d1** se tiene la mediana cercana a 25, y el 50% central de los datos parecen estar contenidos entre 25 y 30 aproximadamente. Hay gran presencia de valores extremos.
@@ -354,18 +360,17 @@ rm(g2, g5, arrange, graficos)
 
 ```{r}
 
-nombres_variables <- c("edad", "anios_fumo", "anio_diagnostico", "anio_medicacion", "anio_enfermedad")
 # Histogramas de variables anios
 
-graficos <- map(nombres_variables, ~ ggplot(datos_it2, aes_string(.)) + 
-                                      geom_histogram(
-                                        bins = calcular_cant_bins(sum(!is.na(datos_it2[[.]]))),
-                                        alpha = 0.4,
-                                        color = "firebrick",
-                                        fill = "white",
-                                        na.rm = TRUE
-                                      ) +
-                                      ylab(""))
+graficos <-  c("edad", "anios_fumo", "anio_diagnostico", "anio_medicacion", "anio_enfermedad") %>% 
+  map(~ ggplot(datos_it2, aes_string(.)) + 
+        geom_histogram(
+          bins = calcular_cant_bins(sum(!is.na(datos_it2[[.]]))),
+          alpha = 0.4,
+          color = "firebrick",
+          fill = "white",
+          na.rm = TRUE) +
+        ylab(""))
 
 arrange <- ggarrange(plotlist = graficos,  nrow = 3, ncol = 2)
 
@@ -374,7 +379,7 @@ annotate_figure(arrange,
                                 face = face_titulo, 
                                 size = tamanio_titulo))
 
-rm(nombres_variables, graficos, arrange)
+rm(graficos, arrange)
 ```
 
 
@@ -386,15 +391,24 @@ rm(nombres_variables, graficos, arrange)
 
 
 ```{r}
+
 # Boxplot de variables anios
-g1 <- g0 + geom_boxplot(aes(edad), na.rm = TRUE, color = "darkblue", fill = "blue", alpha = .6)
-g2 <- g0 + geom_boxplot(aes(anios_fumo), na.rm = TRUE, color = "darkblue", fill = "blue", alpha = .6)
+graficos <- c("edad", "anios_fumo") %>% 
+  map(~ ggplot(datos_it2, aes_string(.)) +
+        geom_boxplot(na.rm = TRUE,
+                     color = "darkblue",
+                     fill = "blue",
+                     alpha = .6) +
+        ylab(""))
 
-arrange <- ggarrange(g1, g2, nrow = 1, ncol = 2)
+arrange <- ggarrange(plotlist = graficos, nrow = 1, ncol = 2)
 
-annotate_figure(arrange,top = text_grob("Boxplot variables de anios", family = familia_texto, face = face_titulo, size = tamanio_titulo))
+annotate_figure(arrange,
+                top = text_grob("Boxplot variables de anios", 
+                                face = face_titulo, 
+                                size = tamanio_titulo))
 
-rm(g0, g1, g2, arrange)
+rm(graficos, arrange)
 ```
 
 
