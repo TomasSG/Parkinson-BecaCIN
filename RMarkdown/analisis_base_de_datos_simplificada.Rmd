@@ -793,13 +793,10 @@ table(datos_it2$educacion, datos_it2$diagnostico) %>%
 ```{r, message = FALSE}
 datos_it2 %>% 
   filter(diagnostico == 1 & !is.na(educacion)) %>%
-  group_by(educacion) %>% 
-  summarise(n = n()) %>% 
-  mutate(prop = n / sum(n)) %>% 
-  arrange(-prop) %>% 
-  mutate(educacion = factor(educacion, levels = educacion)) %>% 
-  ggplot(aes(x = prop, y = educacion, fill = educacion)) +
-  geom_bar(show.legend = FALSE, alpha = .4, stat = "identity") +
+  count(educacion) %>% 
+  mutate(educacion = fct_reorder(educacion, n)) %>% 
+  ggplot(aes(x = stat(prop), y = educacion, group = 1)) +
+  geom_bar(show.legend = FALSE, alpha = .4, fill = "firebrick") +
   xlab("") +
   ggtitle("Grupo con diagnóstico positivo") +
   scale_x_continuous(labels = label_percent(2))
