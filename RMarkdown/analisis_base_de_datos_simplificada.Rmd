@@ -294,14 +294,12 @@ graficos <- c("d1", "d2", "d3", "d4", "d5") %>%
           fill = "white") +
         ylab(""))
 
-arrange <- ggarrange(plotlist = graficos, nrow = 2, ncol = 3)
+ggarrange(plotlist = graficos, nrow = 2, ncol = 3) %>% 
+  annotate_figure(top = text_grob("Histograma variables di", 
+                                  face = face_titulo, 
+                                  size = tamanio_titulo))
 
-annotate_figure(arrange,
-                top = text_grob("Histograma variables di", 
-                                face = face_titulo, 
-                                size = tamanio_titulo))
-
-rm(graficos, arrange)
+rm(graficos)
 ```
 
 
@@ -320,14 +318,10 @@ graficos <-  c("d1", "d2", "d3", "d4", "d5") %>%
         geom_boxplot(color = "darkblue", fill = "blue", alpha = .6) +
         ylab(""))
 
-arrange <- ggarrange(plotlist = graficos, nrow = 2, ncol = 3)
-
-annotate_figure(arrange, 
-                top = text_grob("Boxplot variables di", 
-                                face = face_titulo, 
-                                size = tamanio_titulo))
-
-rm(arrange)
+ggarrange(plotlist = graficos, nrow = 2, ncol = 3) %>% 
+  annotate_figure(top = text_grob("Boxplot variables di", 
+                                  face = face_titulo, 
+                                  size = tamanio_titulo))
 ```
 
 * En **d1** se tiene la mediana cercana a 25, y el 50% central de los datos parecen estar contenidos entre 25 y 30 aproximadamente. Hay gran presencia de valores extremos.
@@ -343,14 +337,12 @@ rm(arrange)
 g2 <- graficos[[2]] + coord_cartesian(xlim = c(-25, 25))
 g5 <- graficos[[5]] + coord_cartesian(xlim = c(0, 0.025))
 
-arrange <- ggarrange(g2, g5, nrow = 1, ncol = 2)
+ggarrange(g2, g5, nrow = 1, ncol = 2) %>% 
+  annotate_figure(top = text_grob("Boxplot con zoom",
+                                  face = face_titulo, 
+                                  size = tamanio_titulo))
 
-annotate_figure(arrange,
-                top = text_grob("Boxplot con zoom",
-                                face = face_titulo, 
-                                size = tamanio_titulo))
-
-rm(g2, g5, arrange, graficos)
+rm(g2, g5, graficos)
 ```
 
 
@@ -401,14 +393,12 @@ graficos <- c("edad", "anios_fumo") %>%
                      alpha = .6) +
         ylab(""))
 
-arrange <- ggarrange(plotlist = graficos, nrow = 1, ncol = 2)
+ggarrange(plotlist = graficos, nrow = 1, ncol = 2) %>% 
+  annotate_figure(top = text_grob("Boxplot variables de anios", 
+                                  face = face_titulo, 
+                                  size = tamanio_titulo))
 
-annotate_figure(arrange,
-                top = text_grob("Boxplot variables de anios", 
-                                face = face_titulo, 
-                                size = tamanio_titulo))
-
-rm(graficos, arrange)
+rm(graficos)
 ```
 
 
@@ -597,19 +587,21 @@ dibujar_barplot_prop(datos_it2, cirugias)
 
 
 ```{r}
-g0 <- datos_it2 %>% 
-  mutate(diagnostico = factor(diagnostico, levels = c(0, 1), labels = c("Negativo", "Positivo"))) %>% 
-  ggplot(aes(x = diagnostico, fill = diagnostico, color = diagnostico)) +
-  xlab("")
 
-g1 <- g0 + geom_boxplot(aes(y = edad), na.rm = TRUE, alpha = .4)
-g2 <- g0 + geom_boxplot(aes(y = anios_fumo), na.rm = TRUE, alpha = .4)
+graficos <- c("edad", "anios_fumo") %>% 
+  map(~ ggplot(datos_it1, aes_string(x = "diagnostico", 
+                                     y = ., 
+                                     fill = "diagnostico", 
+                                     color = "diagnostico")) +
+        geom_boxplot(na.rm = TRUE, alpha = .4) +
+        xlab(""))
 
-arrange <- ggarrange(g1, g2, nrow = 1, ncol = 2, common.legend = TRUE, legend = "none")
+ggarrange(plotlist = graficos, nrow = 1, ncol = 2, common.legend = TRUE, legend = "none") %>% 
+  annotate_figure(top = text_grob("Boxplot contra diangostico", 
+                                  face = face_titulo, 
+                                  size = tamanio_titulo))
 
-annotate_figure(arrange, top = text_grob("Boxplot contra diangostico", family = familia_texto, face = face_titulo, size = tamanio_titulo))
-
-rm(g0, g1, g2, arrange)
+rm(graficos)
 ```
 
 
