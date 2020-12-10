@@ -609,10 +609,7 @@ rm(graficos)
 
 
 ```{r}
-datos_it2 %>% 
-  filter(!is.na(punto_medicacion)) %>% 
-  ggplot(aes(x = edad, y = punto_medicacion, fill = punto_medicacion, color = punto_medicacion)) +
-  geom_boxplot(na.rm = TRUE, show.legend = FALSE, alpha = .4) 
+dibujar_boxplot_cuanti_contra_cuali(datos_it2, edad, punto_medicacion)
 ```
 
 
@@ -630,10 +627,7 @@ Aqui verificamos que la gran mayoría del segundo grupo tienen diagnóstico nega
 
 
 ```{r}
-datos_it2 %>% 
-  filter(!is.na(cuidado)) %>% 
-  ggplot(aes(x = cuidado, y = edad, fill = cuidado, color = cuidado)) +
-  geom_boxplot(na.rm = TRUE, show.legend = FALSE, alpha = .4)
+dibujar_boxplot_cuanti_contra_cuali(datos_it2, edad, cuidado)
 ```
 
 
@@ -641,10 +635,7 @@ datos_it2 %>%
 
 
 ```{r}
-datos_it2 %>% 
-  filter(!is.na(estimulacion_cerebral)) %>% 
-  ggplot(aes(x = estimulacion_cerebral, y = edad, fill =  estimulacion_cerebral, color = estimulacion_cerebral)) + 
-  geom_boxplot(na.rm = TRUE, alpha = .6, show.legend = FALSE)
+dibujar_boxplot_cuanti_contra_cuali(datos_it2, edad, estimulacion_cerebral)
 ```
 
 
@@ -652,20 +643,24 @@ datos_it2 %>%
 
 
 ```{r}
-g0 <- datos_it2 %>% 
-  filter(!is.na(educacion)) %>% 
-  ggplot(aes(y = educacion, fill = educacion, color = educacion)) +
-  ylab("")
+graficos <- c("edad", "anios_fumo") %>% 
+  map(~ ggplot(filter(datos_it2, !is.na(educacion)),
+               aes_string(x = ., y = "educacion", fill = "educacion", color = "educacion")) +
+        geom_boxplot(na.rm = TRUE, alpha = .6))
   
+graficos[[2]] <- graficos[[2]] + theme(axis.text.y = element_blank()) + ylab("")
 
-g1 <- g0 + geom_boxplot(aes(x = edad), na.rm = TRUE, alpha = .6)
-g2 <- g0 + geom_boxplot(aes(x = anios_fumo), na.rm = TRUE, alpha = .6) + theme(axis.text.y = element_blank())
+ggarrange(plotlist = graficos, 
+          nrow = 1, 
+          ncol = 2, 
+          common.legend = TRUE, 
+          legend = "none", 
+          widths = c(2, 1)) %>% 
+  annotate_figure(top = text_grob("Boxplot vs educacion", 
+                                  face = face_titulo, 
+                                  size = tamanio_titulo))
 
-arrange <- ggarrange(g1, g2, nrow = 1, ncol = 2, common.legend = TRUE, legend = "none", widths = c(2, 1))
-
-annotate_figure(arrange, top = text_grob("Boxplot vs educacion", family = familia_texto, face = face_titulo, size = tamanio_titulo))
-
-rm(g0, g1, g2, arrange)
+rm(graficos)
 ```
 
 
@@ -674,20 +669,26 @@ rm(g0, g1, g2, arrange)
 
 
 ```{r}
-g0 <- datos_it2 %>% 
-  filter(!is.na(trabajo)) %>% 
-  ggplot(aes(y = trabajo, fill = trabajo, color = trabajo)) +
-  ylab("")
-  
 
-g1 <- g0 + geom_boxplot(aes(x = edad), na.rm = TRUE, alpha = .4)
-g2 <- g0 + geom_boxplot(aes(x = anios_fumo), na.rm = TRUE, alpha = .4) + theme(axis.text.y = element_blank())
+graficos <- c("edad", "anios_fumo") %>% 
+  map(~ ggplot(filter(datos_it2, !is.na(trabajo)),
+               aes_string(x = ., y = "trabajo", fill = "trabajo", color = "trabajo")) +
+        geom_boxplot(na.rm = TRUE, alpha = .6))
 
-arrange <- ggarrange(g1, g2, nrow = 1, ncol = 2, common.legend = TRUE, legend = "none", widths = c(2, 1))
 
-annotate_figure(arrange, top = text_grob("Boxplot vs trabajo", family = familia_texto, face = face_titulo, size = tamanio_titulo))
+graficos[[2]] <- graficos[[2]] + theme(axis.text.y = element_blank()) + ylab("")
 
-rm(g0, g1, g2, arrange)
+ggarrange(plotlist = graficos, 
+                     nrow = 1, 
+                     ncol = 2, 
+                     common.legend = TRUE, 
+                     legend = "none", 
+                     widths = c(2, 1)) %>% 
+  annotate_figure(top = text_grob("Boxplot vs trabajo",
+                                  face = face_titulo, 
+                                  size = tamanio_titulo))
+
+rm(graficos)
 ```
 
 
@@ -696,19 +697,20 @@ rm(g0, g1, g2, arrange)
 
 
 ```{r, warning = FALSE}
-g0 <- datos_it2 %>% 
-  filter(!is.na(genero)) %>% 
-  ggplot(aes(x = genero, fill = genero, color = genero))
 
-g1 <- g0 + geom_boxplot(aes(y = edad, alpha = .4))
-g2 <- g0 + geom_boxplot(aes(y = anios_fumo, alpha = .4))
 
-arrange <- ggarrange(g1, g2, nrow = 1, ncol = 2, legend = "none")
+graficos <- c("edad", "anios_fumo") %>% 
+  map(~ ggplot(filter(datos_it2, !is.na(genero)),
+               aes_string(x = "genero", y = ., fill = "genero", color = "genero")) +
+        geom_boxplot(na.rm = TRUE, alpha = .6))
 
-annotate_figure(arrange, top = text_grob("Cuanti vs genero", family = familia_texto, face = face_titulo, size = tamanio_titulo))
 
-rm(g0, g1, g2, arrange)
+ggarrange(plotlist = graficos, nrow = 1, ncol = 2, legend = "none") %>% 
+  annotate_figure(top = text_grob("Cuanti vs genero", 
+                                  face = face_titulo, 
+                                  size = tamanio_titulo))
 
+rm(graficos)
 ```
 
 
@@ -716,10 +718,7 @@ rm(g0, g1, g2, arrange)
 
 
 ```{r}
-datos_it2 %>% 
-  filter(!is.na(estado_civil)) %>% 
-  ggplot(aes(x = edad, y = estado_civil, fill = estado_civil, color = estado_civil)) +
-  geom_boxplot(show.legend = FALSE, alpha = .4)
+dibujar_boxplot_cuanti_contra_cuali(datos_it2, edad, estado_civil)
 ```
 
 
@@ -727,10 +726,7 @@ datos_it2 %>%
 
 
 ```{r}
-datos_it2 %>% 
-  filter(!is.na(facilidad_celular)) %>% 
-  ggplot(aes(x = edad, y = facilidad_celular, fill = facilidad_celular, color = facilidad_celular)) +
-  geom_boxplot(show.legend = FALSE, alpha = .4)
+dibujar_boxplot_cuanti_contra_cuali(datos_it2, edad, facilidad_celular)
 ```
 
 
@@ -738,10 +734,7 @@ datos_it2 %>%
 
 
 ```{r}
-datos_it2 %>% 
-  filter(!is.na(fumo)) %>% 
-  ggplot(aes(x = fumo, y = edad, fill = fumo, color = fumo)) +
-  geom_boxplot(show.legend = FALSE, alpha = .4)
+dibujar_boxplot_cuanti_contra_cuali(datos_it2, edad, fumo)
 
 ```
 
@@ -750,11 +743,7 @@ datos_it2 %>%
 
 
 ```{r}
-datos_it2 %>% 
-  filter(!is.na(cirugias)) %>% 
-  ggplot(aes(x = cirugias, y = edad, fill = cirugias, color = cirugias)) +
-  geom_boxplot(show.legend = FALSE, alpha = .4)
-
+dibujar_boxplot_cuanti_contra_cuali(datos_it2, edad, cirugias)
 ```
 
 

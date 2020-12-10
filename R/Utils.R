@@ -35,6 +35,13 @@ dibujar_barplot_prop <- function(data, var){
     scale_y_continuous(labels = label_percent(2))
 }
 
+dibujar_boxplot_cuanti_contra_cuali <- function(data, var_cuanti, var_cuali){
+  data %>% 
+    filter(!is.na({{var_cuali}})) %>% 
+    ggplot(aes(x = {{var_cuanti}}, y = {{var_cuali}}, fill = {{var_cuali}}, color = {{var_cuali}})) +
+    geom_boxplot(na.rm = TRUE, show.legend = FALSE, alpha = .4)
+}
+
 # --------------------------------------Funciones Viejas------------------------------------
 
 
