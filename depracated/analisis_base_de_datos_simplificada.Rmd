@@ -2,8 +2,7 @@
 title: "Análisis Base de Datos Simplificada"
 author: "Tomás Sánchez Grigioni"
 date: "13/9/2020"
-output:
-  html_document: default
+output: html_notebook
 ---
 
 ```{r setup, include = FALSE}
@@ -39,13 +38,7 @@ source("../R/Utils.R")
 familia_texto <- "Arial"
 tamanio_titulo <- 10
 face_titulo <- "bold"
-theme_set(theme_gdocs() + 
-            theme(plot.title = element_text(family = familia_texto, 
-                                            size = 15, 
-                                            face = "bold"),
-                  axis.title = element_text(family = familia_texto, 
-                                            face = "bold", 
-                                            size = 10)))
+theme_set(theme_gdocs())
 
 ```
 
@@ -755,9 +748,8 @@ dibujar_boxplot_cuanti_contra_cuali(datos_it2, edad, cirugias)
 
 ```{r}
 table(datos_it2$cuidado, datos_it2$diagnostico) %>% 
-  addmargins(c(1, 2)) %>% 
-  kbl() %>% 
-  kable_classic_2(full_width = FALSE, font_size = 20)
+  addmargins(c(1, 2))
+  
 ```
 
 
@@ -783,7 +775,7 @@ table(datos_it2$estimulacion_cerebral, datos_it2$diagnostico) %>%
 table(datos_it2$educacion, datos_it2$diagnostico) %>% 
   addmargins(c(1, 2)) %>% 
   kbl() %>% 
-  kable_classic_2(full_width = FALSE, font_size = 20)
+  kable_classic_2(full_width = FALSE)
 ```
 
 
@@ -973,8 +965,6 @@ datos_it2 %>%
   filter(!is.na(anio_diagnostico) & !is.na(anio_enfermedad)) %>% 
   ggplot(aes(x = anio_diagnostico, y = anio_enfermedad, color = anio_enfermedad >= anio_diagnostico)) +
   geom_point(show.legend = FALSE)
-
-  
 ```
 
 

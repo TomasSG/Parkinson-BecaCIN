@@ -1,0 +1,149 @@
+---
+title: "Análisis Exploratorio de Datos"
+author: "Tomás Sánchez Grigioni"
+date: "2020-12-14"
+output: html_notebook
+---
+
+
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Bibliotecas a utilizar
+
+Encontramos la lista de bibliotecas a utilizar aqui, con el fin de por qué las incluimos. Además, cargamos el archivo que contiene funciones importantes a utilizar.
+
+```{r bibliotecas}
+# Para anaálisis de datos
+library(tidyverse)
+library(lubridate)
+
+# Para RMarkdown
+library(knitr)
+library(kableExtra)
+library(tinytex)
+
+# Para cargar datos
+library(readxl)
+
+# Para customizar ggplot
+library(ggpubr)
+library(ggthemes)
+library(extrafont)
+library(scales)
+
+# Funciones utiles
+source("../R/Utils.R")
+```
+
+
+## Importar los datos
+
+Los datos en principio los tenemos divididos en dos bases de datos, así que mediante un join generamos la vase de datos a utilizar.
+
+```{r datos_join}
+# Código hacer join entre las tablas
+datos_izq <- read_excel("../data/bd_acotada.xlsx") %>% 
+  select(ROW_ID, DIAGNOSTICO, d1, d2, d3, d4, d5)
+
+datos_der <- read_excel("../data/bd_completa.xlsx") %>% 
+   select(healthCode1, 
+          medTimepoint, 
+          "F0semitoneFrom27#5Hz_sma3nz_amean", 
+          "F0semitoneFrom27#5Hz_sma3nz_stddevNorm",
+          "F0semitoneFrom27#5Hz_sma3nz_percentile20#0", 
+          "F0semitoneFrom27#5Hz_sma3nz_percentile50#0", 
+          "F0semitoneFrom27#5Hz_sma3nz_percentile80#0", 
+          "F0semitoneFrom27#5Hz_sma3nz_pctlrange0-2",
+          "F0semitoneFrom27#5Hz_sma3nz_meanRisingSlope", 
+          "F0semitoneFrom27#5Hz_sma3nz_stddevRisingSlope",
+          "F0semitoneFrom27#5Hz_sma3nz_meanFallingSlope", 
+          "F0semitoneFrom27#5Hz_sma3nz_stddevFallingSlope",
+          "jitterLocal_sma3nz_amean", 
+          "jitterLocal_sma3nz_stddevNorm", 
+          "shimmerLocaldB_sma3nz_amean",
+          "shimmerLocaldB_sma3nz_stddevNorm", 
+          ROW_ID2, age, 
+          "are-caretaker", 
+          "deep-brain-stimulation",
+          "diagnosis-year", 
+          education, 
+          employment, 
+          gender, 
+          maritalStatus, 
+          "medication-start-year", 
+          "onset-year",
+          smartphone, 
+          smoked, 
+          surgery, 
+          "years-smoking", 
+          healthCode) %>% 
+  rename(ROW_ID = ROW_ID2)
+```
+
+Verificamos la cantidad de IDs repetidos.
+
+```{r ids_repetidos}
+contar_ids_repetidos(datos_izq, ROW_ID)
+contar_ids_repetidos(datos_der, ROW_ID)
+```
+Observamos que en datos_der existen 139 IDs duplicados. Lo que vamos a hacer es obtener estos y observar las filas repetidas.
+
+```{r}
+row_id_duplicado <- datos_der %>% 
+  count(ROW_ID) %>% 
+  filter(n > 1) %>% 
+  select(ROW_ID)
+
+datos_der %>% 
+  filter(ROW_ID %in% row_id_duplicado$ROW_ID) %>% 
+  arrange(ROW_ID)
+```
+
+Aqui podemos ver como en realidad para las variables incluidas, se tratan de observaciones repetidas, entonces lo que hacemos es limpiarlos
+
+```{r datos_der_sin_duplicados}
+datos_der <- datos_der %>% distinct(ROW_ID, .keep_all = TRUE)
+
+contar_ids_repetidos(datos_der, ROW_ID)
+```
+
+Observamos que no tenemos datos duplicados, realizamos el join
+
+```{r datos_crudos}
+datos_crudos <- left_join(datos_izq, datos_der, by = "ROW_ID")
+```
+
+Comenzamos renombando todas las variables, para manegarlas de forma más sencilla. Observamos como trata a cada variable.
+
+```{r datos_it0}
+datos_it0 <- datos_crudos %>%
+  rename(id = ROW_ID, 
+         diagnostico = DIAGNOSTICO, 
+         punto_medicacion = medTimepoint, 
+         edad = age,
+         cuidado = "are-caretaker", 
+         estimulacion_cerebral	 = "deep-brain-stimulation",
+         anio_diagnostico = "diagnosis-year", 
+         educacion = education, 
+         trabajo = employment,
+         genero = gender, 
+         estado_civil = maritalStatus, 
+         anio_medicacion = "medication-start-year",
+         anio_enfermedad = "onset-year", 
+         facilidad_celular = smartphone, 
+         fumo = smoked,
+         cirugias = surgery, 
+         anios_fumo = "years-smoking")
+
+# Lo hacemos un poco más complejo para que sea mas legible el output
+tibble("Nombre" = names(datos_it0), "Clase" = map_chr(datos_it0, class))
+```
+
+```{r, echo = FALSE}
+#Para limpiar el entorno de trabajo
+rm(datos_izq, datos_der, row_id_duplicado)
+```
+
