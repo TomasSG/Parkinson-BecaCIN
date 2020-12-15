@@ -208,21 +208,25 @@ Vamos a empezar calculando las medidas resumen más importante de cada variable.
 
 ```{r medidas_resumen_cuantitativa}
 
-df_resultado <- tibble(q1 = numeric(), Media = numeric(), Mediana = numeric(), q3 = numeric(), Desvio = numeric())
-df_for <- datos_it2 %>%  select(where(is.numeric))
+df_for <- datos_it2 %>%  select(where(is.numeric), -id)
+q1s = numeric(length = length(df_for))
+medias = numeric(length = length(df_for))
+medianas = numeric(length = length(df_for))
+q3s = numeric(length = length(df_for))
+desvios = numeric(length = length(df_for))
 
 for( i in seq_along(df_for)) {
-    df_resultado %>% add_row(
-      q1 = quantile(df_for[[i]], .25, na.rm = TRUE),
-      Media = mean(df_for[[i]], na.rm = TRUE),
-      Mediana = median(df_for[[i]], na.rm = TRUE),
-      q3 = quantile(df_for[[i]], .75, na.rm = TRUE),
-      Desvio = sd(df_for[[i]], na.rm = TRUE))
-  
-  names(df_resultado)[i] = names(df_for)[i]
+      q1s[i] = quantile(df_for[[i]], .25, na.rm = TRUE)
+      medias[i] = mean(df_for[[i]], na.rm = TRUE)
+      medianas[i] = median(df_for[[i]], na.rm = TRUE)
+      q3s[i] = quantile(df_for[[i]], .75, na.rm = TRUE)
+      desvios[i] = sd(df_for[[i]], na.rm = TRUE)
+      
 }
 
-rm(df_resultado, df_for)
+bind_rows(var = names(df_for), q1 = q1s, media = medias, mediana = medianas, q3 = q3s, desvio = desvios)
+
+rm(df_for, q1s, medias, medianas, q3s, desvios)
 ```
 
 
