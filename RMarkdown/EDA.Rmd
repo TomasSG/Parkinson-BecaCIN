@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Encontramos la lista de bibliotecas a utilizar aqui, con el fin de por qué las incluimos. Además, cargamos el archivo que contiene funciones importantes a utilizar.
 
-```{r bibliotecas}
+```{r bibliotecas, results = 'hide', collapse = TRUE}
 # Para anaálisis de datos
 library(tidyverse)
 library(lubridate)
@@ -202,11 +202,11 @@ datos_it2 %>% filter(diagnostico_pro == "false" & anio_diagnostico > 0) %>% nrow
 
 Estas son algunas de las verificaciones que hacemos. A medida que avanzemos en el análisis vamos a seguir haciendo.
 
-### Análisis univariado
+### Análisis de datos
 
 Vamos a empezar calculando las medidas resumen más importante de cada variable. Comenzamos con las cuantitativas.
 
-```{r medidas_resumen_cuantitativa}
+```{r medidas_resumen_cuantitativa, collapse = TRUE}
 
 df_for <- datos_it2 %>%  select(where(is.numeric), -id)
 q1s = numeric(length = length(df_for))
@@ -224,19 +224,52 @@ for( i in seq_along(df_for)) {
       
 }
 
-bind_rows(var = names(df_for), q1 = q1s, media = medias, mediana = medianas, q3 = q3s, desvio = desvios)
+bind_rows(var = names(df_for), q1 = round(q1s, 2), media = round(medias, 2), mediana = round(medianas, 2), q3 = round(q3s, 2), desvio = round(desvios, 2))
 
 rm(df_for, q1s, medias, medianas, q3s, desvios)
 ```
 
+Las variables cualitativas las vamos a explorar a lo largo del análisis. Ahora vamos a tratar de responder algunas preguntas interesantes usando nuestro datos.
+
+**¿Existe alguna diferencia con respecto a fumar entre ambos grupos?**
+
+Comenzamos haciendo una tabla de contigencia entre las variables diagnostico_pro y fumo
+
+```{r}
+table(datos_it2$diagnostico_pro, datos_it2$fumo, dnn = c("Diagnostico", "Fumo"))
+```
+
+Observamos que para ambas niveles de diagnóstico, se respete que existen más no fumadores. También que para ambos niveles de fumadores, las proporciones de personas con daignóstico profesional y sin son bastantes similares. Otra forma de visualizar esto es
+
+```{r}
+datos_it2 %>% 
+  filter(!is.na(fumo)) %>% 
+  ggplot(aes(x = fumo, y = stat(prop), fill = diagnostico_pro)) + 
+  geom_bar(position = "dodge")
+```
+
+Llegamos a la conclusión de que no parece existir gran diferencia entre ambos grupo. Vamos a observar si la cantidad de anios que fumo es distinta
+
+```{r}
+datos_it2 %>% 
+  filter(!is.na(anios_fumo)) %>% 
+  ggplot(aes(x = anios_fumo, y = stat(density), color = diagnostico_pro)) +
+  geom_freqpoly(size = 1.05)
+```
+
+Se observa que se sigue una tendencia para ambos grupos, sin mucha diferencia para los distintos valores de anios_fumo.
 
 
+```{r}
+datos_it2 %>% 
+  filter(!is.na(paquetes_por_dia)) %>% 
+  ggplot(aes(x = paquetes_por_dia, y = stat(prop), fill = diagnostico_pro)) +
+  geom_bar(position = "dodge")
+```
 
+En la proporción de paquetes no parece haber ninguna diferencia entre los paquetes por día
 
-
-
-
-
+En vista de los resultados obtenidos llegamos a la conclusión que no existe diferencia entre ambos grupos con respecto a fumar.
 
 
 
