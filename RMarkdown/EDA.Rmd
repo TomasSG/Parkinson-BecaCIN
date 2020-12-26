@@ -244,7 +244,7 @@ Observamos que para ambas niveles de diagnóstico, se respete que existen más n
 ```{r}
 datos_it2 %>% 
   filter(!is.na(fumo)) %>% 
-  ggplot(aes(x = fumo, y = stat(prop), fill = diagnostico_pro)) + 
+  ggplot(aes(x = fumo, y = stat(prop), fill = diagnostico_pro, group = diagnostico_pro)) + 
   geom_bar(position = "dodge")
 ```
 
@@ -270,6 +270,76 @@ datos_it2 %>%
 En la proporción de paquetes no parece haber ninguna diferencia entre los paquetes por día
 
 En vista de los resultados obtenidos llegamos a la conclusión que no existe diferencia entre ambos grupos con respecto a fumar.
+
+**¿Hay diferencia en las variables relacionadas con el celular?**
+
+Comenzamos comparando las variables de facilidad_celular
+
+```{r}
+datos_it2 %>% 
+  filter(!is.na(facilidad_celular)) %>%
+  count(diagnostico_pro, facilidad_celular) %>% 
+  mutate(facilidad_celular = fct_reorder(facilidad_celular, n), 
+         freq = n / sum(n)) %>% 
+  ggplot(aes(facilidad_celular, freq, fill = diagnostico_pro)) +
+  geom_bar(position = "dodge", stat = "identity") +
+  coord_flip()
+```
+
+Encontramos diferencias entre ambos grupos. Cerca del 50% de las observaciones en el grupo sin diagnóstico profesional pertenecen a "very easy", como se esperaba. En este mismo segmento de daignostico_pro es insignificante la proporción de observaciones que pertenecen a "neither esay nor difficult" o peor. En contraste, para el grupo con un diagnóstico positivo se observa que adquiere importancia personas en el grupo intermedio o tan sólo difícil. 
+
+```{r}
+datos_it2 %>% 
+  filter(!is.na(videollamada)) %>% 
+  ggplot(aes(videollamada, stat(prop), fill = diagnostico_pro, group = diagnostico_pro)) +
+  geom_bar(position = "dodge")
+```
+
+
+Observamos que el porcentaje de personas que no realizan videollamadas es mayor en gente con diagnóstico positivo. Podría deberse a que mayor porcentaje de personas tienen dificultad o están en un punto intermedio para usar el celular?
+
+**¿Hay diferencia de edades?**
+
+```{r}
+ggplot(datos_it2, aes(diagnostico_pro, edad)) +
+  geom_boxplot()
+```
+
+Hay una marcada diferencia de edades entre ambos grupos. Personas sin diagnóstico tienden a ser menores al otro grupo. Poseen una mediana cerca de los 45 años. El grupo con diagnóstico positivo tienen una mediana un poco mayor a 60 años. El rango intercuantil es mayor en el grupo "false". Ambos niveles tienen outliers.
+
+**Hay diferecia en los géneros**
+
+```{r}
+datos_it2 %>% 
+  filter(genero != "Prefer not to answer") %>% 
+  ggplot(aes(genero, stat(prop), fill = diagnostico_pro, group = diagnostico_pro)) +
+  geom_bar(position = "dodge")
+```
+
+Observamos que hay mucho mayor porcentahe de mujeres en el grupo con diagnóstico positivo. ¿Cambian las edades?
+
+```{r}
+datos_it2 %>% 
+  filter(genero != "Prefer not to answer") %>% 
+  ggplot(aes(genero, edad)) +
+  geom_boxplot() + 
+  facet_wrap(~ diagnostico_pro)
+```
+
+Parece que se respetan las edades en los generos en ambos grupos.
+
+*****
+
+```{r}
+datos_it2 %>% 
+  filter(!is.na(estado_marital)) %>% 
+  ggplot(aes(estado_marital, stat(prop), group = diagnostico_pro, fill = diagnostico_pro)) +
+  geom_bar(position = "dodge") +
+  coord_flip()
+```
+
+Observamos que el grupo sin diagnóstico profesional se desaca en "Single never married", esto podría deberse a que la edad es menor en este grupo. En comparación la personas con diagnóstico positivo se destacan en "widowed" y "Married or domestic partnership".
+
 
 
 
