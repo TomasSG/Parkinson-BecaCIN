@@ -326,9 +326,9 @@ datos_it2 %>%
   facet_wrap(~ diagnostico_pro)
 ```
 
-Parece que se respetan las edades en los generos en ambos grupos.
+Parece que se respetan las edades en los generos en ambos grupos.       
 
-*****
+**¿Las parejas son más propensos a tener parkinson?**
 
 ```{r}
 datos_it2 %>% 
@@ -340,13 +340,47 @@ datos_it2 %>%
 
 Observamos que el grupo sin diagnóstico profesional se desaca en "Single never married", esto podría deberse a que la edad es menor en este grupo. En comparación la personas con diagnóstico positivo se destacan en "widowed" y "Married or domestic partnership".
 
+Para responder a la pregunta observamos dentro del grupo "Marreid or domestic partnership" cómo son las proporciones personas con dignóstico profesional del parkinson.
+
+```{r datos_casados}
+
+datos_casados <- datos_it2 %>% 
+  filter(estado_marital == "Married or domestic partnership")
+
+ggplot(datos_casados, aes(diagnostico_pro, stat(prop), group = 1)) +
+  geom_bar()
+```
 
 
+Encontramos que son bastante similares las proporciones, teniendo el grupo "false" un 60% paroximado.
+
+Miramos ahora la proporción de generos aqui
+
+```{r}
+datos_casados %>% 
+  filter(!is.na(genero) & genero != "Prefer not to answer") %>% 
+  ggplot(aes(genero, stat(prop), group = 1)) +
+  geom_bar()
+```
 
 
+Observamos como hay una proporción mucho mayor de hombres en este grupo, lo que nos lleva a la pregunta ¿Cómo seran la proporciones de diagnostico_pro separando por sexo?
 
+```{r}
+datos_casados %>% 
+  filter(!is.na(genero) & genero != "Prefer not to answer") %>% 
+  ggplot(aes(diagnostico_pro, stat(prop), group = 1)) +
+  geom_bar() +
+  facet_grid(~genero)
+  
+```
 
+Observamos que en este grupo, el 60% de las muejeres tiene  diagnóstico postivo. En contraposición, el 60% de los hombres no tienen diagnóstico profesional. 
 
+Pero, capaza esta desproporción entre homres y muejeres pueda ser general de los datos, y nada específico de este subgrupo. Por lo que vamos a observar la tabla de contigencia entre estas variables.
 
-
+```{r}
+table(datos_it2$genero, datos_it2$estado_marital) %>% 
+  addmargins(c(1, 2))
+```
 
