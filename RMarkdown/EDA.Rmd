@@ -384,3 +384,14 @@ table(datos_it2$genero, datos_it2$estado_marital) %>%
   addmargins(c(1, 2))
 ```
 
+Aqui observamos que tanto el mayor número de mujeres como de hombres pertenecen a este grupo. Además, en todos los grupos, excepto en widowed, existe esta diferencia abrumadora entre hombres y muejeres. 
+
+```{r}
+datos_it2 %>% 
+  filter(!is.na(genero) & genero != "Prefer not to answer" & !is.na(estado_marital)) %>% 
+  ggplot(aes(diagnostico_pro, stat(prop), group = 1)) +
+  geom_bar() +
+  facet_grid( genero ~ estado_marital)
+```
+
+Aqui, con una visión más general, vemos que el patrón en las mujeres de tener mayor cantidad de personas con diagnóstico positivo es recurrente on excepción de "Single Never Married" donde se invierten las proporciones. Para los hombres es más común tener mayor cantidad de "false", pero en "separated" y "widowed" es el caso contrario.
