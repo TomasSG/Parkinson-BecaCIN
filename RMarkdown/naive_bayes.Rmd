@@ -1,0 +1,8 @@
+---
+title: "Naive Bayes"
+output: html_notebook
+---
+
+Vamos a hacer un pequeño modelo estilo naive bayes, más que todo para practicar.
+
+
