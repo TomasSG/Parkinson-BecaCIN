@@ -5,4 +5,106 @@ output: html_notebook
 
 Vamos a hacer un pequeño modelo estilo naive bayes, más que todo para practicar.
 
+## Bibliotecas a usar
 
+```{r, results = 'hide', collapse = TRUE}
+library(tidyverse)
+library(caret)
+library(e1071)
+library(ggcorrplot)
+```
+
+## Cargar los datos
+
+```{r}
+df = read.csv("../data/datos_eda.csv", sep = ';')
+head(df)
+names(df)
+```
+Observamos que id es una variable que no queremos usar.
+
+```{r}
+df <- df %>% select(-id)
+```
+
+
+## Modelo
+
+El modelo que vamos a buscar plantear uno que este diagnostico_pro como variable respuesta en función de las otras. Como tenemos la restricción de independencia de las variables predictoras vamos a realizar un heatmap entre las variables numéricas.
+
+```{r}
+var_numericas <- c("d1",  "d2", "d3", "d4", "d5", "edad", "paquetes_por_dia", "anios_fumo" )
+
+df %>% 
+  select(all_of(var_numericas)) %>% 
+  cor(method = "pearson") %>% 
+  ggcorrplot(lab = TRUE)
+```
+
+vemos que hay problemas con las variables paquetes_por_dia y anios_fumo. Sera por la cantidad de NAs?
+
+```{r, collapse = TRUE}
+df %>% 
+  select(all_of(var_numericas)) %>% 
+  map_int(~ sum(is.na(.)))
+
+```
+
+Con esto llegamos a la conclusión que es problema son los NAs, entonces los exlcuimos.
+
+```{r}
+var_numericas <- var_numericas[-c(7, 8)]
+
+df %>% 
+  select(all_of(var_numericas)) %>% 
+  cor(method = "pearson") %>% 
+  ggcorrplot(lab = TRUE)
+```
+
+No observamos que exista variables altamente correlacionada. 
+
+Además, deberemos verificar que su distrbución sea, o almenos aproximadamente, normal.
+
+```{r}
+df %>% 
+  select(all_of(var_numericas)) %>% 
+  map(~ ggplot(df, aes(.)) + geom_density())
+```
+
+Observamos que, exceptuando edad y d5, se acercan bastante a las normalidad. Sin embargo, vamos a incluir todas estas variables. **¿Es posible que este modelo sea robusto a la falta de normalidad?**
+
+Para las variables categóricas vamos a utilizar
+
+```{r}
+var_categ <- c("educ", "empleo",  "genero",  "estado_marital",  "facilidad_celular", "fumo")
+```
+
+**¿Cómo se podría ver si son independientes las va categóricas?**
+
+```{r split_datos}
+# Nos quedamos con las vaiables que queremos
+
+variables <- c(var_numericas, var_categ, "diagnostico_pro")
+
+df_bayes <- df %>% 
+  select(all_of(variables))
+
+# Dividimos el dataste
+
+indices_train <- createDataPartition(df_bayes$diagnostico_pro, p = .7, list = FALSE)
+datos_train <- df_bayes[indices_train, ]
+datos_test <- df_bayes[-indices_train, ]
+
+# Creamos el modelo
+
+modelo_bayes <- naiveBayes(diagnostico_pro ~ ., data = datos_train)
+modelo_bayes
+```
+
+Ahora que tenemos el modelo, comenzamos realizando las predicciones
+
+```{r}
+predicicones_bayes <- predict(modelo_bayes, datos_test, type = "raw")
+```
+
+**HAY QUE ARMAR AUC**
