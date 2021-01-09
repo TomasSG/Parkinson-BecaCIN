@@ -12,6 +12,7 @@ library(tidyverse)
 library(caret)
 library(e1071)
 library(ggcorrplot)
+library(pROC)
 ```
 
 ## Cargar los datos
@@ -24,7 +25,7 @@ names(df)
 Observamos que id es una variable que no queremos usar.
 
 ```{r}
-df <- df %>% select(-id)
+df <- df %>% select(-id) %>% mutate(diagnostico_pro = factor(diagnostico_pro))
 ```
 
 
@@ -71,7 +72,30 @@ df %>%
   map(~ ggplot(df, aes(.)) + geom_density())
 ```
 
-Observamos que, exceptuando edad y d5, se acercan bastante a las normalidad. Sin embargo, vamos a incluir todas estas variables. **¿Es posible que este modelo sea robusto a la falta de normalidad?**
+Observamos que, exceptuando d3, d5 y edad, se acercan bastante a las normalidad. Probamos una transformación en estas variables. **¿Es posible que este modelo sea robusto a la falta de normalidad?**
+
+```{r}
+df %>% 
+  select(d3, d5, edad) %>% 
+  mutate(ln_d3 = log(d3, exp(1)),
+         ln_d5 = log(d5, exp(1)),
+         ln_edad = log(edad, exp(1))) %>% 
+  ggplot() +
+  geom_density(aes(ln_d3), color = "red") +
+  geom_density(aes(ln_d5), color = "blue") +
+  geom_density(aes(ln_edad), color = "green") 
+```
+
+Observamos que las varibles adpotan una forma más semejante a una normal con esta transformación.
+
+```{r df2}
+df2 <- df %>% 
+  mutate(ln_d3 = log(d3, exp(1)),
+         ln_d5 = log(d5, exp(1)),
+         ln_edad = log(edad, exp(1)))
+
+var_numericas <- c("d1",  "d2", "ln_d3", "d4", "ln_d5", "ln_edad")
+```
 
 Para las variables categóricas vamos a utilizar
 
@@ -86,11 +110,12 @@ var_categ <- c("educ", "empleo",  "genero",  "estado_marital",  "facilidad_celul
 
 variables <- c(var_numericas, var_categ, "diagnostico_pro")
 
-df_bayes <- df %>% 
+df_bayes <- df2 %>% 
   select(all_of(variables))
 
 # Dividimos el dataste
 
+set.seed(100)
 indices_train <- createDataPartition(df_bayes$diagnostico_pro, p = .7, list = FALSE)
 datos_train <- df_bayes[indices_train, ]
 datos_test <- df_bayes[-indices_train, ]
@@ -103,8 +128,18 @@ modelo_bayes
 
 Ahora que tenemos el modelo, comenzamos realizando las predicciones
 
-```{r}
-predicicones_bayes <- predict(modelo_bayes, datos_test, type = "raw")
+```{r roc, collapse = TRUE}
+predicciones_bayes <- predict(modelo_bayes, datos_test, type = "raw")
+objeto_roc <- roc(datos_test$diagnostico_pro, predicciones_bayes[,"true"])
+
+data.frame(sensitivity = objeto_roc$sensitivities,
+           specificity = objeto_roc$specificities) %>% 
+  ggplot(aes(1 - specificity, sensitivity)) +
+  geom_line()
+
+auc(objeto_roc)
 ```
 
-**HAY QUE ARMAR AUC**
+Observamos que este modelo consigue un buen valor de AUC. Para seguir, vamos a armar rapidamente una regresión logística usando las mismas variables, para luego comparar ambos modelos.
+
+**TODO: Hacer regresión logística**
