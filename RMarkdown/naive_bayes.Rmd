@@ -1,0 +1,275 @@
+---
+title: "Naive Bayes"
+output: html_notebook
+---
+
+Vamos a hacer un pequeño modelo estilo naive bayes, más que todo para practicar.
+
+## Bibliotecas a usar
+
+```{r, results = 'hide', collapse = TRUE}
+library(MASS)
+library(e1071)
+library(ggcorrplot)
+library(pROC)
+library(tidyverse)
+library(caret)
+
+
+source("../R/Utils.R")
+```
+
+## Cargar los datos
+
+```{r}
+df <-  read.csv("../data/datos_eda.csv", sep = ';')
+head(df)
+names(df)
+```
+Observamos que id es una variable que no queremos usar.
+
+```{r}
+df <- df %>% select(-id) %>% mutate(diagnostico_pro = factor(diagnostico_pro))
+```
+
+
+## Modelo
+
+El modelo que vamos a buscar plantear uno que este diagnostico_pro como variable respuesta en función de las otras. Como tenemos la restricción de independencia de las variables predictoras vamos a realizar un heatmap entre las variables numéricas.
+
+```{r}
+var_numericas <- c("d1",  "d2", "d3", "d4", "d5", "edad", "paquetes_por_dia", "anios_fumo" )
+
+df %>% 
+  select(all_of(var_numericas)) %>% 
+  cor(method = "pearson") %>% 
+  ggcorrplot(lab = TRUE)
+```
+
+vemos que hay problemas con las variables paquetes_por_dia y anios_fumo. Sera por la cantidad de NAs?
+
+```{r, collapse = TRUE}
+df %>% 
+  select(all_of(var_numericas)) %>% 
+  map_int(~ sum(is.na(.)))
+
+```
+
+Con esto llegamos a la conclusión que es problema son los NAs, entonces los exlcuimos.
+
+```{r}
+var_numericas <- var_numericas[-c(7, 8)]
+
+df %>% 
+  select(all_of(var_numericas)) %>% 
+  cor(method = "pearson") %>% 
+  ggcorrplot(lab = TRUE)
+```
+
+No observamos que exista variables altamente correlacionada. 
+
+Además, deberemos verificar que su distrbución sea, o almenos aproximadamente, normal.
+
+```{r}
+df %>% 
+  select(all_of(var_numericas)) %>% 
+  map(~ ggplot(df, aes(.)) + geom_density())
+```
+
+Observamos que, exceptuando d3, d5 y edad, se acercan bastante a las normalidad. Probamos una transformación en estas variables. **¿Es posible que este modelo sea robusto a la falta de normalidad?**
+
+```{r}
+df %>% 
+  select(d3, d5, edad) %>% 
+  mutate(ln_d3 = log(d3, exp(1)),
+         ln_d5 = log(d5, exp(1)),
+         ln_edad = log(edad, exp(1))) %>% 
+  ggplot() +
+  geom_density(aes(ln_d3), color = "red") +
+  geom_density(aes(ln_d5), color = "blue") +
+  geom_density(aes(ln_edad), color = "green") 
+```
+
+Observamos que las varibles adpotan una forma más semejante a una normal con esta transformación.
+
+```{r df2}
+df2 <- df %>% 
+  mutate(ln_d3 = log(d3, exp(1)),
+         ln_d5 = log(d5, exp(1)),
+         ln_edad = log(edad, exp(1)))
+
+var_numericas <- c("d1",  "d2", "ln_d3", "d4", "ln_d5", "ln_edad")
+```
+
+Para las variables categóricas vamos a utilizar
+
+```{r}
+var_categ <- c("educ", "empleo",  "genero",  "estado_marital",  "facilidad_celular", "fumo")
+```
+
+**¿Cómo se podría ver si son independientes las va categóricas?**
+
+```{r split_datos}
+# Nos quedamos con las vaiables que queremos
+
+variables <- c(var_numericas, var_categ, "diagnostico_pro")
+
+df_bayes <- df2 %>% 
+  select(all_of(variables))
+
+# Dividimos el dataste
+
+set.seed(100)
+indices_train <- createDataPartition(df_bayes$diagnostico_pro, p = .7, list = FALSE)
+datos_train <- df_bayes[indices_train, ]
+datos_test <- df_bayes[-indices_train, ]
+
+# Creamos el modelo
+
+modelo_bayes <- naiveBayes(diagnostico_pro ~ ., data = datos_train)
+modelo_bayes
+```
+
+Ahora que tenemos el modelo, comenzamos realizando las predicciones
+
+```{r roc, collapse = TRUE}
+predicciones_bayes <- predict(modelo_bayes, datos_test, type = "raw")
+objeto_roc_bayes <- roc(datos_test$diagnostico_pro, predicciones_bayes[,"true"])
+
+data.frame(sensitivity = objeto_roc$sensitivities,
+           specificity = objeto_roc$specificities) %>% 
+  ggplot(aes(1 - specificity, sensitivity)) +
+  geom_line()
+
+auc(objeto_roc_bayes)
+```
+
+Observamos que este modelo consigue un buen valor de AUC. Para seguir, vamos a armar rapidamente una regresión logística usando las mismas variables, para luego comparar ambos modelos.
+
+Como la regresión logística no pone ninguna restrcción sobre las variables independientes, vamos a usar más variables, primero veamos cuales tienen mayor cantidad de NAs
+
+```{r}
+
+# Obsearvamos la cantidad de NAs
+df %>%
+  map_int(~ sum(is.na(.)))
+
+
+# Elegimos las variables a usar
+vars_cuanti <- c("d1", "d2", "d3", "d4", "d5", "edad")
+vars_cuali <- c("educ", "empleo", "genero", "estado_marital", "facilidad_celular")
+vars <- c(vars_cuanti, vars_cuali, "diagnostico_pro")
+
+df_logistica <- df %>% 
+  select(all_of(vars)) %>% 
+  drop_na()
+
+# ¿Cúantas observaciones nos quedan?
+nrow(df_logistica)
+
+# Separamos los datos
+set.seed(999)
+indices_train <- createDataPartition(df_logistica$diagnostico_pro, p = .7, list = FALSE)
+datos_train <- df_logistica[indices_train,]
+datos_test <- df_logistica[-indices_train,]
+```
+
+Con esto armado, vamos a entrenar el modelo
+
+```{r}
+modelo <- train(diagnostico_pro ~ .,
+                data = df_logistica,
+                method = "glm",
+                family = "binomial")
+```
+
+Buscando en internet encontre que este problema puede deberse a que son desbalanceados los niveles de las distintas variables categóricas, vamos a armar unas tablas de frecuencias para ver si esto es verdad
+
+```{r}
+armar_tabla_frecuencia(df_logistica, vars_cuali)
+```
+
+Observamos que evidentemente hay casos con estos problemas, vamso a solucionar creando nuevos niveles
+
+```{r}
+# Dividir educ en Posgraduate - College - Highschool
+df_logistica <- df_logistica %>% 
+  mutate(educ = fct_collapse(educ,
+                           "Postgraduate" = c("Doctoral Degree", "Masters Degree"),
+                           "College" = c("2-year college degree", "4-year college degree", "Some graduate school"),
+                           "HighSchool" = c("High School Diploma/GED", "Some college", "Some high school")))
+
+# Emplemos lo agrupamos en Working - Not Working
+df_logistica <- df_logistica %>% 
+  mutate(empleo = fct_collapse(empleo, 
+                               "Working" = c("A homemaker", "Employment for wages", "Self-employed"),
+                               "Not Working" = c("A student", "Out of work", "Retired", "Unable to work" )))
+
+# Genero sacamos la observacion con Prefer not to answer
+df_logistica <- df_logistica %>% 
+  filter(genero != "Prefer not to answer")
+
+# Estado marital lo convertimos en Married - Not Married
+df_logistica <- df_logistica %>% 
+  mutate(estado_marital = fct_collapse(estado_marital,
+                                       "Married" = c("Married or domestic partnership"),
+                                       "Not Married" = c("Divorced", "Other", "Separated", "Single never married", "Widowed")))
+
+# Para facilidad celular lo convertimos en Easy - Not Easy
+df_logistica <- df_logistica %>% 
+  mutate(facilidad_celular = fct_collapse(facilidad_celular,
+                                    "Not Easy" = c("Difficult", "Neither easy nor difficult", "Very Difficult"),
+                                    "Easy" = c("Easy", "Very easy")))
+
+# Probamos nuevamente para ver si ha pocas observaciones en algún nivel
+armar_tabla_frecuencia(df_logistica, vars_cuali)
+```
+Si bien observamos que existen varios niveles desbalanceados, todos poseen una cantidad de observaciones acpetables. Volvemos a intetar entrenar el modelo
+
+```{r}
+# Separamos los datos
+set.seed(999)
+indices_train <- createDataPartition(df_logistica$diagnostico_pro, p = .7, list = FALSE)
+datos_train <- df_logistica[indices_train,]
+datos_test <- df_logistica[-indices_train,]
+
+modelo_logistica <- train(diagnostico_pro ~ .,
+                          data = datos_train,
+                          method = "glm",
+                          family = "binomial")
+
+summary(modelo_logistica)
+```
+
+Este es el primer modelo, donde incluimos todas las variables. En los resultados vemos que existen variables que no resultan significativas para el modelo. Aplicamos un metodo stepwise para seleccionar aquellas que son más importantes.
+
+```{r}
+# Para esto necesitamos la bilbioteca MASS
+modelo_logistica <- train(diagnostico_pro ~ .,
+                          data = datos_train,
+                          method = "glmStepAIC",
+                          family = "binomial",
+                          trace = FALSE)
+
+summary(modelo_logistica)
+```
+
+
+En general observamos que el aumento de una unidad de d1, d3 y edad hacen que incrementen los odds de tener un diagnóstico positivo de PD. A su vez, los neveles Not Working de empleo y Married de estado_marital también aumentan los odds. En contra parte, el nivel Easy de facilidad_celular reduce los odds.
+
+Ahora que tenemos el modelo podemos hacer predicciones y compararlo con el modelo naive bayes para observar cual tiene una mejor perfomance.
+
+```{r}
+predicciones_logistica <- predict(modelo_logistica, datos_test, type = "prob")
+objeto_roc_logistica <- roc(datos_test$diagnostico_pro, predicciones_logistica[,"true"])
+
+data.frame(Sensitivity = objeto_roc$sensitivities,
+           Specificity = objeto_roc$specificities) %>% 
+  ggplot(aes(1 - Specificity, Sensitivity)) +
+  geom_line()
+
+auc(objeto_roc_logistica)
+auc(objeto_roc_bayes)
+```
+
+Vemos que el modelo de bayes perfoma mejor que el modelo de regresión logística, con un AUC de 0.85 contra uno de 0.82.
