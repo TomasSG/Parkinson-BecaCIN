@@ -8,12 +8,13 @@ Vamos a hacer un pequeño modelo estilo naive bayes, más que todo para practica
 ## Bibliotecas a usar
 
 ```{r, results = 'hide', collapse = TRUE}
-library(tidyverse)
-library(caret)
+library(MASS)
 library(e1071)
 library(ggcorrplot)
 library(pROC)
-library(MASS)
+library(tidyverse)
+library(caret)
+
 
 source("../R/Utils.R")
 ```
@@ -21,7 +22,7 @@ source("../R/Utils.R")
 ## Cargar los datos
 
 ```{r}
-df = read.csv("../data/datos_eda.csv", sep = ';')
+df <-  read.csv("../data/datos_eda.csv", sep = ';')
 head(df)
 names(df)
 ```
@@ -133,14 +134,14 @@ Ahora que tenemos el modelo, comenzamos realizando las predicciones
 
 ```{r roc, collapse = TRUE}
 predicciones_bayes <- predict(modelo_bayes, datos_test, type = "raw")
-objeto_roc <- roc(datos_test$diagnostico_pro, predicciones_bayes[,"true"])
+objeto_roc_bayes <- roc(datos_test$diagnostico_pro, predicciones_bayes[,"true"])
 
 data.frame(sensitivity = objeto_roc$sensitivities,
            specificity = objeto_roc$specificities) %>% 
   ggplot(aes(1 - specificity, sensitivity)) +
   geom_line()
 
-auc(objeto_roc)
+auc(objeto_roc_bayes)
 ```
 
 Observamos que este modelo consigue un buen valor de AUC. Para seguir, vamos a armar rapidamente una regresión logística usando las mismas variables, para luego comparar ambos modelos.
@@ -247,8 +248,28 @@ Este es el primer modelo, donde incluimos todas las variables. En los resultados
 modelo_logistica <- train(diagnostico_pro ~ .,
                           data = datos_train,
                           method = "glmStepAIC",
-                          family = "binomial")
+                          family = "binomial",
+                          trace = FALSE)
 
 summary(modelo_logistica)
 ```
 
+
+En general observamos que el aumento de una unidad de d1, d3 y edad hacen que incrementen los odds de tener un diagnóstico positivo de PD. A su vez, los neveles Not Working de empleo y Married de estado_marital también aumentan los odds. En contra parte, el nivel Easy de facilidad_celular reduce los odds.
+
+Ahora que tenemos el modelo podemos hacer predicciones y compararlo con el modelo naive bayes para observar cual tiene una mejor perfomance.
+
+```{r}
+predicciones_logistica <- predict(modelo_logistica, datos_test, type = "prob")
+objeto_roc_logistica <- roc(datos_test$diagnostico_pro, predicciones_logistica[,"true"])
+
+data.frame(Sensitivity = objeto_roc$sensitivities,
+           Specificity = objeto_roc$specificities) %>% 
+  ggplot(aes(1 - Specificity, Sensitivity)) +
+  geom_line()
+
+auc(objeto_roc_logistica)
+auc(objeto_roc_bayes)
+```
+
+Vemos que el modelo de bayes perfoma mejor que el modelo de regresión logística, con un AUC de 0.85 contra uno de 0.82.
