@@ -1,0 +1,135 @@
+---
+title: "Random Forest"
+output: html_notebook
+author: Tomás Sánchez Grigioni
+---
+
+## Importar bibliotecas
+
+```{r setup, collapse=TRUE, results='hide'}
+library(tidyverse)
+library(caret)
+library(pROC)
+# Biblioteca naceasiar para usar un método con caret
+library(randomForest)
+
+# Funciones que pueden ser de utilidad
+source("../R/Utils.R")
+
+```
+
+## Importar datos
+
+```{r datos}
+datos <- read.table("../data/datos_eda.csv", sep = ";", dec = ".", header = TRUE, stringsAsFactors = TRUE)
+
+glimpse(datos)
+```
+
+## Tratamiento de los datos
+
+Primero empezamos desechando la columna id porque no nos interesa para el modelo
+
+```{r}
+datos <- datos %>% select(-id)
+```
+
+En principio, queremos incluir la mayor cantidad de variables en el modelo, luego el propio modelo se encargara de desechar o utilizar aquellas que sean más interesantes. Sin embargo, no todas las variables las queremos incluir al principio debido a los NA. Así que vamos a ver la cantida de NAs por cada variable y decidir con cual quedarnos
+
+```{r}
+datos %>% map_int(~ sum(is.na(.)))
+```
+
+De aqui observamos que no todas las varaibles no interesan, vamos a ordenarlas y luego decidir donde cortar
+
+```{r}
+cant_nas <- datos %>% map_int(~ sum(is.na(.)))
+
+df_nas <- data.frame(var = names(cant_nas), cant_nas, row.names = NULL)
+
+df_nas %>% 
+  arrange(-cant_nas)
+```
+
+Como fumo resulta una variable interesante entonces lo que vamos a hacer es desechar todas las variables que estén por encima de fumo
+
+```{r}
+vars_mantener <- df_nas %>% filter(cant_nas <= 65) %>% select(var) %>% unlist()
+names(vars_mantener) <- NULL
+
+datos_rf <- datos %>% select(all_of(vars_mantener)) %>% drop_na()
+
+glimpse(datos_rf)
+```
+Ya tenemos con las variables con las queremos trabajar, vamos a ver sus medidas resumen para darnos una idea de algún posible problema o ideas para generar nuevas
+
+
+```{r}
+summary(datos_rf %>% select_if(is.numeric))
+```
+
+Para las variables numéricas no notamos nada en sus medidas resumen pero tampoco se me ocurre algo que agregar
+
+```{r}
+summary(datos_rf %>% select_if(is.factor))
+```
+
+Aqui observamos que un problema podría ser que realmente no están muy balancedos los niveles en algunas variables. Sin embargo vamos a probar para realizarlo así el random forest.
+
+## División de los datos
+
+```{r}
+indices_train <- createDataPartition(datos_rf$diagnostico_pro, p = 0.7, list = FALSE)
+datos_rf_train <- datos_rf[indices_train,]
+datos_rf_test <- datos_rf[-indices_train,]
+
+prop.table(table(datos_rf$diagnostico_pro))
+prop.table(table(datos_rf_train$diagnostico_pro))
+prop.table(table(datos_rf_test$diagnostico_pro))
+```
+
+Observamos que todas las particiones mantienen la misma proporción de la variable diagnostico pro
+
+## Entrenar el modelo
+
+Para comenzar vamos a entrenar un modelo base usando el valor por defecto de mtry. Este parámetro es la cantidad de variables a usar en cada nodo.
+
+```{r}
+control <- trainControl(method = "repeatedcv", number = 10, repeats = 3, search = "grid")
+
+grid <- expand.grid(mtry = sqrt(ncol(datos_rf_train)))
+
+rf_base <- train(diagnostico_pro ~ .,
+                 data = datos_rf_train,
+                 method = "rf",
+                 tuneGrid = grid,
+                 trControl = control)
+
+rf_base
+```
+Ahora, vamos a intentar buscar el mejor parámetro posible para mtry
+
+```{r}
+grid <- expand.grid(mtry = 1:ncol(datos_rf_train))
+
+rf_tun <- train(diagnostico_pro ~ .,
+                 data = datos_rf_train,
+                 method = "rf",
+                 tuneGrid = grid,
+                 trControl = control)
+
+rf_tun
+```
+
+Aqui vemos que el valor de mtry elegido para este modelo es el de 3. Ahora vamos a ver cómo perfoman estos dos modelos
+
+## Score de los modelos
+
+Como métrica vamos a usar el AUC de la curva ROC
+
+```{r}
+evaluar_modelo(rf_base, datos_rf_test, "true", "diagnostico_pro")
+evaluar_modelo(rf_tun, datos_rf_test, "true", "diagnostico_pro")
+```
+
+Observamos que se obtiene casi la misma AUROC, pero esto es porque el mtry por feceto coincide con el mtry óptimo para este modelo.
