@@ -1,23 +1,22 @@
-# El tutorial es de esta página: https://www.datanovia.com/en/blog/gganimate-how-to-create-plots-with-beautiful-animation-in-r/
+# Fuentes de información:
+#   https://www.datanovia.com/en/blog/gganimate-how-to-create-plots-with-beautiful-animation-in-r/
+#   https://gganimate.com/articles/gganimate.html
+#   https://anderfernandez.com/blog/como-crear-animaciones-en-r-con-gganimate/
 
 # Bilbiotecas
 library(gganimate)
 library(tidyverse)
 library(gifski)
-
+library(scales)
 
 # Cargamos los datos
 datos <- read.table("data/datos_eda.csv", sep = ";", dec = ".", header = TRUE)
 glimpse(datos)
 
+# Declaramos unas variables que van a ser importantes al final
+PATH_SUB_DIRECTORIO <- "./examples/"
 
 # Vamos a probar de hacer la proporción de personas con parkinsons según edad
-
-# Declaramos unas variables que van a ser importantes al final
-N_FRAME <-  120
-HEIGHT <- 700
-WIDTH <- 1000
-
 # Preparamos los datos
 prop_positivos_por_edad <- datos %>% 
   mutate(diagnostico_pro = ifelse(diagnostico_pro == "true", 1, 0)) %>% 
@@ -37,13 +36,55 @@ grafico <- ggplot(prop_positivos_por_edad, aes(edad, prop_pos)) +
 # Lo hacemos dinámico
 animacion <- grafico + transition_reveal(edad)
 
-animate(p, 
-        render = gifski_renderer("./examples/render_edad_prop_pos.gif"), 
-        nframe = N_FRAME, 
-        height = HEIGHT, 
-        width = WIDTH)
+animacion
 
-# TODO: Por qué tengo que usar gifski?
+anim_save(paste(PATH_SUB_DIRECTORIO, "render_edad_prop_pos.gif"))
 
+
+# TODO: Por qué tengo que usar gifski? 
+# Usa gisfki por defecto para unir todos los png en un gift. Si no lo tuvieramos instalado
+# Devolvería todas las imágnes por separado en lugar de un gift.
+
+# Voy a tratar de hacer un gráfico que cambie según los valores de un factor.
+# Se me ocurrio ver como cambia la proporción de hombres y mujeres según la facilidad de usar el 
+# celular
+
+# Preparamos los datos
+datos <- datos %>% 
+  mutate(facilidad_celular = factor(facilidad_celular)) %>% 
+  mutate(facilidad_celular = fct_relevel(facilidad_celular, 
+                                         c("Very easy", 
+                                           "Easy", 
+                                           "Neither easy nor difficult", 
+                                           "Difficult", 
+                                           "Very Difficult"))) %>% 
+  filter(!is.na(facilidad_celular)) %>% 
+  filter(genero %in% c("Female", "Male"))
+
+# Construimos le gráfico estático
+grafico <- datos %>% 
+  ggplot(aes(genero, stat(prop), group = diagnostico_pro, fill = diagnostico_pro)) +
+  geom_bar(position = "dodge", alpha = .6) +
+  xlab("Genero") +
+  ylab("") +
+  theme_bw() +
+  scale_fill_brewer(palette = "Set1", labels = c("Negativo", "Positivo")) +
+  scale_y_continuous(labels = label_percent(1)) +
+  theme(legend.position = "bottom", 
+        legend.title = element_blank(),
+        plot.title = element_text(face = "bold", size = 20),
+        plot.subtitle =  element_text(face = "bold", size = 15))
+
+grafico
+
+# Lo animamos
+animacion <- grafico + 
+  ggtitle("Hay mayor cantidad de hombres en \nambos grupos",
+          "Nivel actual: {closest_state}") +
+  transition_states(facilidad_celular, state_length = 2) 
+
+animacion
+
+anim_save(paste(PATH_SUB_DIRECTORIO, "genero_diagnostico_celular.gif"))
 
 
