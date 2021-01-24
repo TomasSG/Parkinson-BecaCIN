@@ -13,7 +13,7 @@ library(scales)
 datos <- read.table("data/datos_eda.csv", sep = ";", dec = ".", header = TRUE)
 glimpse(datos)
 
-# Declaramos unas variables que van a ser importantes al final
+# Variables globales
 PATH_SUB_DIRECTORIO <- "./examples/"
 
 # Vamos a probar de hacer la proporción de personas con parkinsons según edad
@@ -57,7 +57,10 @@ datos <- datos %>%
                                            "Easy", 
                                            "Neither easy nor difficult", 
                                            "Difficult", 
-                                           "Very Difficult"))) %>% 
+                                           "Very Difficult")),
+         diagnostico_pro = fct_recode(diagnostico_pro,
+                                      "Negativo" = "false",
+                                      "Positivo" = "true")) %>% 
   filter(!is.na(facilidad_celular)) %>% 
   filter(genero %in% c("Female", "Male"))
 
@@ -68,12 +71,13 @@ grafico <- datos %>%
   xlab("Genero") +
   ylab("") +
   theme_bw() +
-  scale_fill_brewer(palette = "Set1", labels = c("Negativo", "Positivo")) +
+  scale_fill_brewer(palette = "Set1") +
   scale_y_continuous(labels = label_percent(1)) +
-  theme(legend.position = "bottom", 
+  theme(legend.position = "none", 
         legend.title = element_blank(),
         plot.title = element_text(face = "bold", size = 20),
-        plot.subtitle =  element_text(face = "bold", size = 15))
+        plot.subtitle =  element_text(face = "bold", size = 15)) +
+  facet_grid(~ diagnostico_pro)
 
 grafico
 
@@ -86,5 +90,21 @@ animacion <- grafico +
 animacion
 
 anim_save(paste(PATH_SUB_DIRECTORIO, "genero_diagnostico_celular.gif"))
+
+# Vamos a hacer un gráfico utilizando las fechas
+
+# Modificando los datos
+datos <- datos %>% 
+  mutate(dif_comienzo_medicacion = anio_diagnostico - anio_comienzo_med,
+         dif_comienzo_sintomas = anio_diagnostico - anio_comienzo_sintomas)
+
+
+# Armamos el gráfico estático
+datos %>% 
+  filter(!is.na(anio_diagnostico)) %>% 
+  ggplot(aes(d1, d2)) +
+  geom_point() +
+  transition_time(anio_diagnostico)
+
 
 
