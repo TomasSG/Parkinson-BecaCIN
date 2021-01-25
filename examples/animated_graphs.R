@@ -36,9 +36,8 @@ grafico <- ggplot(prop_positivos_por_edad, aes(edad, prop_pos)) +
 # Lo hacemos dinámico
 animacion <- grafico + transition_reveal(edad)
 
-animacion
-
-anim_save(paste(PATH_SUB_DIRECTORIO, "render_edad_prop_pos.gif"))
+#animacion
+#anim_save(paste(PATH_SUB_DIRECTORIO, "render_edad_prop_pos.gif"))
 
 
 # TODO: Por qué tengo que usar gifski? 
@@ -87,9 +86,8 @@ animacion <- grafico +
           "Nivel actual: {closest_state}") +
   transition_states(facilidad_celular, state_length = 2) 
 
-animacion
-
-anim_save(paste(PATH_SUB_DIRECTORIO, "genero_diagnostico_celular.gif"))
+#animacion
+#anim_save(paste(PATH_SUB_DIRECTORIO, "genero_diagnostico_celular.gif"))
 
 # Vamos a hacer un gráfico utilizando las fechas
 
@@ -100,11 +98,25 @@ datos <- datos %>%
 
 
 # Armamos el gráfico estático
-datos %>% 
+grafico <- datos %>% 
   filter(!is.na(anio_diagnostico)) %>% 
-  ggplot(aes(d1, d2)) +
-  geom_point() +
-  transition_time(anio_diagnostico)
+  ggplot(aes(genero, edad, fill = genero)) +
+  geom_boxplot() + 
+  ylab("Edad (años)") +
+  xlab("Genero") +
+  ggtitle("Variaciones de edades según el año",
+          "El año de diagnostico es {frame_time}") +
+  theme_minimal() +
+  theme(legend.position = "none",
+        plot.title = element_text(face = "bold", size = 20), 
+        plot.subtitle =  element_text(face = "bold", size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15)) +
+  guides(size = "none")
+  
+# Los animamos, le agregamos una etiqueta para saber en que año estamos actualemnte
+animacion <- grafico +
+    transition_time(anio_diagnostico, range = c(2000L, 2015L))
 
-
-
+#animacion
+#anim_save(paste(PATH_SUB_DIRECTORIO, "edad_anio_diagnostico.gif"))
