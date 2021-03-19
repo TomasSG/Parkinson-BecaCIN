@@ -110,15 +110,15 @@ rf_base
 Ahora, vamos a intentar buscar el mejor parámetro posible para mtry
 
 ```{r}
-grid <- expand.grid(mtry = 1:ncol(datos_rf_train))
+#grid <- expand.grid(mtry = 1:ncol(datos_rf_train))
 
-rf_tun <- train(diagnostico_pro ~ .,
+#rf_tun <- train(diagnostico_pro ~ .,
                  data = datos_rf_train,
                  method = "rf",
                  tuneGrid = grid,
                  trControl = control)
 
-rf_tun
+#rf_tun
 ```
 
 Aqui vemos que el valor de mtry elegido para este modelo es el de 3. Ahora vamos a ver cómo perfoman estos dos modelos

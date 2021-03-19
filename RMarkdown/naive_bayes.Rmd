@@ -12,8 +12,8 @@ library(MASS)
 library(e1071)
 library(ggcorrplot)
 library(pROC)
-library(tidyverse)
 library(caret)
+library(tidyverse)
 
 
 source("../R/Utils.R")
@@ -136,8 +136,8 @@ Ahora que tenemos el modelo, comenzamos realizando las predicciones
 predicciones_bayes <- predict(modelo_bayes, datos_test, type = "raw")
 objeto_roc_bayes <- roc(datos_test$diagnostico_pro, predicciones_bayes[,"true"])
 
-data.frame(sensitivity = objeto_roc$sensitivities,
-           specificity = objeto_roc$specificities) %>% 
+data.frame(sensitivity = objeto_roc_bayes$sensitivities,
+           specificity = objeto_roc_bayes$specificities) %>% 
   ggplot(aes(1 - specificity, sensitivity)) +
   geom_line()
 
@@ -263,8 +263,8 @@ Ahora que tenemos el modelo podemos hacer predicciones y compararlo con el model
 predicciones_logistica <- predict(modelo_logistica, datos_test, type = "prob")
 objeto_roc_logistica <- roc(datos_test$diagnostico_pro, predicciones_logistica[,"true"])
 
-data.frame(Sensitivity = objeto_roc$sensitivities,
-           Specificity = objeto_roc$specificities) %>% 
+data.frame(Sensitivity = objeto_roc_logistica$sensitivities,
+           Specificity = objeto_roc_logistica$specificities) %>% 
   ggplot(aes(1 - Specificity, Sensitivity)) +
   geom_line()
 
