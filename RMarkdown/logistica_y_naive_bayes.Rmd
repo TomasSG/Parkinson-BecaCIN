@@ -21,7 +21,7 @@ SEP_COLUMNAS <- ";"
 SEP_DECIMAL <- "."
 
 SEED <- 987
-PORCENTAJE_TRAIN <- .7
+PORCENTAJE_TRAIN <- .8
 ```
 
 # Cargar datos
@@ -84,9 +84,9 @@ modelo_log <- train(diagnostico_pro ~ .,
 summary(modelo_log)
 ```
 
-Observamos que solamente las variables d1 y edad figuran con un pvalor significativo. Interpretamos uno de los resultados:
+Observamos que solamente las variables d1, d2 y edad figuran con un pvalor significativo. Interpretamos uno de los resultados:
 
-  * Por cada incremento de un año en la edad, hay un incremento promedio de `r round((exp(0.114167) - 1) * 100, 3)`% en los odds de tener un diagnóstico postivo de EP, manteniendo el resto de variables constantes.
+  * Por cada incremento de un año en la edad, hay un incremento promedio de `r round((exp(0.110494) - 1) * 100, 3)`% en los odds de tener un diagnóstico postivo de EP, manteniendo el resto de variables constantes.
   
 Con el modelo elegido, vamos armar la curva ROC.
 
@@ -101,16 +101,16 @@ Vamos a tratar de mejorar el AUC identificando observaciones influyentes para el
 data.frame(d_cook = cooks.distance(modelo_log$finalModel)) %>% arrange(- d_cook)
 ```
 
-Observamos que la observación 262 es la que se encuentra más alejada del resto, por lo que vamos a probar entrenando otro modelo sin esa observación. 
+Observamos que la observación 302 es la que se encuentra más alejada del resto, por lo que vamos a probar entrenando otro modelo sin esa observación. 
 
 ```{r}
-nro_fila_influyente <- 262
+nro_fila_influyente <- 302
 
 # Observamos como es ese registro
 datos_log[nro_fila_influyente,]
 
-# Excluimos la observacion 262
-datos_log_sin_inf <- datos_log[-nro_fila_influyente→,]
+# Excluimos la observacion
+datos_log_sin_inf <- datos_log[-nro_fila_influyente,]
 
 # Realizamos la particion de vuelta
 set.seed(SEED)
@@ -139,7 +139,7 @@ modelo_log_inf <- train(diagnostico_pro ~ .,
 summary(modelo_log_inf)
 ```
 
-Comparando con el primer modelo de logístico armado, los coeficientes de d1 y edad son similares. Sin embargo, observamos que en este punto el pvalor de d2 dio < 0.05, aunque sobre el límite.
+Comparando con el primer modelo de logístico armado, los coeficientes son similares.
 
 Armamos de nuevo la curva ROC
 
@@ -147,14 +147,14 @@ Armamos de nuevo la curva ROC
 graficar_curva_roc(modelo_log_inf, datos_log_inf_test, "true", "diagnostico_pro")
 ```
 
-Se observa que hubo un incremento en el AUC al sacar el modelo. 
+Se observa que el AUC es el mismo, así que no excluimos esa observación. 
 
 Ahora lo que hacemos es graficar specificity vs sensitivity para todos los posibles puntos de corte
 
 ```{r}
 # Primero creamos un objeto roc
-predicciones_log <- predict(modelo_log_inf, datos_log_inf_test, list = FALSE, type = "prob")
-objeto_roc_log <- roc(datos_log_inf_test$diagnostico_pro, predicciones_log[, "true"])
+predicciones_log <- predict(modelo_log, datos_log_test, list = FALSE, type = "prob")
+objeto_roc_log <- roc(datos_log_test$diagnostico_pro, predicciones_log[, "true"])
 
 
 # Armamos el grafico
@@ -180,7 +180,7 @@ prediccioes_log_matriz_confusion <- ifelse(predicciones_log[, "true"] >= 0.44,
 
 # Armamos la matriz de confusion
 confusionMatrix(prediccioes_log_matriz_confusion, 
-                datos_log_inf_test$diagnostico_pro, 
+                datos_log_test$diagnostico_pro, 
                 positive = "true")
 
 ```
