@@ -1,5 +1,5 @@
 ---
-title: "Regresión Logística y Nive Bayes"
+title: "Regresión Logística y Naive Bayes"
 output: html_notebook
 ---
 
@@ -62,7 +62,10 @@ Dividimos los datos
 ```{r}
 set.seed(SEED)
 
-indices_train_log <- createDataPartition(datos_log$diagnostico_pro, p = PORCENTAJE_TRAIN, list = FALSE)
+indices_train_log <- createDataPartition(datos_log$diagnostico_pro, 
+                                         p = PORCENTAJE_TRAIN, 
+                                         list = FALSE) %>% 
+  as.vector()
 
 datos_log_train <- datos_log[indices_train_log,]
 datos_log_test <- datos_log[-indices_train_log,]
@@ -101,14 +104,25 @@ data.frame(d_cook = cooks.distance(modelo_log$finalModel)) %>% arrange(- d_cook)
 Observamos que la observación 262 es la que se encuentra más alejada del resto, por lo que vamos a probar entrenando otro modelo sin esa observación. 
 
 ```{r}
-datos_log_sin_inf <- datos_log[-262,]
+nro_fila_influyente <- 262
 
+# Observamos como es ese registro
+datos_log[nro_fila_influyente,]
+
+# Excluimos la observacion 262
+datos_log_sin_inf <- datos_log[-nro_fila_influyente→,]
+
+# Realizamos la particion de vuelta
 set.seed(SEED)
-indices_train_inf <- createDataPartition(datos_log_sin_inf$diagnostico_pro, p = PORCENTAJE_TRAIN, list = FALSE)
+indices_train_inf <- createDataPartition(datos_log_sin_inf$diagnostico_pro, 
+                                         p = PORCENTAJE_TRAIN, 
+                                         list = FALSE) %>% 
+  as.vector()
 
 datos_log_inf_train <- datos_log_sin_inf[indices_train_inf,]
 datos_log_inf_test <- datos_log_sin_inf[- indices_train_inf,]
 
+# Verifiquemos que se cree correctamente
 nrow(datos_log_inf_train)
 nrow(datos_log_inf_test)
 
@@ -143,7 +157,7 @@ predicciones_log <- predict(modelo_log_inf, datos_log_inf_test, list = FALSE, ty
 objeto_roc_log <- roc(datos_log_inf_test$diagnostico_pro, predicciones_log[, "true"])
 
 
-# Armamos el gráfico
+# Armamos el grafico
 data.frame(Specificity = objeto_roc_log$specificities,
            Sencitivity = objeto_roc_log$sensitivities,
            Thresholds = objeto_roc_log$thresholds) %>% 
@@ -164,7 +178,7 @@ prediccioes_log_matriz_confusion <- ifelse(predicciones_log[, "true"] >= 0.44,
                                            "false") %>%
   as.factor()
 
-# Armamos la matriz de confusión
+# Armamos la matriz de confusion
 confusionMatrix(prediccioes_log_matriz_confusion, 
                 datos_log_inf_test$diagnostico_pro, 
                 positive = "true")
