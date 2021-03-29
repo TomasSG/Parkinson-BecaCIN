@@ -1,0 +1,81 @@
+---
+title: "Regresión Logística y Nive Bayes"
+output: html_notebook
+---
+
+# Bibliotecas
+
+```{r}
+library(tidyverse)
+library(caret)
+
+```
+
+# Variables Globales
+
+```{r}
+PATH_DATOS <- "../data/datos_eda.csv"
+SEP_COLUMNAS <- ";"
+SEP_DECIMAL <- "."
+
+SEED <- 987
+PORCENTAJE_TRAIN <- .7
+```
+
+# Cargar datos
+
+```{r}
+datos <- read.table(PATH_DATOS, sep = SEP_COLUMNAS, dec = SEP_DECIMAL, header = TRUE)
+glimpse(datos)
+```
+
+Primero transfromamos todas las variables del tipo character como factores
+
+```{r}
+
+datos <- datos %>% 
+  map_dfc(~ if(is.character(.x)) factor(.x) else .x)
+
+glimpse(datos)
+
+```
+
+Observamos la cantidad de NAs en cada variable
+
+```{r}
+datos %>% map_int(~ sum(is.na(.x)))
+```
+# Regresión Logística
+
+Vamos a armar una regresión logística con diagnostico_pro como respuesta y las variables d1, d2, d3, d4, d5 y edad como predictoras.
+
+```{r}
+datos_log <- datos %>%
+  select(diagnostico_pro, d1, d2, d3, d4, d5, edad)
+
+glimpse(datos_log)
+```
+Dividimos los datos
+
+```{r}
+set.seed(SEED)
+
+indices_train_log <- createDataPartition(datos_log$diagnostico_pro, p = PORCENTAJE_TRAIN, list = FALSE)
+
+datos_log_train <- datos_log[indices_train_log,]
+datos_log_test <- datos_log[-indices_train_log,]
+
+nrow(datos_log_train)
+nrow(datos_log_test)
+```
+Entrenamos el modelo con las particiones
+
+```{r}
+modelo_log <- train(diagnostico_pro ~ .,
+                    data = datos_log_train,
+                    method = "glm",
+                    family= "binomial")
+
+summary(modelo_log)
+```
+
