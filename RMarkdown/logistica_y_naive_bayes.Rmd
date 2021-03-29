@@ -10,6 +10,7 @@ library(tidyverse)
 library(caret)
 library(pROC)
 
+source("../R/Utils.R")
 ```
 
 # Variables Globales
@@ -26,16 +27,16 @@ PORCENTAJE_TRAIN <- .7
 # Cargar datos
 
 ```{r}
-datos <- read.table(PATH_DATOS, sep = SEP_COLUMNAS, dec = SEP_DECIMAL, header = TRUE)
-glimpse(datos)
+datos_crudos <- read.table(PATH_DATOS, sep = SEP_COLUMNAS, dec = SEP_DECIMAL, header = TRUE)
+glimpse(datos_crudos)
 ```
 
 Primero transfromamos todas las variables del tipo character como factores
 
 ```{r}
 
-datos <- datos %>% 
-  map_dfc(~ if(is.character(.x)) factor(.x) else .x)
+datos <- datos_crudos %>% 
+  map_dfc(~ if(is.character(.x)) { factor(.x) } else { .x})
 
 glimpse(datos)
 
@@ -87,15 +88,7 @@ Observamos que solamente las variables d1 y edad figuran con un pvalor significa
 Con el modelo elegido, vamos armar la curva ROC.
 
 ```{r}
-predicciones_log <- predict(modelo_log, datos_log_test, type = "prob")
-objeto_roc_log <- roc(datos_log_test$diagnostico_pro, predicciones_log[,"true"])
-
-data.frame(Sensitivity = objeto_roc_log$sensitivities,
-           Specificity = objeto_roc_log$specificities)  %>% 
-  ggplot(aes(1 - Specificity, Sensitivity)) +
-  geom_line()
-
-auc(objeto_roc_log)
+graficar_curva_roc(modelo_log, datos_log_test, nivel_positivo = "true", var_respuesta = "diagnostico_pro")
 ```
 
 Vamos a tratar de mejorar el AUC identificando observaciones influyentes para el modelo. Usamos la distancia de cook como métrica.
@@ -111,13 +104,13 @@ Observamos que la observación 262 es la que se encuentra más alejada del resto
 datos_log_sin_inf <- datos_log[-262,]
 
 set.seed(SEED)
-indices_train <- createDataPartition(datos_log_sin_inf$diagnostico_pro, p = PORCENTAJE_TRAIN, list = FALSE)
+indices_train_inf <- createDataPartition(datos_log_sin_inf$diagnostico_pro, p = PORCENTAJE_TRAIN, list = FALSE)
 
-datos_log_train <- datos_log_sin_inf[indices_train,]
-datos_log_test <- datos_log_sin_inf[- indices_train,]
+datos_log_inf_train <- datos_log_sin_inf[indices_train_inf,]
+datos_log_inf_test <- datos_log_sin_inf[- indices_train_inf,]
 
-nrow(datos_log_train)
-nrow(datos_log_test)
+nrow(datos_log_inf_train)
+nrow(datos_log_inf_test)
 
 ```
 
@@ -125,7 +118,7 @@ Habiendo hecho la partición, ajustamos el modelo
 
 ```{r}
 modelo_log_inf <- train(diagnostico_pro ~ .,
-                        datos_log_train,
+                        datos_log_inf_train,
                         method = "glm",
                         family = "binomial")
 
@@ -137,15 +130,7 @@ Comparando con el primer modelo de logístico armado, los coeficientes de d1 y e
 Armamos de nuevo la curva ROC
 
 ```{r}
-predicciones_log <- predict(modelo_log_inf, datos_log_test, type = "prob")
-objeto_roc_log <- roc(datos_log_test$diagnostico_pro, predicciones_log[, "true"])
-
-data.frame(Sensitivity = objeto_roc_log$sensitivities,
-           Specificity = objeto_roc_log$specificities) %>% 
-  ggplot(aes(1 - Specificity, Sensitivity)) +
-  geom_line()
-
-auc(objeto_roc_log)
+graficar_curva_roc(modelo_log_inf, datos_log_inf_test, "true", "diagnostico_pro")
 ```
 
 Se observa que hubo un incremento en el AUC al sacar el modelo. 
@@ -153,6 +138,12 @@ Se observa que hubo un incremento en el AUC al sacar el modelo.
 Ahora lo que hacemos es graficar specificity vs sensitivity para todos los posibles puntos de corte
 
 ```{r}
+# Primero creamos un objeto roc
+predicciones_log <- predict(modelo_log_inf, datos_log_inf_test, list = FALSE, type = "prob")
+objeto_roc_log <- roc(datos_log_inf_test$diagnostico_pro, predicciones_log[, "true"])
+
+
+# Armamos el gráfico
 data.frame(Specificity = objeto_roc_log$specificities,
            Sencitivity = objeto_roc_log$sensitivities,
            Thresholds = objeto_roc_log$thresholds) %>% 
@@ -166,10 +157,17 @@ data.frame(Specificity = objeto_roc_log$specificities,
 Observamos que el punto de intersección se encuentra en algún punto entre 0.4 y 0.5. Elegimos el punto 0.44 como punto de corte para armar una matriz de confusión.
 
 ```{r}
-prediccioes_log_matriz_confusion_prob <- predict(modelo_log_inf, datos_log_test, type = "prob")
-prediccioes_log_matriz_confusion <- ifelse(prediccioes_log_matriz_confusion_prob[, "true"] >= 0.44, "true", "false") %>% 
+
+# Hacemos las predicciones usando 0.44 como punto de corte
+prediccioes_log_matriz_confusion <- ifelse(predicciones_log[, "true"] >= 0.44,
+                                           "true",
+                                           "false") %>%
   as.factor()
-confusionMatrix(prediccioes_log_matriz_confusion, datos_log_test$diagnostico_pro, positive = "true")
+
+# Armamos la matriz de confusión
+confusionMatrix(prediccioes_log_matriz_confusion, 
+                datos_log_inf_test$diagnostico_pro, 
+                positive = "true")
 
 ```
 

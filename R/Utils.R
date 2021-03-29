@@ -10,10 +10,23 @@ armar_tabla_frecuencia <- function(data, vars){
     map(table)
 }
 
-evaluar_modelo <- function(modelo, datos_test, nivel_positivo, var_respuesta) {
+graficar_curva_roc <- function(modelo, datos_test, nivel_positivo, var_respuesta) {
+  
+  # Primero obtenemos las probabilidades predichas
   predicciones <- predict(modelo, datos_test, list = FALSE, type = "prob")[,nivel_positivo]
-  auc <- roc(datos_test[[var_respuesta]], predicciones) %>% auc
-  return(auc)
+  
+  # Calculamos la sensitivity y especificity para cada valor de corte posible
+  objeto_roc <- roc(datos_test[[var_respuesta]], predicciones)
+  
+  # Calculamos el AUROC
+  auroc <- auc(objeto_roc)
+  
+  # Graficamos la curva ROC
+  data.frame(Sensitivity = objeto_roc$sensitivities,
+             Specificity = objeto_roc$specificities)  %>% 
+    ggplot(aes(1 - Specificity, Sensitivity)) +
+    geom_line() + 
+    ggtitle("Curva ROC", paste("AUROC:", round(auroc, 4)))
 }
 
 
