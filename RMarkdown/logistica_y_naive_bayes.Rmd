@@ -8,6 +8,7 @@ output: html_notebook
 ```{r}
 library(tidyverse)
 library(caret)
+library(pROC)
 
 ```
 
@@ -78,4 +79,98 @@ modelo_log <- train(diagnostico_pro ~ .,
 
 summary(modelo_log)
 ```
+
+Observamos que solamente las variables d1 y edad figuran con un pvalor significativo. Interpretamos uno de los resultados:
+
+  * Por cada incremento de un año en la edad, hay un incremento promedio de `r round((exp(0.114167) - 1) * 100, 3)`% en los odds de tener un diagnóstico postivo de EP, manteniendo el resto de variables constantes.
+  
+Con el modelo elegido, vamos armar la curva ROC.
+
+```{r}
+predicciones_log <- predict(modelo_log, datos_log_test, type = "prob")
+objeto_roc_log <- roc(datos_log_test$diagnostico_pro, predicciones_log[,"true"])
+
+data.frame(Sensitivity = objeto_roc_log$sensitivities,
+           Specificity = objeto_roc_log$specificities)  %>% 
+  ggplot(aes(1 - Specificity, Sensitivity)) +
+  geom_line()
+
+auc(objeto_roc_log)
+```
+
+Vamos a tratar de mejorar el AUC identificando observaciones influyentes para el modelo. Usamos la distancia de cook como métrica.
+
+
+```{r}
+data.frame(d_cook = cooks.distance(modelo_log$finalModel)) %>% arrange(- d_cook)
+```
+
+Observamos que la observación 262 es la que se encuentra más alejada del resto, por lo que vamos a probar entrenando otro modelo sin esa observación. 
+
+```{r}
+datos_log_sin_inf <- datos_log[-262,]
+
+set.seed(SEED)
+indices_train <- createDataPartition(datos_log_sin_inf$diagnostico_pro, p = PORCENTAJE_TRAIN, list = FALSE)
+
+datos_log_train <- datos_log_sin_inf[indices_train,]
+datos_log_test <- datos_log_sin_inf[- indices_train,]
+
+nrow(datos_log_train)
+nrow(datos_log_test)
+
+```
+
+Habiendo hecho la partición, ajustamos el modelo
+
+```{r}
+modelo_log_inf <- train(diagnostico_pro ~ .,
+                        datos_log_train,
+                        method = "glm",
+                        family = "binomial")
+
+summary(modelo_log_inf)
+```
+
+Comparando con el primer modelo de logístico armado, los coeficientes de d1 y edad son similares. Sin embargo, observamos que en este punto el pvalor de d2 dio < 0.05, aunque sobre el límite.
+
+Armamos de nuevo la curva ROC
+
+```{r}
+predicciones_log <- predict(modelo_log_inf, datos_log_test, type = "prob")
+objeto_roc_log <- roc(datos_log_test$diagnostico_pro, predicciones_log[, "true"])
+
+data.frame(Sensitivity = objeto_roc_log$sensitivities,
+           Specificity = objeto_roc_log$specificities) %>% 
+  ggplot(aes(1 - Specificity, Sensitivity)) +
+  geom_line()
+
+auc(objeto_roc_log)
+```
+
+Se observa que hubo un incremento en el AUC al sacar el modelo. 
+
+Ahora lo que hacemos es graficar specificity vs sensitivity para todos los posibles puntos de corte
+
+```{r}
+data.frame(Specificity = objeto_roc_log$specificities,
+           Sencitivity = objeto_roc_log$sensitivities,
+           Thresholds = objeto_roc_log$thresholds) %>% 
+  ggplot(aes(x = Thresholds)) +
+  geom_line(aes(y = Specificity), color = "firebrick") +
+  geom_line(aes(y = Sencitivity), color = "orange") + 
+  geom_vline(xintercept = .5, color = "gray") +
+  geom_vline(xintercept = .4, color = "gray") +
+  ylab("")
+```
+Observamos que el punto de intersección se encuentra en algún punto entre 0.4 y 0.5. Elegimos el punto 0.44 como punto de corte para armar una matriz de confusión.
+
+```{r}
+prediccioes_log_matriz_confusion_prob <- predict(modelo_log_inf, datos_log_test, type = "prob")
+prediccioes_log_matriz_confusion <- ifelse(prediccioes_log_matriz_confusion_prob[, "true"] >= 0.44, "true", "false") %>% 
+  as.factor()
+confusionMatrix(prediccioes_log_matriz_confusion, datos_log_test$diagnostico_pro, positive = "true")
+
+```
+
 
