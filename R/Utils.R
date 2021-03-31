@@ -10,10 +10,10 @@ armar_tabla_frecuencia <- function(data, vars){
     map(table)
 }
 
-graficar_curva_roc <- function(modelo, datos_test, nivel_positivo, var_respuesta) {
+graficar_curva_roc <- function(modelo, datos_test, nivel_positivo, var_respuesta, type_predict = "prob") {
   
   # Primero obtenemos las probabilidades predichas
-  predicciones <- predict(modelo, datos_test, list = FALSE, type = "prob")[,nivel_positivo]
+  predicciones <- predict(modelo, datos_test, list = FALSE, type = type_predict)[,nivel_positivo]
   
   # Calculamos la sensitivity y especificity para cada valor de corte posible
   objeto_roc <- roc(datos_test[[var_respuesta]], predicciones)

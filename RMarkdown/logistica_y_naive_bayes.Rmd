@@ -6,22 +6,47 @@ output: html_notebook
 # Bibliotecas
 
 ```{r}
-library(tidyverse)
 library(caret)
 library(pROC)
+library(e1071)
+library(tidyverse)
 
 source("../R/Utils.R")
 ```
 
-# Variables Globales
+# Variables Globales, constantes y otros
 
 ```{r}
-PATH_DATOS <- "../data/datos_eda.csv"
+PATH_DATOS <- "../data/bd_final.csv"
 SEP_COLUMNAS <- ";"
 SEP_DECIMAL <- "."
 
 SEED <- 987
 PORCENTAJE_TRAIN <- .8
+
+VARIABLES_LOGISTICA <- c("diagnostico_pro", "d1", "d2", "d3", "d4", "d5", "edad")
+VARIABLES_BAYES <- c("d1",
+                     "es_cuidador",
+                     "educ",
+                     "empleo",
+                     "estado_marital",
+                     "facilidad_celular",
+                     "fumo",
+                     "diagnostico_pro",
+                     "F0semitoneFrom27.5Hz_sma3nz_amean",
+                     "F0semitoneFrom27.5Hz_sma3nz_stddevNorm",
+                     "F0semitoneFrom27.5Hz_sma3nz_percentile20.0",
+                     "F0semitoneFrom27.5Hz_sma3nz_percentile50.0",
+                     "F0semitoneFrom27.5Hz_sma3nz_percentile80.0",
+                     "F0semitoneFrom27.5Hz_sma3nz_pctlrange0.2",
+                     "F0semitoneFrom27.5Hz_sma3nz_meanRisingSlope",
+                     "F0semitoneFrom27.5Hz_sma3nz_stddevRisingSlope",
+                     "F0semitoneFrom27.5Hz_sma3nz_meanFallingSlope",
+                     "F0semitoneFrom27.5Hz_sma3nz_stddevFallingSlope",
+                     "jitterLocal_sma3nz_amean",
+                     "jitterLocal_sma3nz_stddevNorm", 
+                     "shimmerLocaldB_sma3nz_amean", 
+                     "shimmerLocaldB_sma3nz_stddevNorm")
 ```
 
 # Cargar datos
@@ -36,24 +61,29 @@ Primero transfromamos todas las variables del tipo character como factores
 ```{r}
 
 datos <- datos_crudos %>% 
-  map_dfc(~ if(is.character(.x)) { factor(.x) } else { .x})
+  map_dfc(~ if(is.character(.x)) { factor(.x) } else { .x })
 
 glimpse(datos)
 
 ```
 
-Observamos la cantidad de NAs en cada variable
-
-```{r}
-datos %>% map_int(~ sum(is.na(.x)))
-```
 # Regresión Logística
 
 Vamos a armar una regresión logística con diagnostico_pro como respuesta y las variables d1, d2, d3, d4, d5 y edad como predictoras.
 
+Observamos los NAs para las variables leegidas
+
+```{r}
+datos %>% 
+  select(all_of(VARIABLES_LOGISTICA)) %>% 
+  map_int(~ sum(is.na(.x)))
+```
+
+No se observan NAs en las variables a usar, ahora apartamos las varaibles que vamos a utilizar en el modelo.
+
 ```{r}
 datos_log <- datos %>%
-  select(diagnostico_pro, d1, d2, d3, d4, d5, edad)
+  select(all_of(VARIABLES_LOGISTICA))
 
 glimpse(datos_log)
 ```
@@ -185,4 +215,118 @@ confusionMatrix(prediccioes_log_matriz_confusion,
 
 ```
 
+# Naive Bayes
 
+Primero observamos los NAs en las variables que vamos a usar en el modelo
+
+```{r}
+datos %>%
+  select(all_of(VARIABLES_BAYES)) %>% 
+  map_int(~ sum(is.na(.x)))
+```
+
+Lo que vamos a hacer es apartar las variables a usar en un nuevo dataset y tratamos los NAs
+
+```{r}
+datos_bayes <- datos %>% 
+  select(all_of(VARIABLES_BAYES))
+
+glimpse(datos_bayes)
+```
+Para tratar los NAs vamos a tomar dos caminos:
+
+  * Vamos a hacer un modelo donde los NAs son sustitudos por el promedio o el nivel con mayor cantidad de observaciones.
+  * Vamos a hacer un modelo donde se eliminen los registros con NAs.
+  
+```{r}
+# Reemplazamos los NAs
+datos_bayes_con_na <- datos_bayes %>% 
+  mutate(es_cuidador = replace(es_cuidador, is.na(es_cuidador), "false"),
+         educ = replace(educ, is.na(educ), "4-year college degree"),
+         empleo = replace(empleo, is.na(empleo), "Employment for wages"),
+         estado_marital = replace(estado_marital, is.na(estado_marital), "Married or domestic partnership"),
+         facilidad_celular = replace(facilidad_celular, is.na(facilidad_celular), "Very easy"),
+         fumo = replace(fumo, is.na(fumo), "false"))
+
+# Elminamos los NAs
+datos_bayes_sin_na <- datos_bayes %>% 
+  drop_na()
+
+# Verificamos que no queden NAs
+datos_bayes_con_na %>% map_int(~ sum(is.na(.x))) %>% sum()
+datos_bayes_sin_na %>% map_int(~ sum(is.na(.x))) %>% sum()
+
+# Vemos como quedaron los datasets
+glimpse(datos_bayes_con_na)
+glimpse(datos_bayes_sin_na)
+
+```
+
+## Con NAs sustitudos
+
+Empezamos haciendo las particiones
+
+```{r}
+set.seed(SEED)
+indices_train_bayes <- createDataPartition(datos_bayes_con_na$diagnostico_pro, p = PORCENTAJE_TRAIN, list = FALSE) %>% 
+  as.vector()
+
+datos_bayes_con_na_train <- datos_bayes_con_na[indices_train_bayes, ]
+datos_bayes_con_na_test <- datos_bayes_con_na[- indices_train_bayes, ]
+
+nrow(datos_bayes_con_na_train)
+nrow(datos_bayes_con_na_test)
+```
+Entrenamos el modelo con los datos de train
+
+```{r}
+modelo_bayes_con_na <- naiveBayes(diagnostico_pro ~ .,
+                             data = datos_bayes_con_na_train)
+
+modelo_bayes_con_na
+                             
+```
+
+```{r}
+graficar_curva_roc(modelo_bayes_con_na, 
+                   datos_bayes_con_na_test, 
+                   nivel_positivo = "true", 
+                   var_respuesta = "diagnostico_pro", 
+                   type_predict = "raw")
+```
+
+## Con NAs eliminados
+
+Realizamos la partición
+
+```{r}
+indices_train_bayes <- createDataPartition(datos_bayes_sin_na$diagnostico_pro,
+                                          p = PORCENTAJE_TRAIN,
+                                          list = FALSE) %>% 
+  as.vector()
+
+datos_bayes_sin_na_train <- datos_bayes_sin_na[indices_train_bayes, ]
+datos_bayes_sin_na_test <- datos_bayes_sin_na[- indices_train_bayes, ]
+
+# Verificamos
+nrow(datos_bayes_sin_na) == nrow(datos_bayes_sin_na_train) + nrow(datos_bayes_sin_na_test)
+```
+Ahora ajustamos el modelo
+
+```{r}
+modelo_bayes_sin_na <- naiveBayes(diagnostico_pro ~ .,
+                                  datos_bayes_sin_na_train)
+
+modelo_bayes_sin_na
+```
+Graficamos la cruva ROC
+
+```{r}
+graficar_curva_roc(modelo_bayes_sin_na, 
+                   datos_bayes_sin_na_test,
+                   nivel_positivo = "true", 
+                   var_respuesta = "diagnostico_pro",
+                   type_predict = "raw")
+```
+
+# TODO: Probar distribución normal y reorganiar factores

@@ -43,92 +43,30 @@ source("../R/Utils.R")
 
 La información de las variables se puede extraer de este [link](https://www.synapse.org/#!Synapse:syn4993293/wiki/390372)
 
-Los datos en principio los tenemos divididos en dos bases de datos, así que mediante un join generamos la vase de datos a utilizar.
-
-```{r datos_join}
-# Código hacer join entre las tablas
-datos_izq <- read_excel("../data/bd_acotada.xlsx") %>% 
-  select(ROW_ID, d1, d2, d3, d4, d5)
-
-datos_der <- read_excel("../data/bd_completa.xlsx") %>% 
-   select(ROW_ID2, 
-          age, 
-          "are-caretaker", 
-          "deep-brain-stimulation",
-          "diagnosis-year", 
-          education, 
-          employment, 
-          gender, 
-          "healthcare-provider",
-          maritalStatus, 
-          "medication-start-year", 
-          "onset-year",
-          "packs-per-day",
-          smartphone, 
-          smoked, 
-          surgery, 
-          "video-usage",
-          "years-smoking",
-          "professional-diagnosis") %>% 
-  rename(ROW_ID = ROW_ID2)
-```
-
-Verificamos la cantidad de IDs repetidos.
-
-```{r ids_repetidos}
-contar_ids_repetidos(datos_izq, ROW_ID)
-contar_ids_repetidos(datos_der, ROW_ID)
-```
-Observamos que en datos_der existen 139 IDs duplicados. Lo que vamos a hacer es obtener estos y observar las filas repetidas.
-
-```{r}
-row_id_duplicado <- datos_der %>% 
-  count(ROW_ID) %>% 
-  filter(n > 1) %>% 
-  select(ROW_ID)
-
-datos_der %>% 
-  filter(ROW_ID %in% row_id_duplicado$ROW_ID) %>% 
-  arrange(ROW_ID)
-```
-
-Aqui podemos ver como en realidad para las variables incluidas, se tratan de observaciones repetidas, entonces lo que hacemos es limpiarlos
-
-```{r datos_der_sin_duplicados}
-datos_der <- datos_der %>% distinct(ROW_ID, .keep_all = TRUE)
-
-contar_ids_repetidos(datos_der, ROW_ID)
-```
-
-Observamos que no tenemos datos duplicados, realizamos el join
-
-```{r datos_crudos}
-datos_crudos <- left_join(datos_izq, datos_der, by = "ROW_ID")
-```
-
-Comenzamos renombando todas las variables, para manegarlas de forma más sencilla. Observamos como trata a cada variable.
+En principio los datos se encontraban divididos en dos BDs diferentes, pero el merge ya se hizo en otro archivo diferente. Comenzamos seleccionando las variables que nos interesan. Observamos como trata a cada variable.
 
 ```{r datos_it0}
+datos_crudos <- read.table("../data/bd_final.csv", sep = ";", dec = ".", header = TRUE)
+
 datos_it0 <- datos_crudos %>%
-  rename(id = ROW_ID,
-         edad = age,
-         es_cuidador = `are-caretaker`,
-         dbs = `deep-brain-stimulation`,
-         anio_diagnostico = `diagnosis-year`,
-         educ = education,
-         empleo = employment,
-         genero = gender,
-         tipo_medico = `healthcare-provider`,
-         estado_marital = maritalStatus,
-         anio_comienzo_med = `medication-start-year`,
-         anio_comienzo_sintomas = `onset-year`,
-         paquetes_por_dia = `packs-per-day`,
-         facilidad_celular = smartphone,
-         fumo = smoked,
-         cirugia = surgery,
-         videollamada = `video-usage`,
-         anios_fumo = `years-smoking`,
-         diagnostico_pro = `professional-diagnosis`)
+  select(id, 
+         edad,
+         es_cuidador,
+         dbs, anio_diagnostico,
+         educ,
+         empleo,
+         genero,
+         tipo_medico,
+         estado_marital,
+         anio_comienzo_med,
+         anio_comienzo_sintomas,
+         paquetes_por_dia,
+         facilidad_celular,
+         fumo,
+         cirugia,
+         videollamada,
+         anios_fumo,
+         diagnostico_pro)
 
 # Lo hacemos un poco más complejo para que sea mas legible el output
 tibble("Nombre" = names(datos_it0), "Clase" = map_chr(datos_it0, class))
