@@ -294,6 +294,32 @@ graficar_curva_roc(modelo_bayes_con_na,
                    var_respuesta = "diagnostico_pro", 
                    type_predict = "raw")
 ```
+Vamos a tratar de mejorar está métrica, primero empecemos viendo si las variables numéricas se aproximan a una normal.
+
+```{r}
+datos_bayes_con_na %>% 
+  select(is.numeric) %>% 
+  map(~ ggplot(datos_bayes_con_na, aes(.x)) +
+        geom_density())
+```
+
+Ahora comparamos los mismos resultados aplicando una transformación logarítmica a los datos.
+
+```{r}
+lista_graficos <- datos_bayes_con_na %>% 
+  select(is.numeric) %>% 
+  map2(, ~ ggplot(datos_bayes_con_na, aes(log(.x))) +
+        geom_density() + 
+         xlab(.y))
+
+for(i in seq_along(lista_graficos)) {
+  grafico <- lista_graficos[i] + xlab(names(lista_graficos)[i])
+  print(ggrafico)
+}
+```
+
+
+
 
 ## Con NAs eliminados
 
