@@ -1,6 +1,8 @@
 ---
 title: "Regresión Logística y Naive Bayes"
-output: html_notebook
+output: 
+  html_notebook: 
+    toc: yes
 ---
 
 # Bibliotecas
@@ -11,13 +13,14 @@ library(pROC)
 library(e1071)
 library(tidyverse)
 
-source("../R/Utils.R")
+source("./R/Utils.R")
 ```
+
 
 # Variables Globales, constantes y otros
 
 ```{r}
-PATH_DATOS <- "../data/bd_final.csv"
+PATH_DATOS <- "./data/bd_final.csv"
 SEP_COLUMNAS <- ";"
 SEP_DECIMAL <- "."
 
@@ -297,25 +300,30 @@ graficar_curva_roc(modelo_bayes_con_na,
 Vamos a tratar de mejorar está métrica, primero empecemos viendo si las variables numéricas se aproximan a una normal.
 
 ```{r}
+nombres_variables <- datos_bayes_con_na %>% 
+  select(is.numeric) %>%
+  names()
+  
 datos_bayes_con_na %>% 
-  select(is.numeric) %>% 
-  map(~ ggplot(datos_bayes_con_na, aes(.x)) +
-        geom_density())
+  select(is.numeric) %>%
+  map2(nombres_variables, ~ ggplot(datos_bayes_con_na, aes(.x)) +
+        geom_density() + 
+         xlab(.y))
+
 ```
 
 Ahora comparamos los mismos resultados aplicando una transformación logarítmica a los datos.
 
 ```{r}
-lista_graficos <- datos_bayes_con_na %>% 
-  select(is.numeric) %>% 
-  map2(, ~ ggplot(datos_bayes_con_na, aes(log(.x))) +
+nombres_variables <- datos_bayes_con_na %>% 
+  select(is.numeric) %>%
+  names()
+  
+datos_bayes_con_na %>% 
+  select(is.numeric) %>%
+  map2(nombres_variables, ~ ggplot(datos_bayes_con_na, aes(log(.x))) +
         geom_density() + 
          xlab(.y))
-
-for(i in seq_along(lista_graficos)) {
-  grafico <- lista_graficos[i] + xlab(names(lista_graficos)[i])
-  print(ggrafico)
-}
 ```
 
 
@@ -326,9 +334,7 @@ for(i in seq_along(lista_graficos)) {
 Realizamos la partición
 
 ```{r}
-indices_train_bayes <- createDataPartition(datos_bayes_sin_na$diagnostico_pro,
-                                          p = PORCENTAJE_TRAIN,
-                                          list = FALSE) %>% 
+indices_train_bayes <- createDataPartition(datos_bayes_sin_na$diagnostico_pro, p = PORCENTAJE_TRAIN,  list = FALSE) %>% 
   as.vector()
 
 datos_bayes_sin_na_train <- datos_bayes_sin_na[indices_train_bayes, ]
@@ -355,4 +361,4 @@ graficar_curva_roc(modelo_bayes_sin_na,
                    type_predict = "raw")
 ```
 
-# TODO: Probar distribución normal y reorganiar factores
+# TODO: Probar distribucion normal y reorganiar factores
