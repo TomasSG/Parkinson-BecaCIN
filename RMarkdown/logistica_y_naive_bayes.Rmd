@@ -26,6 +26,7 @@ SEP_DECIMAL <- "."
 
 SEED <- 987
 PORCENTAJE_TRAIN <- .8
+VALOR_LAPLACE <- 1
 
 VARIABLES_LOGISTICA <- c("diagnostico_pro", "d1", "d2", "d3", "d4", "d5", "edad")
 VARIABLES_BAYES <- c("d1",
@@ -94,7 +95,6 @@ Dividimos los datos
 
 ```{r}
 set.seed(SEED)
-
 indices_train_log <- createDataPartition(datos_log$diagnostico_pro, 
                                          p = PORCENTAJE_TRAIN, 
                                          list = FALSE) %>% 
@@ -284,7 +284,8 @@ Entrenamos el modelo con los datos de train
 
 ```{r}
 modelo_bayes_con_na <- naiveBayes(diagnostico_pro ~ .,
-                             data = datos_bayes_con_na_train)
+                             data = datos_bayes_con_na_train,
+                             laplace = VALOR_LAPLACE)
 
 modelo_bayes_con_na
                              
@@ -301,39 +302,147 @@ Vamos a tratar de mejorar está métrica, primero empecemos viendo si las variab
 
 ```{r}
 nombres_variables <- datos_bayes_con_na %>% 
-  select(is.numeric) %>%
+  select(where(is.numeric)) %>%
   names()
   
 datos_bayes_con_na %>% 
-  select(is.numeric) %>%
+  select(where(is.numeric)) %>%
   map2(nombres_variables, ~ ggplot(datos_bayes_con_na, aes(.x)) +
         geom_density() + 
          xlab(.y))
 
 ```
 
-Ahora comparamos los mismos resultados aplicando una transformación logarítmica a los datos.
+Ahora comparamos los mismos resultados aplicando una transformación logarítmica a los datos, solo a las variables que no observemos una densidad muy aleajada de la normal.
 
 ```{r}
-nombres_variables <- datos_bayes_con_na %>% 
-  select(is.numeric) %>%
-  names()
-  
+
+vars_trans_log <- c("F0semitoneFrom27.5Hz_sma3nz_amean", 
+                    "shimmerLocaldB_sma3nz_amean",
+                    "jitterLocal_sma3nz_amean")
+
 datos_bayes_con_na %>% 
-  select(is.numeric) %>%
-  map2(nombres_variables, ~ ggplot(datos_bayes_con_na, aes(log(.x))) +
+  select(all_of(vars_trans_log)) %>%
+  map2(vars_trans_log, ~ ggplot(datos_bayes_con_na, aes(log(.x))) +
         geom_density() + 
          xlab(.y))
 ```
 
+Creamos un nuevo dataset con las variables transformadas
+
+```{r}
+datos_bayes_con_na_log <- datos_bayes_con_na %>% 
+  mutate(F0semitoneFrom27.5Hz_sma3nz_amean = log(F0semitoneFrom27.5Hz_sma3nz_amean),
+  shimmerLocaldB_sma3nz_amean = log(shimmerLocaldB_sma3nz_amean),
+  jitterLocal_sma3nz_amean = log(jitterLocal_sma3nz_amean))
+```
+
+Volvemos a realizar la partición y entrenamos el modelo
+
+```{r}
+set.seed(SEED)
+indices_train_bayes <- createDataPartition(datos_bayes_con_na_log$diagnostico_pro,
+                                           p = PORCENTAJE_TRAIN,
+                                           list = FALSE) %>% 
+  as.vector()
+
+datos_bayes_con_na_log_train <- datos_bayes_con_na_log[indices_train_bayes, ]
+datos_bayes_con_na_log_test <- datos_bayes_con_na_log[-indices_train_bayes, ]
+
+# Verificamos
+nrow(datos_bayes_con_na_log) == nrow(datos_bayes_con_na_log_train) + nrow(datos_bayes_con_na_log_test)
+```
+
+Ahora entrenamos el modelo
+
+```{r}
+modelo_bayes_con_na_log <- naiveBayes(diagnostico_pro ~ .,
+                                      datos_bayes_con_na_log_train,
+                                      laplace = VALOR_LAPLACE)
+
+modelo_bayes_con_na_log
+```
+Dibujamos la curva ROC y AUROC
+
+```{r}
+graficar_curva_roc(modelo_bayes_con_na_log,
+                   datos_bayes_con_na_log_test,
+                   nivel_positivo = "true",
+                   var_respuesta = "diagnostico_pro",
+                   type_predict = "raw")
+```
+Para seguir tratando de mejorar el modelo vamos a re-organizar las categorías de las variables cualitativas, ya que hay varías que se encuentran con niveles desbalanceados.
+
+```{r}
+datos_bayes_con_na_refactor <- datos_bayes_con_na
 
 
+# Dividir educ en Posgraduate - College - Highschool
+datos_bayes_con_na_refactor <- datos_bayes_con_na_refactor %>% 
+  mutate(educ = fct_collapse(educ,
+                           "Postgraduate" = c("Doctoral Degree", "Masters Degree"),
+                           "College" = c("2-year college degree", "4-year college degree", "Some graduate school"),
+                           "HighSchool" = c("High School Diploma/GED", "Some college", "Some high school")))
+
+# Emplemos lo agrupamos en Working - Not Working
+datos_bayes_con_na_refactor <- datos_bayes_con_na_refactor %>% 
+  mutate(empleo = fct_collapse(empleo, 
+                               "Working" = c("A homemaker", "Employment for wages", "Self-employed"),
+                               "Not Working" = c("A student", "Out of work", "Retired", "Unable to work" )))
+
+# Estado marital lo convertimos en Married - Not Married
+datos_bayes_con_na_refactor <- datos_bayes_con_na_refactor %>% 
+  mutate(estado_marital = fct_collapse(estado_marital,
+                                       "Married" = c("Married or domestic partnership"),
+                                       "Not Married" = c("Divorced", "Other", "Separated", "Single never married", "Widowed")))
+
+# Para facilidad celular lo convertimos en Easy - Not Easy
+datos_bayes_con_na_refactor <- datos_bayes_con_na_refactor %>% 
+  mutate(facilidad_celular = fct_collapse(facilidad_celular,
+                                    "Not Easy" = c("Difficult", "Neither easy nor difficult", "Very Difficult"),
+                                    "Easy" = c("Easy", "Very easy")))
+```
+
+
+Volvemos a particionar, entrenar el modelo y graficar la curva ROC
+
+```{r}
+set.seed(SEED)
+indices_train_bayes <- createDataPartition(datos_bayes_con_na_refactor$diagnostico_pro,
+                                           p = PORCENTAJE_TRAIN,
+                                           list = FALSE) %>% 
+  as.vector()
+
+datos_bayes_con_na_refactor_train <- datos_bayes_con_na_refactor[indices_train_bayes,]
+datos_bayes_con_na_refactor_test <- datos_bayes_con_na_refactor[-indices_train_bayes,]
+
+# Verificamos
+nrow(datos_bayes_con_na_refactor) == nrow(datos_bayes_con_na_refactor_train) + nrow(datos_bayes_con_na_refactor_test)
+```
+
+```{r}
+modelo_bayes_con_na_refactor <- naiveBayes(diagnostico_pro ~ .,
+                                           datos_bayes_con_na_refactor_train,
+                                           laplace = VALOR_LAPLACE)
+
+modelo_bayes_con_na_refactor
+```
+```{r}
+graficar_curva_roc(modelo_bayes_con_na_refactor, 
+                   datos_bayes_con_na_refactor_test, 
+                   nivel_positivo = "true", 
+                   var_respuesta = "diagnostico_pro", 
+                   type_predict = "raw")
+```
+
+Empeoro el AUC en este caso
 
 ## Con NAs eliminados
 
 Realizamos la partición
 
 ```{r}
+set.seed(SEED)
 indices_train_bayes <- createDataPartition(datos_bayes_sin_na$diagnostico_pro, p = PORCENTAJE_TRAIN,  list = FALSE) %>% 
   as.vector()
 
@@ -347,7 +456,8 @@ Ahora ajustamos el modelo
 
 ```{r}
 modelo_bayes_sin_na <- naiveBayes(diagnostico_pro ~ .,
-                                  datos_bayes_sin_na_train)
+                                  datos_bayes_sin_na_train,
+                                  laplace = VALOR_LAPLACE)
 
 modelo_bayes_sin_na
 ```
@@ -361,4 +471,49 @@ graficar_curva_roc(modelo_bayes_sin_na,
                    type_predict = "raw")
 ```
 
-# TODO: Probar distribucion normal y reorganiar factores
+Probamos realizando una transformación logarítmica a algunas de las variables.
+
+```{r}
+datos_bayes_sin_na_log <- datos_bayes_sin_na %>% 
+  mutate(F0semitoneFrom27.5Hz_sma3nz_amean = log(F0semitoneFrom27.5Hz_sma3nz_amean),
+  shimmerLocaldB_sma3nz_amean = log(shimmerLocaldB_sma3nz_amean),
+  jitterLocal_sma3nz_amean = log(jitterLocal_sma3nz_amean))
+```
+
+Realizamos la partición
+
+```{r}
+set.seed(SEED)
+indices_train_bayes <- createDataPartition(datos_bayes_sin_na_log$diagnostico_pro,
+                                           p = PORCENTAJE_TRAIN,
+                                           list = FALSE) %>% 
+  as.vector()
+
+datos_bayes_sin_na_log_train <- datos_bayes_sin_na_log[indices_train_bayes,]
+datos_bayes_sin_na_log_test <- datos_bayes_sin_na_log[-indices_train_bayes,]
+
+# Verificamos
+nrow(datos_bayes_sin_na) == nrow(datos_bayes_sin_na_log_train) + nrow(datos_bayes_sin_na_log_test)
+```
+
+Entrenamos el modelo
+
+```{r}
+modelo_bayes_sin_na_log <- naiveBayes(diagnostico_pro ~ .,
+                                      datos_bayes_sin_na_log_train,
+                                      laplace = VALOR_LAPLACE)
+
+modelo_bayes_sin_na_log
+```
+
+Graficamos cruva ROC
+
+```{r}
+graficar_curva_roc(modelo_bayes_sin_na_log,
+                   datos_bayes_sin_na_log_test,
+                   nivel_positivo = "true",
+                   var_respuesta = "diagnostico_pro", 
+                   type_predict = "raw")
+```
+
+El AUC no varío mucho
