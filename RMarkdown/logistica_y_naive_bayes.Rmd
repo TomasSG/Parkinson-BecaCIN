@@ -29,11 +29,11 @@ PORCENTAJE_TRAIN <- .8
 VALOR_LAPLACE <- 1
 
 VARIABLES_LOGISTICA <- c("diagnostico_pro", "d1", "d2", "d3", "d4", "d5", "edad")
-VARIABLES_BAYES <- c("d1",
+VARIABLES_BAYES <- c("d1", 
                      "es_cuidador",
                      "educ",
                      "empleo",
-                     "estado_marital",
+                     "estado_marital", 
                      "facilidad_celular",
                      "fumo",
                      "diagnostico_pro",
@@ -516,4 +516,70 @@ graficar_curva_roc(modelo_bayes_sin_na_log,
                    type_predict = "raw")
 ```
 
-El AUC no varío mucho
+El AUC disminuyo con el cambio, aunque no fue por mucho.
+
+Por último, probamos de hacer el refactor de las variables categóricas para observar cómo varía el AUC
+
+```{r}
+datos_bayes_sin_na_refactor <- datos_bayes_sin_na
+
+
+# Dividir educ en Posgraduate - College - Highschool
+datos_bayes_sin_na_refactor <- datos_bayes_sin_na_refactor %>% 
+  mutate(educ = fct_collapse(educ,
+                           "Postgraduate" = c("Doctoral Degree", "Masters Degree"),
+                           "College" = c("2-year college degree", "4-year college degree", "Some graduate school"),
+                           "HighSchool" = c("High School Diploma/GED", "Some college", "Some high school")))
+
+# Emplemos lo agrupamos en Working - Not Working
+datos_bayes_sin_na_refactor <- datos_bayes_sin_na_refactor %>% 
+  mutate(empleo = fct_collapse(empleo, 
+                               "Working" = c("A homemaker", "Employment for wages", "Self-employed"),
+                               "Not Working" = c("A student", "Out of work", "Retired", "Unable to work" )))
+
+# Estado marital lo convertimos en Married - Not Married
+datos_bayes_sin_na_refactor <- datos_bayes_sin_na_refactor %>% 
+  mutate(estado_marital = fct_collapse(estado_marital,
+                                       "Married" = c("Married or domestic partnership"),
+                                       "Not Married" = c("Divorced", "Other", "Separated", "Single never married", "Widowed")))
+
+# Para facilidad celular lo convertimos en Easy - Not Easy
+datos_bayes_sin_na_refactor <- datos_bayes_sin_na_refactor %>% 
+  mutate(facilidad_celular = fct_collapse(facilidad_celular,
+                                    "Not Easy" = c("Difficult", "Neither easy nor difficult", "Very Difficult"),
+                                    "Easy" = c("Easy", "Very easy")))
+```
+
+Particionamos los datos, entrenamos los medoelos y graficamos la curva ROC.
+
+```{r}
+set.seed(SEED)
+
+indices_train_bayes <- createDataPartition(datos_bayes_sin_na_refactor$diagnostico_pro,
+                                           p = PORCENTAJE_TRAIN,
+                                           list = FALSE) %>% 
+  as.vector()
+
+datos_bayes_sin_na_refactor_train <- datos_bayes_sin_na_refactor[indices_train_bayes,]
+datos_bayes_sin_na_refactor_test <- datos_bayes_sin_na_refactor[-indices_train_bayes,]
+
+# Verificamos
+nrow(datos_bayes_sin_na_refactor) == nrow(datos_bayes_sin_na_refactor_train) + nrow(datos_bayes_sin_na_refactor_test)
+```
+
+```{r}
+modelo_bayes_sin_na_refactor <- naiveBayes(diagnostico_pro ~ .,
+                                           datos_bayes_sin_na_refactor_train,
+                                           laplace = VALOR_LAPLACE)
+
+modelo_bayes_sin_na_refactor
+```
+
+```{r}
+graficar_curva_roc(modelo_bayes_sin_na_refactor,
+                   datos_bayes_sin_na_refactor_test, 
+                   nivel_positivo = "true",
+                   var_respuesta = "diagnostico_pro", 
+                   type_predict = "raw")
+```
+
