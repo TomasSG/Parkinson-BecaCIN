@@ -440,6 +440,46 @@ graficar_curva_roc(modelo_bayes_con_na_refactor,
 
 Empeoro el AUC en este caso
 
+Por último, probamos un modelo en un dataset que incluye tanto las transformaciones logaritmicas como la reorganización de los factores.
+
+```{r}
+variables_categoricas <- datos_bayes_con_na_refactor %>% select(where(is.factor))
+variables_cuanti <- datos_bayes_con_na_log %>% select(where(is.numeric))
+datos_bayes_con_na_log_refactor <- cbind(variables_categoricas, variables_cuanti)
+
+# Para verificar
+nrow(datos_bayes_con_na_log_refactor) == nrow(datos_bayes)
+ncol(datos_bayes_con_na_log_refactor) == ncol(datos_bayes)
+```
+
+```{r}
+set.seed(SEED)
+indices_train_bayes <- createDataPartition(datos_bayes_con_na_log_refactor$diagnostico_pro, 
+                                           p = PORCENTAJE_TRAIN,
+                                           list = FALSE) %>% 
+  as.vector()
+
+datos_bayes_con_na_log_refactor_train <- datos_bayes_con_na_log_refactor[indices_train_bayes,]
+datos_bayes_con_na_log_refactor_test <- datos_bayes_con_na_log_refactor[-indices_train_bayes,]
+
+# Verificacion
+nrow(datos_bayes_con_na_log_refactor) == nrow(datos_bayes_con_na_log_refactor_train) + nrow(datos_bayes_con_na_log_refactor_test)
+```
+
+```{r}
+modelo_bayes_con_na_log_refactor <- naiveBayes(diagnostico_pro ~ .,
+                                               datos_bayes_con_na_log_refactor_train,
+                                               laplace = VALOR_LAPLACE)
+modelo_bayes_con_na_log_refactor
+```
+```{r}
+graficar_curva_roc(modelo_bayes_con_na_log_refactor,
+                   datos_bayes_con_na_log_refactor_test, nivel_positivo = "true", 
+                   var_respuesta = "diagnostico_pro", 
+                   type_predict = "raw")
+```
+
+
 ## Con NAs eliminados
 
 Realizamos la partición
