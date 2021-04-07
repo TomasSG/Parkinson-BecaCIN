@@ -12,6 +12,7 @@ library(caret)
 library(pROC)
 library(e1071)
 library(tidyverse)
+library(ggpubr)
 
 source("./R/Utils.R")
 ```
@@ -78,9 +79,11 @@ Vamos a armar una regresión logística con diagnostico_pro como respuesta y las
 Observamos los NAs para las variables leegidas
 
 ```{r}
-datos %>% 
+vector_cant_nas <- datos %>% 
   select(all_of(VARIABLES_LOGISTICA)) %>% 
   map_int(~ sum(is.na(.x)))
+
+vector_cant_nas[vector_cant_nas > 0]
 ```
 
 No se observan NAs en las variables a usar, ahora apartamos las varaibles que vamos a utilizar en el modelo.
@@ -220,21 +223,19 @@ confusionMatrix(prediccioes_log_matriz_confusion,
 
 # Naive Bayes
 
-Primero observamos los NAs en las variables que vamos a usar en el modelo
-
-```{r}
-datos %>%
-  select(all_of(VARIABLES_BAYES)) %>% 
-  map_int(~ sum(is.na(.x)))
-```
-
-Lo que vamos a hacer es apartar las variables a usar en un nuevo dataset y tratamos los NAs
-
 ```{r}
 datos_bayes <- datos %>% 
   select(all_of(VARIABLES_BAYES))
-
 glimpse(datos_bayes)
+```
+
+Primero observamos los NAs en las variables que vamos a usar en el modelo
+
+```{r}
+vector_cant_nas <- datos_bayes %>%
+  map_int(~ sum(is.na(.x)))
+
+vector_cant_nas[vector_cant_nas > 0] %>% sort(decreasing = TRUE)
 ```
 Para tratar los NAs vamos a tomar dos caminos:
 
@@ -255,13 +256,9 @@ datos_bayes_con_na <- datos_bayes %>%
 datos_bayes_sin_na <- datos_bayes %>% 
   drop_na()
 
-# Verificamos que no queden NAs
-datos_bayes_con_na %>% map_int(~ sum(is.na(.x))) %>% sum()
-datos_bayes_sin_na %>% map_int(~ sum(is.na(.x))) %>% sum()
-
 # Vemos como quedaron los datasets
-glimpse(datos_bayes_con_na)
-glimpse(datos_bayes_sin_na)
+paste("Cantidad de observaciones en datos con NAs reemplazados:", nrow(datos_bayes_con_na))
+paste("Cantidad de observaciones en datos con NAs eliminados:", nrow(datos_bayes_sin_na))
 
 ```
 
@@ -305,12 +302,15 @@ nombres_variables <- datos_bayes_con_na %>%
   select(where(is.numeric)) %>%
   names()
   
-datos_bayes_con_na %>% 
+graficos <- datos_bayes_con_na %>% 
   select(where(is.numeric)) %>%
   map2(nombres_variables, ~ ggplot(datos_bayes_con_na, aes(.x)) +
         geom_density() + 
-         xlab(.y))
+         xlab(.y) +
+         ylab(""))
 
+
+ggarrange(plotlist = graficos)
 ```
 
 Ahora comparamos los mismos resultados aplicando una transformación logarítmica a los datos, solo a las variables que no observemos una densidad muy aleajada de la normal.
@@ -321,11 +321,14 @@ vars_trans_log <- c("F0semitoneFrom27.5Hz_sma3nz_amean",
                     "shimmerLocaldB_sma3nz_amean",
                     "jitterLocal_sma3nz_amean")
 
-datos_bayes_con_na %>% 
+graficos <- datos_bayes_con_na %>% 
   select(all_of(vars_trans_log)) %>%
   map2(vars_trans_log, ~ ggplot(datos_bayes_con_na, aes(log(.x))) +
         geom_density() + 
-         xlab(.y))
+         xlab(.y) +
+         ylab(""))
+
+ggarrange(plotlist = graficos)
 ```
 
 Creamos un nuevo dataset con las variables transformadas
@@ -468,118 +471,6 @@ graficar_curva_roc(modelo_bayes_sin_na,
                    datos_bayes_sin_na_test,
                    nivel_positivo = "true", 
                    var_respuesta = "diagnostico_pro",
-                   type_predict = "raw")
-```
-
-Probamos realizando una transformación logarítmica a algunas de las variables.
-
-```{r}
-datos_bayes_sin_na_log <- datos_bayes_sin_na %>% 
-  mutate(F0semitoneFrom27.5Hz_sma3nz_amean = log(F0semitoneFrom27.5Hz_sma3nz_amean),
-  shimmerLocaldB_sma3nz_amean = log(shimmerLocaldB_sma3nz_amean),
-  jitterLocal_sma3nz_amean = log(jitterLocal_sma3nz_amean))
-```
-
-Realizamos la partición
-
-```{r}
-set.seed(SEED)
-indices_train_bayes <- createDataPartition(datos_bayes_sin_na_log$diagnostico_pro,
-                                           p = PORCENTAJE_TRAIN,
-                                           list = FALSE) %>% 
-  as.vector()
-
-datos_bayes_sin_na_log_train <- datos_bayes_sin_na_log[indices_train_bayes,]
-datos_bayes_sin_na_log_test <- datos_bayes_sin_na_log[-indices_train_bayes,]
-
-# Verificamos
-nrow(datos_bayes_sin_na) == nrow(datos_bayes_sin_na_log_train) + nrow(datos_bayes_sin_na_log_test)
-```
-
-Entrenamos el modelo
-
-```{r}
-modelo_bayes_sin_na_log <- naiveBayes(diagnostico_pro ~ .,
-                                      datos_bayes_sin_na_log_train,
-                                      laplace = VALOR_LAPLACE)
-
-modelo_bayes_sin_na_log
-```
-
-Graficamos cruva ROC
-
-```{r}
-graficar_curva_roc(modelo_bayes_sin_na_log,
-                   datos_bayes_sin_na_log_test,
-                   nivel_positivo = "true",
-                   var_respuesta = "diagnostico_pro", 
-                   type_predict = "raw")
-```
-
-El AUC disminuyo con el cambio, aunque no fue por mucho.
-
-Por último, probamos de hacer el refactor de las variables categóricas para observar cómo varía el AUC
-
-```{r}
-datos_bayes_sin_na_refactor <- datos_bayes_sin_na
-
-
-# Dividir educ en Posgraduate - College - Highschool
-datos_bayes_sin_na_refactor <- datos_bayes_sin_na_refactor %>% 
-  mutate(educ = fct_collapse(educ,
-                           "Postgraduate" = c("Doctoral Degree", "Masters Degree"),
-                           "College" = c("2-year college degree", "4-year college degree", "Some graduate school"),
-                           "HighSchool" = c("High School Diploma/GED", "Some college", "Some high school")))
-
-# Emplemos lo agrupamos en Working - Not Working
-datos_bayes_sin_na_refactor <- datos_bayes_sin_na_refactor %>% 
-  mutate(empleo = fct_collapse(empleo, 
-                               "Working" = c("A homemaker", "Employment for wages", "Self-employed"),
-                               "Not Working" = c("A student", "Out of work", "Retired", "Unable to work" )))
-
-# Estado marital lo convertimos en Married - Not Married
-datos_bayes_sin_na_refactor <- datos_bayes_sin_na_refactor %>% 
-  mutate(estado_marital = fct_collapse(estado_marital,
-                                       "Married" = c("Married or domestic partnership"),
-                                       "Not Married" = c("Divorced", "Other", "Separated", "Single never married", "Widowed")))
-
-# Para facilidad celular lo convertimos en Easy - Not Easy
-datos_bayes_sin_na_refactor <- datos_bayes_sin_na_refactor %>% 
-  mutate(facilidad_celular = fct_collapse(facilidad_celular,
-                                    "Not Easy" = c("Difficult", "Neither easy nor difficult", "Very Difficult"),
-                                    "Easy" = c("Easy", "Very easy")))
-```
-
-Particionamos los datos, entrenamos los medoelos y graficamos la curva ROC.
-
-```{r}
-set.seed(SEED)
-
-indices_train_bayes <- createDataPartition(datos_bayes_sin_na_refactor$diagnostico_pro,
-                                           p = PORCENTAJE_TRAIN,
-                                           list = FALSE) %>% 
-  as.vector()
-
-datos_bayes_sin_na_refactor_train <- datos_bayes_sin_na_refactor[indices_train_bayes,]
-datos_bayes_sin_na_refactor_test <- datos_bayes_sin_na_refactor[-indices_train_bayes,]
-
-# Verificamos
-nrow(datos_bayes_sin_na_refactor) == nrow(datos_bayes_sin_na_refactor_train) + nrow(datos_bayes_sin_na_refactor_test)
-```
-
-```{r}
-modelo_bayes_sin_na_refactor <- naiveBayes(diagnostico_pro ~ .,
-                                           datos_bayes_sin_na_refactor_train,
-                                           laplace = VALOR_LAPLACE)
-
-modelo_bayes_sin_na_refactor
-```
-
-```{r}
-graficar_curva_roc(modelo_bayes_sin_na_refactor,
-                   datos_bayes_sin_na_refactor_test, 
-                   nivel_positivo = "true",
-                   var_respuesta = "diagnostico_pro", 
                    type_predict = "raw")
 ```
 
