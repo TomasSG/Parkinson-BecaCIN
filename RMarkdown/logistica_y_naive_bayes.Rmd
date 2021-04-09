@@ -304,8 +304,8 @@ nombres_variables <- datos_bayes_con_na %>%
   
 graficos <- datos_bayes_con_na %>% 
   select(where(is.numeric)) %>%
-  map2(nombres_variables, ~ ggplot(datos_bayes_con_na, aes(.x)) +
-        geom_density() + 
+  map2(nombres_variables, ~ ggplot(datos_bayes_con_na, aes(.x, color = diagnostico_pro)) +
+        geom_density(show.legend = FALSE) + 
          xlab(.y) +
          ylab(""))
 
@@ -323,8 +323,8 @@ vars_trans_log <- c("F0semitoneFrom27.5Hz_sma3nz_amean",
 
 graficos <- datos_bayes_con_na %>% 
   select(all_of(vars_trans_log)) %>%
-  map2(vars_trans_log, ~ ggplot(datos_bayes_con_na, aes(log(.x))) +
-        geom_density() + 
+  map2(vars_trans_log, ~ ggplot(datos_bayes_con_na, aes(log(.x), color = diagnostico_pro)) +
+        geom_density(show.legend = FALSE) + 
          xlab(.y) +
          ylab(""))
 
