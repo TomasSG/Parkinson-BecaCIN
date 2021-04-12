@@ -42,7 +42,7 @@ graficar_curva_roc <- function(modelo, datos_test, nivel_positivo, var_respuesta
 crear_df_evaluacion <- function(modelo, 
                                 datos, 
                                 nombre_var_respuesta, 
-                                ids, 
+                                nombre_var_ids, 
                                 type_predict = "prob", 
                                 nivel_positivo = "true") {
   
@@ -54,7 +54,11 @@ crear_df_evaluacion <- function(modelo,
   
   y_obs <- datos[[nombre_var_respuesta]]
   
-  df_resultado <- data.frame(ids, y_obs, y_predichos) %>% arrange(y_predichos)
+  ids <- datos[[nombre_var_ids]]
+  
+  df_resultado <- data.frame(ids, y_obs, y_predichos) %>% arrange(-y_predichos)
   
   return(df_resultado)
 }
+
+calcular_porcentaje_correctos <- function()
