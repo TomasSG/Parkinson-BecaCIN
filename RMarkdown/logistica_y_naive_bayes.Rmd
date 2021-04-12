@@ -522,7 +522,8 @@ graficar_curva_roc(modelo_bayes_sin_na,
 crear_df_evaluacion(modelo_log, 
                     datos_log, 
                     nombre_var_respuesta = "diagnostico_pro",
-                    ids = datos$id)
+                    ids = datos$id) 
+
 
 
 # TODO: Hacer que los ids estén dentro del data_frame que paso y no que tenga pasarlo por separado
