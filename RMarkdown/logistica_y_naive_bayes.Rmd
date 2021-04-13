@@ -29,8 +29,9 @@ SEED <- 987
 PORCENTAJE_TRAIN <- .8
 VALOR_LAPLACE <- 1
 
-VARIABLES_LOGISTICA <- c("diagnostico_pro", "d1", "d2", "d3", "d4", "d5", "edad")
-VARIABLES_BAYES <- c("d1", 
+VARIABLES_LOGISTICA <- c("diagnostico_pro", "d1", "d2", "d3", "d4", "d5", "edad", "id")
+VARIABLES_BAYES <- c("id",
+                     "d1", 
                      "es_cuidador",
                      "educ",
                      "empleo",
@@ -113,7 +114,7 @@ Entrenamos el modelo con las particiones
 
 ```{r}
 modelo_log <- train(diagnostico_pro ~ .,
-                    data = datos_log_train,
+                    data = datos_log_train %>% select(-id),
                     method = "glm",
                     family= "binomial")
 
@@ -168,7 +169,7 @@ Habiendo hecho la partición, ajustamos el modelo
 
 ```{r}
 modelo_log_inf <- train(diagnostico_pro ~ .,
-                        datos_log_inf_train,
+                        datos_log_inf_train %>% select(-id),
                         method = "glm",
                         family = "binomial")
 
@@ -281,7 +282,7 @@ Entrenamos el modelo con los datos de train
 
 ```{r}
 modelo_bayes_con_na <- naiveBayes(diagnostico_pro ~ .,
-                             data = datos_bayes_con_na_train,
+                             data = datos_bayes_con_na_train %>% select(-id),
                              laplace = VALOR_LAPLACE)
 
 modelo_bayes_con_na
@@ -360,7 +361,7 @@ Ahora entrenamos el modelo
 
 ```{r}
 modelo_bayes_con_na_log <- naiveBayes(diagnostico_pro ~ .,
-                                      datos_bayes_con_na_log_train,
+                                      datos_bayes_con_na_log_train %>% select(-id),
                                       laplace = VALOR_LAPLACE)
 
 modelo_bayes_con_na_log
@@ -425,7 +426,7 @@ nrow(datos_bayes_con_na_refactor) == nrow(datos_bayes_con_na_refactor_train) + n
 
 ```{r}
 modelo_bayes_con_na_refactor <- naiveBayes(diagnostico_pro ~ .,
-                                           datos_bayes_con_na_refactor_train,
+                                           datos_bayes_con_na_refactor_train %>% select(-id),
                                            laplace = VALOR_LAPLACE)
 
 modelo_bayes_con_na_refactor
@@ -468,7 +469,7 @@ nrow(datos_bayes_con_na_log_refactor) == nrow(datos_bayes_con_na_log_refactor_tr
 
 ```{r}
 modelo_bayes_con_na_log_refactor <- naiveBayes(diagnostico_pro ~ .,
-                                               datos_bayes_con_na_log_refactor_train,
+                                               datos_bayes_con_na_log_refactor_train %>% select(-id),
                                                laplace = VALOR_LAPLACE)
 modelo_bayes_con_na_log_refactor
 ```
@@ -499,7 +500,7 @@ Ahora ajustamos el modelo
 
 ```{r}
 modelo_bayes_sin_na <- naiveBayes(diagnostico_pro ~ .,
-                                  datos_bayes_sin_na_train,
+                                  datos_bayes_sin_na_train %>% select(-id),
                                   laplace = VALOR_LAPLACE)
 
 modelo_bayes_sin_na
@@ -519,11 +520,9 @@ graficar_curva_roc(modelo_bayes_sin_na,
 ## Regresión Logística
 
 ```{r}
-df_logistica <- crear_df_evaluacion(modelo_log, 
-                    datos, 
-                    nombre_var_respuesta = "diagnostico_pro", 
-                    nombre_var_ids = "id") 
 
-glimpse(df_logistica)
+
+
+calcular_porcentaje_correctos(modelo_log, datos_log, 0.01, nombre_var_respuesta = "diagnostico_pro", nombre_var_ids = "id") 
 ```
 
