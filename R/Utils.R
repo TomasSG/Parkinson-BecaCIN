@@ -109,11 +109,12 @@ evaluar_modelo_metodo_silvia <- function(modelo, datos, proporciones, nombre_var
   }
   
   # Hacemos el grafico de columnas
-  data.frame(x = proporciones, y = porcentaje_correctos) %>% 
-    ggplot(aes(x, y)) +
+  df <- data.frame(x = proporciones, y = porcentaje_correctos)
+  
+  ggplot(df, aes(x, y)) +
     geom_col(fill = "firebrick", alpha = .6) +
     geom_label(aes(label = paste(y * 100, "%")), nudge_y = .04) +
-    scale_x_continuous("Proporcion", labels = label_percent(1L), breaks = proporcion) +
+    scale_x_continuous("Proporcion de datos", labels = label_percent(1L), breaks = df$x) +
     scale_y_continuous("Porcentaje correctos", labels = label_percent()) +
     theme_bw()
 

@@ -518,9 +518,38 @@ graficar_curva_roc(modelo_bayes_sin_na,
 
 # Evaluación de los modelos
 
+```{r}
+proporciones <- seq(0.05, .35, .05)
+```
+
+
 ## Regresión Logística
 
 ```{r}
 evaluar_modelo_metodo_silvia(modelo_log, datos_log, proporciones, nombre_var_respuesta = "diagnostico_pro", nombre_var_ids = "id") 
+```
+
+## Naive Bayes
+
+Primero corremos el mejor modelo de bayes con los NAs reemplazados.
+
+```{r}
+evaluar_modelo_metodo_silvia(modelo_bayes_con_na_log, 
+                             datos_bayes_con_na_log, 
+                             proporciones, 
+                             nombre_var_respuesta = "diagnostico_pro", 
+                             nombre_var_ids = "id", 
+                             type_predict = "raw")
+```
+
+Ahora corremos el modelo de bayes con los NAs eliminados
+
+```{r}
+evaluar_modelo_metodo_silvia(modelo_bayes_sin_na, 
+                             datos_bayes_sin_na, 
+                             proporciones, 
+                             nombre_var_respuesta = "diagnostico_pro", 
+                             nombre_var_ids = "id", 
+                             type_predict = "raw")
 ```
 
