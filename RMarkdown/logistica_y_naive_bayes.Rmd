@@ -13,6 +13,7 @@ library(pROC)
 library(e1071)
 library(tidyverse)
 library(ggpubr)
+library(scales)
 
 source("./R/Utils.R")
 ```
@@ -520,9 +521,6 @@ graficar_curva_roc(modelo_bayes_sin_na,
 ## Regresión Logística
 
 ```{r}
-
-
-
-calcular_porcentaje_correctos(modelo_log, datos_log, 0.01, nombre_var_respuesta = "diagnostico_pro", nombre_var_ids = "id") 
+evaluar_modelo_metodo_silvia(modelo_log, datos_log, proporciones, nombre_var_respuesta = "diagnostico_pro", nombre_var_ids = "id") 
 ```
 
