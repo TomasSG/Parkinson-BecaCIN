@@ -83,7 +83,10 @@ calcular_porcentaje_correctos <- function(modelo, datos, p_df, nombre_var_respue
   df <- df[1:nro_filas_sub,]
   p_correctos <- sum(df$y_obs == nivel_positivo) / nro_filas_sub
   
-  return(round(p_correctos, 4))
+  # Guardamos los resultados en un vector
+  resultado <- c(round(p_correctos, 4), round(df[nro_filas_sub, 3], 2))
+  
+  return(resultado)
   
 }
 
@@ -94,26 +97,29 @@ evaluar_modelo_metodo_silvia <- function(modelo, datos, proporciones, nombre_var
     return()
   }
     
-  # Creamos el vector donde guardamos los resultados
+  # Creamos el vector donde guardamos los resultados y los puntos de cortes
   porcentaje_correctos <- vector(mode = "numeric", length = length(proporciones))
-  
+  punto_corte <- vector(mode = "numeric", length = length(proporciones))
+    
   # Iteramos para tener todos los porcentajes de correctos
   for(i in seq_along(proporciones)) {
-    porcentaje_correctos[i] <- calcular_porcentaje_correctos(modelo, 
-                                                             datos, 
-                                                             proporciones[i], 
-                                                             nombre_var_respuesta = "diagnostico_pro", 
-                                                             nombre_var_ids = "id",
-                                                             type_predict = type_predict,
-                                                             nivel_positivo = nivel_positivo) 
+    vec_aux <- calcular_porcentaje_correctos(modelo, 
+                                             datos, 
+                                             proporciones[i], 
+                                             nombre_var_respuesta = "diagnostico_pro", 
+                                             nombre_var_ids = "id",
+                                             type_predict = type_predict,
+                                             nivel_positivo = nivel_positivo) 
+    porcentaje_correctos[i] <- vec_aux[1]
+    punto_corte[i] <- vec_aux[2]
   }
   
   # Hacemos el grafico de columnas
-  df <- data.frame(x = proporciones, y = porcentaje_correctos)
+  df <- data.frame(x = proporciones, y = porcentaje_correctos, z = punto_corte)
   
   ggplot(df, aes(x, y)) +
     geom_col(fill = "firebrick", alpha = .6) +
-    geom_label(aes(label = paste(y * 100, "%")), nudge_y = .04) +
+    geom_label(aes(label = paste(y * 100, "%\n", "PC =", z)), nudge_y = .07) +
     scale_x_continuous("Proporcion de datos", labels = label_percent(1L), breaks = df$x) +
     scale_y_continuous("Porcentaje correctos", labels = label_percent()) +
     theme_bw()

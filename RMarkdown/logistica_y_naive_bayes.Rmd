@@ -526,7 +526,11 @@ proporciones <- seq(0.05, .35, .05)
 ## Regresión Logística
 
 ```{r}
-evaluar_modelo_metodo_silvia(modelo_log, datos_log, proporciones, nombre_var_respuesta = "diagnostico_pro", nombre_var_ids = "id") 
+evaluar_modelo_metodo_silvia(modelo_log, 
+                             datos_log, 
+                             proporciones, 
+                             nombre_var_respuesta = "diagnostico_pro", 
+                             nombre_var_ids = "id") 
 ```
 
 ## Naive Bayes
