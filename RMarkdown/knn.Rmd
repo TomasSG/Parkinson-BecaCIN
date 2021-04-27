@@ -4,11 +4,6 @@ author: Tomás Sánchez Grigioni
 output: html_notebook
 ---
 
-```{r setup}
-knitr::opts_knit$set(root.dir = "./")
-```
-
-
 # Bibliotecas
 
 ```{r}
@@ -20,7 +15,7 @@ library(caret)
 
 ```{r}
 # Para cargar archivos
-PATH_DATOS_IN <- "./data/bd_final.csv"
+PATH_DATOS_IN <- "../data/bd_final.csv"
 
 FILE_COLUMN_SEPARATOR <- ";"
 FILE_DECIMAL_SEPARATOR <- "."
@@ -29,6 +24,45 @@ FILE_DECIMAL_SEPARATOR <- "."
 # Cargar datos
 
 ```{r}
-datos_crudos <- read.table()
+datos_crudos <- read.table(PATH_DATOS_IN, header = TRUE, sep = FILE_COLUMN_SEPARATOR, dec = FILE_DECIMAL_SEPARATOR)
 ```
 
+# Manipulación de datos
+
+```{r}
+glimpse(datos_crudos)
+```
+Solo hacemos que las variables que aparecen como <chr> pasen a ser factores
+
+```{r}
+datos <- datos_crudos %>% 
+  map_dfr(~ if(is.character(.x)) { as.factor(.x) } else { .x })
+
+glimpse(datos)
+```
+
+# Aplicar algoritmo KNN
+
+## Ejemplo sencillo
+
+Para hacer algo sencillo, solo usamos dos variables numéricas individuales
+
+```{r}
+vars_knn_sencillo <- c("diagnostico_pro", "d1", "d2")
+```
+
+Creamos un nuevo df con las variables elegidas
+
+```{r}
+df_knn_sencillo <- datos %>% select(all_of(vars_knn_sencillo))
+glimpse(df_knn_sencillo)
+```
+
+Hacemos un pequeño grafico de d1 vs d2 mostrando a que clase de diagnostico_pro pertenece
+
+```{r}
+ggplot(df_knn_sencillo, aes(d1, d2, color = diagnostico_pro, shape = diagnostico_pro)) +
+  geom_point() +
+  theme_bw()
+```
+Observamos que se solapan bastante estos datos, pero igual vamos a aplicar el algoritmo para hacer el ejemplo.
