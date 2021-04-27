@@ -1,0 +1,34 @@
+---
+title: "KNN"
+author: Tomás Sánchez Grigioni
+output: html_notebook
+---
+
+```{r setup}
+knitr::opts_knit$set(root.dir = "./")
+```
+
+
+# Bibliotecas
+
+```{r}
+library(tidyverse)
+library(caret)
+```
+
+# Constantes y otros
+
+```{r}
+# Para cargar archivos
+PATH_DATOS_IN <- "./data/bd_final.csv"
+
+FILE_COLUMN_SEPARATOR <- ";"
+FILE_DECIMAL_SEPARATOR <- "."
+```
+
+# Cargar datos
+
+```{r}
+datos_crudos <- read.table()
+```
+

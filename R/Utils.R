@@ -82,6 +82,7 @@ calcular_porcentaje_correctos <- function(modelo, datos, p_df, nombre_var_respue
   # Apartamos las primeras n observaciones y calculamos el porcentajes de correctos
   df <- df[1:nro_filas_sub,]
   p_correctos <- sum(df$y_obs == nivel_positivo) / nro_filas_sub
+
   
   # Guardamos los resultados en un vector
   resultado <- c(round(p_correctos, 4), round(df[nro_filas_sub, 3], 2))
