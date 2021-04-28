@@ -9,6 +9,9 @@ output: html_notebook
 ```{r}
 library(tidyverse)
 library(caret)
+library(pROC)
+
+source("../R/Utils.R")
 ```
 
 # Constantes y otros
@@ -19,6 +22,10 @@ PATH_DATOS_IN <- "../data/bd_final.csv"
 
 FILE_COLUMN_SEPARATOR <- ";"
 FILE_DECIMAL_SEPARATOR <- "."
+
+# Para CARET
+SEED <- 12345
+PORCENTAJE_TRAIN <- 0.7
 ```
 
 # Cargar datos
@@ -66,3 +73,62 @@ ggplot(df_knn_sencillo, aes(d1, d2, color = diagnostico_pro, shape = diagnostico
   theme_bw()
 ```
 Observamos que se solapan bastante estos datos, pero igual vamos a aplicar el algoritmo para hacer el ejemplo.
+
+```{r}
+# Particionar datos
+set.seed(SEED)
+
+indices_train <- createDataPartition(df_knn_sencillo$diagnostico_pro, p = PORCENTAJE_TRAIN, list = FALSE) %>% as.vector()
+
+df_knn_sencillo_train <- df_knn_sencillo[indices_train,]
+df_knn_sencillo_test <- df_knn_sencillo[-indices_train,]
+
+nrow(df_knn_sencillo_test)
+nrow(df_knn_sencillo_train)
+```
+
+En este algoritmo hay que definir un valor de k. Para esto lo que vamos a usar es el método de 10-fold cross-validation.
+
+```{r}
+# Definimos todos los valores de k a probar.
+# Observamos como se debe llamar el parámetro según el modelo que voy a usar, para nuestro caso "knn".
+getModelInfo(model = "knn")
+
+grid <- expand.grid(k = seq(1, 15, 1))
+grid
+```
+
+Ahora, tenemos que especificar la forma de que vamos a obtener el valor de k óptimo.
+
+```{r}
+train_control <- trainControl(method = "cv", number = 10)
+```
+
+
+Normalizamos los datos, es decir que los dejamos en el rango [0, 1]. Para esto especificamos el parámetro preProcess en la función train. También, se puede hacer por separado.
+
+Ajustamos el algoritmo a los datos
+
+```{r}
+set.seed(SEED)
+
+# range = normalizar
+# sacale and center = standarizar
+knn_sencillo <- train(diagnostico_pro ~ ., 
+                      data = df_knn_sencillo_train, 
+                      method = "knn", 
+                      preProcess = "range", 
+                      tuneGrid = grid, 
+                      trControl = train_control)
+knn_sencillo
+
+# Este paquete también nos permite graficar como varía la métrica usada para elegir el valor de k óptimo
+plot(knn_sencillo)
+```
+
+Por último vemos como perfoma el modelo con el test
+
+```{r}
+graficar_curva_roc(knn_sencillo, df_knn_sencillo_test, nivel_positivo = "true", var_respuesta = "diagnostico_pro")
+```
+
