@@ -113,7 +113,7 @@ Ajustamos el algoritmo a los datos
 set.seed(SEED)
 
 # range = normalizar
-# sacale and center = standarizar
+# scale and center = standarizar
 knn_sencillo <- train(diagnostico_pro ~ ., 
                       data = df_knn_sencillo_train, 
                       method = "knn", 

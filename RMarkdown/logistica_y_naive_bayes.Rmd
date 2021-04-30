@@ -531,6 +531,9 @@ evaluar_modelo_metodo_silvia(modelo_log,
                              proporciones, 
                              nombre_var_respuesta = "diagnostico_pro", 
                              nombre_var_ids = "id") 
+
+#aux <- crear_df_evaluacion(modelo_log, 
+#                    datos_log, nombre_var_respuesta = "diagnostico_pro", nombre_var_ids = "id", nivel_positivo = "true", type_predict = "prob")
 ```
 
 ## Naive Bayes
@@ -546,13 +549,13 @@ evaluar_modelo_metodo_silvia(modelo_bayes_con_na_log,
                              type_predict = "raw")
 
 
-#auxiliar <- crear_df_evaluacion(modelo_bayes_con_na_log, 
+#crear_df_evaluacion(modelo_bayes_con_na_log, 
 #                             datos_bayes_con_na_log, 
 #                             nombre_var_respuesta = "diagnostico_pro", 
 #                             nombre_var_ids = "id", 
 #                             type_predict = "raw", 
 #                  nivel_positivo = "true")
-#write.table(x = auxiliar, file = "./data/candela.csv", sep = ",", dec = ".", row.names = TRUE)
+
 ```
 
 Ahora corremos el modelo de bayes con los NAs eliminados
