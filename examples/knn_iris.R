@@ -5,6 +5,30 @@ library(pROC)
 
 source("./R/Utils.R")
 
+# -------------------------- FUNCIONES --------------------------  
+
+calcular_medidas <- function(matriz_confusion, cant_decimales = 4){
+  
+  cantidad_clases <- ncol(matriz_confusion)
+  matriz_resultados <- matrix(nrow = cantidad_clases, ncol = 3)
+  
+  row.names(matriz_resultados) <- row.names(matriz_confusion)
+  colnames(matriz_resultados) <- c("Sensitiviy", "Specificity", "Accuracy")
+  
+  for(i in 1:cantidad_clases) {
+    
+    tp <- matriz_confusion[i, i]
+    fp <- sum(matriz_confusion[i,]) - tp
+    fn <- sum(matriz_confusion[,i]) - tp
+    tn <- sum(matriz_confusion[-i,]) - fn
+    
+    matriz_resultados[i,1] <- round(tp / (tp + fn), digits = cant_decimales)
+    matriz_resultados[i,2] <- round(tn / (tn + fp), digits = cant_decimales)
+    matriz_resultados[i,3] <- round(tp / (tp + fp), digits = cant_decimales)
+  }
+  return(matriz_resultados)
+}
+
 # -------------------------- CONSTANTES Y OTROS --------------------------  
 # Para CARET
 SEED <- 12345
@@ -67,8 +91,10 @@ predicciones <- predict(knn_iris_simple, df_iris_test)
 confusionMatrix(predicciones, df_iris_test$Species)
 
 
-#matriz_confusion_casera <- table(predict = predicciones, real = df_iris_test$Species)
-#precision <- 
+matriz_confusion_casera <- table(predict = predicciones, real = df_iris_test$Species)
+matriz_confusion_casera
+
+calcular_medidas(matriz_confusion_casera)
 
 # Realizamos el gráfico para ver cómo delimita las zonas
 
