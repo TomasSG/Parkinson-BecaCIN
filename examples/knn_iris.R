@@ -13,7 +13,7 @@ calcular_medidas <- function(matriz_confusion, cant_decimales = 4){
   matriz_resultados <- matrix(nrow = cantidad_clases, ncol = 3)
   
   row.names(matriz_resultados) <- row.names(matriz_confusion)
-  colnames(matriz_resultados) <- c("Sensitiviy", "Specificity", "Accuracy")
+  colnames(matriz_resultados) <- c("Sensitiviy", "Specificity", "Precision")
   
   for(i in 1:cantidad_clases) {
     
@@ -95,6 +95,8 @@ matriz_confusion_casera <- table(predict = predicciones, real = df_iris_test$Spe
 matriz_confusion_casera
 
 calcular_medidas(matriz_confusion_casera)
+
+multiclass.roc(as.numeric(predicciones), as.numeric(df_iris_test$Species))
 
 # Realizamos el gráfico para ver cómo delimita las zonas
 
