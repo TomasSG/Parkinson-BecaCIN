@@ -6,16 +6,23 @@ library(pROC)
 source("./R/Utils.R")
 
 # -------------------------- CONSTANTES Y OTROS --------------------------  
-# Para cargar archivos
-PATH_DATOS_IN <- "iris"
-
 # Para CARET
 SEED <- 12345
 PORCENTAJE_TRAIN <- 0.7
 NUMBER_FOLDS <- 10
 
+# GRID
+ESPACIADO_GRID <- 0.1
+
+# PATH DATOS
+PAHT_GRAFICO_OUT <- "./examples/decision_boundary_knn.jpg"
+
+# GRAFICOS
+UNIDADES_GRAFICOS <- "cm" 
+ANCHO_GRAFICO <- 15
+ALTO_GRAFICO <- 30
 # -------------------------- CARGAR DATOS --------------------------  
-data(PATH_DATOS_IN)
+data("iris")
 
 df_iris <- iris
 
@@ -66,8 +73,8 @@ confusionMatrix(predicciones, df_iris_test$Species)
 # Realizamos el gráfico para ver cómo delimita las zonas
 
 # Primero vamos generar una grilla donde los valores esten igualmente espaciados
-pl_grid <- seq(min(df_iris$Petal.Length), max(df_iris$Petal.Length), 0.1)
-pw_grid <- seq(min(df_iris$Petal.Width), max(df_iris$Petal.Width), 0.1)
+pl_grid <- seq(min(df_iris$Petal.Length), max(df_iris$Petal.Length), ESPACIADO_GRID)
+pw_grid <- seq(min(df_iris$Petal.Width), max(df_iris$Petal.Width), ESPACIADO_GRID)
 
 # Armamos la grid
 grid <- expand.grid(Petal.Length = pl_grid,
@@ -75,24 +82,27 @@ grid <- expand.grid(Petal.Length = pl_grid,
 
 
 # Hacemos las predicciones
-predicciones_grid <- predict(knn_iris_simple, grid)
+predicciones_grid_clases <- predict(knn_iris_simple, grid)
 
-# Armamos un df para hacer el gráfico
+# Armamos un df para hacer el gráfico del contorno
 df_grid <- data.frame(x = grid$Petal.Length, 
                       y =grid$Petal.Width,
-                      z = predicciones_grid)
+                      c = predicciones_grid_clases)
 
 # Armamos un df para las predicciones del df completo
-predicciones_completo <- predict(knn_iris_simple, df_iris[, c("Petal.Length", "Petal.Width", "Species")])
+predicciones_test <- predict(knn_iris_simple, df_iris_test[, c("Petal.Length", "Petal.Width", "Species")])
 
-df_completo <- data.frame(x = df_iris$Petal.Length, 
-                     y = df_iris$Petal.Width, 
-                     z = predicciones_completo)
+df_test <- data.frame(x = df_iris_test$Petal.Length, 
+                     y = df_iris_test$Petal.Width, 
+                     c = predicciones_test)
 
 
 # Hacemos un gráfico
-ggplot(df_grid, aes(x, y, z = as.integer(z)))  +
-  geom_contour(bins = 3, size = 1, colour = "black", linetype = 2) +
-  geom_point(aes(color = z), size = 0.05) +
-  geom_point(data = df_completo, aes(x, y, color = z), size = 2, shape = 19) +
-  theme_bw()
+ggplot(df_grid, aes(x, y))  +
+  geom_contour(aes(z = as.numeric(c)), size = 1, bins = length(levels(df_grid$c)), linetype = "longdash", color = "black") +
+  geom_point(aes(color = c), size = .8) +
+  geom_point(data = df_test, aes(x, y, color = c), size = 5, shape = 19) +
+  theme_bw() + 
+  theme(legend.position = "none")
+
+ggsave(PAHT_GRAFICO_OUT, units = UNIDADES_GRAFICOS, width = ANCHO_GRAFICO, height = ALTO_GRAFICO)
