@@ -26,6 +26,9 @@ FILE_DECIMAL_SEPARATOR <- "."
 # Para CARET
 SEED <- 12345
 PORCENTAJE_TRAIN <- 0.7
+
+PRE_PROCESS_NORMALIZAR <- "range"
+METODO_KNN <- "knn"
 ```
 
 # Cargar datos
@@ -116,8 +119,8 @@ set.seed(SEED)
 # scale and center = standarizar
 knn_sencillo <- train(diagnostico_pro ~ ., 
                       data = df_knn_sencillo_train, 
-                      method = "knn", 
-                      preProcess = "range", 
+                      method = METODO_KNN, 
+                      preProcess = PRE_PROCESS_NORMALIZAR, 
                       tuneGrid = grid, 
                       trControl = train_control)
 knn_sencillo
@@ -131,4 +134,49 @@ Por último vemos como perfoma el modelo con el test
 ```{r}
 graficar_curva_roc(knn_sencillo, df_knn_sencillo_test, nivel_positivo = "true", var_respuesta = "diagnostico_pro")
 ```
+
+## Ejemplo Más Complejo
+
+```{r}
+vars_knn_complejo <- c("diagnostico_pro", "d1", "d2", "d3", "d4", "d5", "edad", "es_cuidador", "educ", "empleo", "genero")
+df_knn_complejo <- datos %>% select(all_of(vars_knn_complejo)) %>% drop_na()
+glimpse(df_knn_complejo)
+```
+Separamos los datos
+
+```{r}
+set.seed(SEED)
+indices_train <- createDataPartition(df_knn_complejo$diagnostico_pro, p = PORCENTAJE_TRAIN)[[1]]
+
+df_knn_complejo_train <- df_knn_complejo[indices_train,]
+df_knn_complejo_test <- df_knn_complejo[-indices_train,]
+
+# Verificamos
+nrow(df_knn_complejo) == nrow(df_knn_complejo_test) + nrow(df_knn_complejo_train)
+```
+Para buscar el K óptimo, vamos a utilizar 10-fold cross-validation. Vamos a usar valores de k desde 3 hasta 20
+
+```{r}
+# Grilla con los valores de k
+grid_train <- expand.grid(k = 3:20)
+
+# Control de entrenamineto
+trian_control <- trainControl(method = "cv", number = 10)
+
+# Creamos variables dummy
+as <- predict(dummyVars(diagnostico_pro ~ ., df_knn_complejo_train), df_knn_complejo_train)
+```
+
+Entrenamos el modelo
+
+```{r}
+knn_complejo <- train(diagnostico_pro ~ .,
+                      df_knn_complejo_train,
+                      method = METODO_KNN,
+                      preProcess = PRE_PROCESS_NORMALIZAR,
+                      trControl = train_control,
+                      tuneGrid = grid_train)
+```
+
+
 
