@@ -17,18 +17,37 @@ source("../R/Utils.R")
 # Constantes y otros
 
 ```{r}
-# Para cargar archivos
+# ARCHIVOS
 PATH_DATOS_IN <- "../data/bd_final.csv"
 
 FILE_COLUMN_SEPARATOR <- ";"
 FILE_DECIMAL_SEPARATOR <- "."
 
-# Para CARET
+# CARET
+
+# División datos
 SEED <- 12345
 PORCENTAJE_TRAIN <- 0.7
 
+# Pre-procesamiento
 PRE_PROCESS_NORMALIZAR <- "range"
+PRE_PROCESS_ESTANDARIZAR <- c("center", "scale")
+
+# Grid
+K_MIN <- 3
+K_MAX <- 25
+
+# Train control
+METODO_CROSS_VALIDATION <- "cv"
+K_FOLD <- 10
+
+# Train
 METODO_KNN <- "knn"
+
+# Curva ROC
+NOMBRE_NIVEL_POSITIVO_VAR_RESPUESTA <-  "true"
+NOMBRE_VAR_RESPUESTA <-  "diagnostico_pro"
+TYPE_PREDICT_KNN <-  "prob"
 ```
 
 # Cargar datos
@@ -95,16 +114,16 @@ En este algoritmo hay que definir un valor de k. Para esto lo que vamos a usar e
 ```{r}
 # Definimos todos los valores de k a probar.
 # Observamos como se debe llamar el parámetro según el modelo que voy a usar, para nuestro caso "knn".
-getModelInfo(model = "knn")
+#getModelInfo(model = "knn")
 
-grid <- expand.grid(k = seq(1, 15, 1))
+grid <- expand.grid(k = seq(K_MIN, K_MAX))
 grid
 ```
 
 Ahora, tenemos que especificar la forma de que vamos a obtener el valor de k óptimo.
 
 ```{r}
-train_control <- trainControl(method = "cv", number = 10)
+train_control <- trainControl(method = METODO_CROSS_VALIDATION, number = K_FOLD)
 ```
 
 
@@ -115,8 +134,6 @@ Ajustamos el algoritmo a los datos
 ```{r}
 set.seed(SEED)
 
-# range = normalizar
-# scale and center = standarizar
 knn_sencillo <- train(diagnostico_pro ~ ., 
                       data = df_knn_sencillo_train, 
                       method = METODO_KNN, 
@@ -132,7 +149,11 @@ plot(knn_sencillo)
 Por último vemos como perfoma el modelo con el test
 
 ```{r}
-graficar_curva_roc(knn_sencillo, df_knn_sencillo_test, nivel_positivo = "true", var_respuesta = "diagnostico_pro")
+graficar_curva_roc(knn_sencillo, 
+                   df_knn_sencillo_test, 
+                   nivel_positivo = NOMBRE_NIVEL_POSITIVO_VAR_RESPUESTA, 
+                   var_respuesta = NOMBRE_VAR_RESPUESTA,
+                   type_predict = TYPE_PREDICT_KNN)
 ```
 
 ## Ejemplo Más Complejo
@@ -142,29 +163,61 @@ vars_knn_complejo <- c("diagnostico_pro", "d1", "d2", "d3", "d4", "d5", "edad", 
 df_knn_complejo <- datos %>% select(all_of(vars_knn_complejo)) %>% drop_na()
 glimpse(df_knn_complejo)
 ```
+Primero vamos a hacer un preprocesamiento de los datos. Basicamente serán dos tareas:
+
+* Normalizar los datos: (x - xmin) / (xmax - xmin).
+* Crear dummy variables para todas las categóricas, excepto la daignostico_pro.
+
+Comenzamos con la normaliación.
+```{r}
+# Separamos, para que todo lo que hagamos no afecte a la var respuesta
+df_x <- df_knn_complejo[,1]
+df_y <- df_knn_complejo[,-1]
+
+# Normalizamos los datos, esta función ignora a las factores así que en realidad no pasa nada por tener todas las predictoras juntas.
+df_y_normalizado <- df_y %>% 
+  preProcess(method = PRE_PROCESS_NORMALIZAR) %>% 
+  predict(df_y) %>% 
+  data.frame()
+
+# Verificamos que se haya realizado correctamente, ahora todos los xmin y xmax son 0 y 1 respectivamente
+df_y_normalizado %>% 
+  select(where(is.numeric)) %>% 
+  summary()
+
+```
+Creamos las variables dummy 
+
+```{r}
+# Creación variables dummy
+df_y_normalizado_dummy <- dummyVars(~., df_y_normalizado) %>% 
+  predict(df_y_normalizado) %>% 
+  data.frame()
+
+# Una vez hecho esto podemos vovler a juntar los datos
+df_knn_complejo_split <- cbind(df_x, df_y_normalizado_dummy)
+```
+
 Separamos los datos
 
 ```{r}
 set.seed(SEED)
-indices_train <- createDataPartition(df_knn_complejo$diagnostico_pro, p = PORCENTAJE_TRAIN)[[1]]
+indices_train <- createDataPartition(df_knn_complejo_split$diagnostico_pro, p = PORCENTAJE_TRAIN)[[1]]
 
-df_knn_complejo_train <- df_knn_complejo[indices_train,]
-df_knn_complejo_test <- df_knn_complejo[-indices_train,]
+df_knn_complejo_train <- df_knn_complejo_split[indices_train,]
+df_knn_complejo_test <- df_knn_complejo_split[-indices_train,]
 
 # Verificamos
-nrow(df_knn_complejo) == nrow(df_knn_complejo_test) + nrow(df_knn_complejo_train)
+nrow(df_knn_complejo_split) == nrow(df_knn_complejo_test) + nrow(df_knn_complejo_train)
 ```
 Para buscar el K óptimo, vamos a utilizar 10-fold cross-validation. Vamos a usar valores de k desde 3 hasta 20
 
 ```{r}
 # Grilla con los valores de k
-grid_train <- expand.grid(k = 3:20)
+grid_train <- expand.grid(k = seq(K_MIN, K_MAX))
 
 # Control de entrenamineto
-trian_control <- trainControl(method = "cv", number = 10)
-
-# Creamos variables dummy
-as <- predict(dummyVars(diagnostico_pro ~ ., df_knn_complejo_train), df_knn_complejo_train)
+trian_control <- trainControl(method = METODO_CROSS_VALIDATION, number = K_FOLD)
 ```
 
 Entrenamos el modelo
@@ -173,10 +226,24 @@ Entrenamos el modelo
 knn_complejo <- train(diagnostico_pro ~ .,
                       df_knn_complejo_train,
                       method = METODO_KNN,
-                      preProcess = PRE_PROCESS_NORMALIZAR,
-                      trControl = train_control,
                       tuneGrid = grid_train)
+
+knn_complejo
 ```
 
+Solo porque podemos, vemos el gráfico de cómo elige el Kmax
 
+```{r}
+plot(knn_complejo)
+```
+
+Observamos como es el AUROC
+
+```{r}
+graficar_curva_roc(knn_complejo,
+                   df_knn_complejo_test, 
+                   nivel_positivo = NOMBRE_NIVEL_POSITIVO_VAR_RESPUESTA, 
+                   var_respuesta = NOMBRE_VAR_RESPUESTA, 
+                   type_predict = TYPE_PREDICT_KNN)
+```
 
