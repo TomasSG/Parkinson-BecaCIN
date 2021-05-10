@@ -96,14 +96,30 @@ ggplot(df_knn_sencillo, aes(d1, d2, color = diagnostico_pro, shape = diagnostico
 ```
 Observamos que se solapan bastante estos datos, pero igual vamos a aplicar el algoritmo para hacer el ejemplo.
 
+Vamos a normalizar los datos
+
+```{r}
+df_knn_sencillo_split <- df_knn_sencillo %>% 
+  preProcess(method = PRE_PROCESS_NORMALIZAR) %>% 
+  predict(df_knn_sencillo) %>% 
+  data.frame()
+
+# Verificamos que se haya realizado correctamente
+df_knn_sencillo_split %>% 
+  select(where(is.numeric)) %>% 
+  summary()
+```
+
+Dividimos los datos
+
 ```{r}
 # Particionar datos
 set.seed(SEED)
 
-indices_train <- createDataPartition(df_knn_sencillo$diagnostico_pro, p = PORCENTAJE_TRAIN, list = FALSE) %>% as.vector()
+indices_train <- createDataPartition(df_knn_sencillo_split$diagnostico_pro, p = PORCENTAJE_TRAIN, list = FALSE) %>% as.vector()
 
-df_knn_sencillo_train <- df_knn_sencillo[indices_train,]
-df_knn_sencillo_test <- df_knn_sencillo[-indices_train,]
+df_knn_sencillo_train <- df_knn_sencillo_split[indices_train,]
+df_knn_sencillo_test <- df_knn_sencillo_split[-indices_train,]
 
 nrow(df_knn_sencillo_test)
 nrow(df_knn_sencillo_train)
@@ -137,7 +153,6 @@ set.seed(SEED)
 knn_sencillo <- train(diagnostico_pro ~ ., 
                       data = df_knn_sencillo_train, 
                       method = METODO_KNN, 
-                      preProcess = PRE_PROCESS_NORMALIZAR, 
                       tuneGrid = grid, 
                       trControl = train_control)
 knn_sencillo
