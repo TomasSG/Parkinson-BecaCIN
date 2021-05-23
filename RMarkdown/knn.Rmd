@@ -365,20 +365,18 @@ for(i in seq_along(var_predictoras)){
                             var_respuesta = NOMBRE_VAR_RESPUESTA, 
                             type_predict = TYPE_PREDICT_KNN)
     
-    print(round(auroc, 4))
-    
     # Agregamos una fila al df con los resultados
     if(nrow(df_resumen_resultados) == 0){
       df_resumen_resultados <- data.frame("NroPredictoras" = length(x), 
                                           "k" = knn$bestTune[[1]], 
                                           "Predictoras" = paste(x, collapse = " "), 
-                                          "AUROC" = auroc)
+                                          "AUC" = auroc)
     } else {
-      df_resumen_resultados <- df_resumen_resultados %>% 
-        add_row(NroPredictoras = length(x), 
-                k = knn$bestTune[[1]], 
-                Predictoras = paste(x, collapse = " "), 
-                AUROC = auroc)  
+      df_resumen_resultados <- rbind(df_resumen_resultados,
+                                     data.frame(NroPredictoras = length(x),
+                                                k = knn$bestTune[[1]], 
+                                                Predictoras = paste(x, collapse = " "), 
+                                                AUC = auroc))  
     }
     
 }
