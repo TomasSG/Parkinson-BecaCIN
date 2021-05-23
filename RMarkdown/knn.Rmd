@@ -316,10 +316,7 @@ datos[,var_predictoras] %>%
 
 
 ```{r}
-df_resumen_resultados <- data.frame(NroPredictoras = c(), 
-                                    k = c(),
-                                    Predictoras = c(), 
-                                    AUROC = c())
+df_resumen_resultados <- data.frame()
 
 for(i in seq_along(var_predictoras)){
   
@@ -347,14 +344,15 @@ for(i in seq_along(var_predictoras)){
     # Realizamos la partición
     set.seed(SEED)
     
-    indices_train <- createDataPartition(df[[NOMBRE_VAR_RESPUESTA]], p = PORCENTAJE_TRAIN)[[1]]
+    indices_train <- createDataPartition(df[[NOMBRE_VAR_RESPUESTA]], 
+                                         p = PORCENTAJE_TRAIN)[[1]]
     
     df_train <- df[indices_train,]
     df_test <- df[-indices_train,]
     
     # Ajustamos el modelo
     knn <- train(x = df_train %>% select(-NOMBRE_VAR_RESPUESTA),
-                 y = df_train %>% select(NOMBRE_VAR_RESPUESTA),
+                 y = df_train[[NOMBRE_VAR_RESPUESTA]],
                  method = METODO_KNN,
                  trControl = train_control, 
                  tuneGrid = grid)
@@ -367,11 +365,24 @@ for(i in seq_along(var_predictoras)){
                             var_respuesta = NOMBRE_VAR_RESPUESTA, 
                             type_predict = TYPE_PREDICT_KNN)
     
-    
+    print(round(auroc, 4))
     
     # Agregamos una fila al df con los resultados
-    df_resumen_resultados <- df_resumen_resultados %>% 
-      add_row(NroPredictoras = c(), k = knn$bestTune[[1]], Predictoras = c(), AUROC = c())
+    if(nrow(df_resumen_resultados) == 0){
+      df_resumen_resultados <- data.frame("NroPredictoras" = length(x), 
+                                          "k" = knn$bestTune[[1]], 
+                                          "Predictoras" = paste(x, collapse = " "), 
+                                          "AUROC" = auroc)
+    } else {
+      df_resumen_resultados <- df_resumen_resultados %>% 
+        add_row(NroPredictoras = length(x), 
+                k = knn$bestTune[[1]], 
+                Predictoras = paste(x, collapse = " "), 
+                AUROC = auroc)  
+    }
+    
 }
+
+df_resumen_resultados
 ```
 
