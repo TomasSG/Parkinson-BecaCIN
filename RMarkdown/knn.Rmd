@@ -1,12 +1,14 @@
 ---
 title: "KNN"
 author: Tomás Sánchez Grigioni
-output: html_notebook
+output: 
+  html_notebook: 
+    toc: yes
 ---
 
 # Bibliotecas
 
-```{r}
+```{r, results = 'hide', collapse = TRUE}
 library(tidyverse)
 library(caret)
 library(pROC)
@@ -36,6 +38,7 @@ PRE_PROCESS_ESTANDARIZAR <- c("center", "scale")
 # Grid
 K_MIN <- 3
 K_MAX <- 25
+AVANCE_k <- 1
 
 # Train control
 METODO_CROSS_VALIDATION <- "cv"
@@ -58,12 +61,12 @@ datos_crudos <- read.table(PATH_DATOS_IN, header = TRUE, sep = FILE_COLUMN_SEPAR
 
 # Manipulación de datos
 
-```{r}
+```{r, results = 'hide'}
 glimpse(datos_crudos)
 ```
 Solo hacemos que las variables que aparecen como <chr> pasen a ser factores
 
-```{r}
+```{r, results = 'hide'}
 datos <- datos_crudos %>% 
   map_dfr(~ if(is.character(.x)) { as.factor(.x) } else { .x })
 
@@ -82,7 +85,7 @@ vars_knn_sencillo <- c("diagnostico_pro", "d1", "d2")
 
 Creamos un nuevo df con las variables elegidas
 
-```{r}
+```{r, results = 'hide'}
 df_knn_sencillo <- datos %>% select(all_of(vars_knn_sencillo))
 glimpse(df_knn_sencillo)
 ```
@@ -173,8 +176,8 @@ graficar_curva_roc(knn_sencillo,
 
 ## Ejemplo Más Complejo
 
-```{r}
-vars_knn_complejo <- c("diagnostico_pro", "d1", "d2", "d3", "d4", "d5", "edad", "es_cuidador", "educ", "empleo", "genero")
+```{r, results = 'hide'}
+vars_knn_complejo <- c("diagnostico_pro", "d1", "d2", "d3", "d4", "d5", "edad", "educ", "empleo", "genero")
 df_knn_complejo <- datos %>% select(all_of(vars_knn_complejo)) %>% drop_na()
 glimpse(df_knn_complejo)
 ```
@@ -260,5 +263,115 @@ graficar_curva_roc(knn_complejo,
                    nivel_positivo = NOMBRE_NIVEL_POSITIVO_VAR_RESPUESTA, 
                    var_respuesta = NOMBRE_VAR_RESPUESTA, 
                    type_predict = TYPE_PREDICT_KNN)
+```
+
+## Ejemplo Avanzando de A Poco
+
+Vamos a probar como cambia el modelo a medida que agregamos más variables. Por cada submodelo lo que hacemos es:
+
+* Normalizar variables numéricas.
+* Crear variables dummy para categóricas.
+* Dividir los datos.
+* Entrenar un nuevo modelo.
+* Calcular el AUROC.
+
+Siempre vamos a usar la misma forma de seleccionar el mismo caso así que defenimos un train_control y una grid para todos los casos.
+
+```{r}
+train_control <- trainControl(method = METODO_CROSS_VALIDATION, numbers = K_FOLD)
+grid <- expand.grid(k = seq(K_MIN, K_MAX, AVANCE_k))
+```
+
+Las variables que vamos a usar son
+
+```{r}
+var_predictoras <- c("d1", 
+                     "d2",
+                     "d3",
+                     "d4",
+                     "d5",
+                     "edad",
+                     "educ",
+                     "empleo",
+                     "genero",
+                     "estado_marital",
+                     "facilidad_celular",
+                     "F0semitoneFrom27.5Hz_sma3nz_stddevNorm",
+                     "F0semitoneFrom27.5Hz_sma3nz_amean",
+                     "F0semitoneFrom27.5Hz_sma3nz_percentile20.0",
+                     "F0semitoneFrom27.5Hz_sma3nz_percentile50.0",
+                     "F0semitoneFrom27.5Hz_sma3nz_percentile80.0",
+                     "F0semitoneFrom27.5Hz_sma3nz_stddevRisingSlope",
+                     "F0semitoneFrom27.5Hz_sma3nz_meanFallingSlope",
+                     "F0semitoneFrom27.5Hz_sma3nz_stddevFallingSlope",
+                     "jitterLocal_sma3nz_amean",
+                     "jitterLocal_sma3nz_stddevNorm",
+                     "shimmerLocaldB_sma3nz_amean",
+                     "shimmerLocaldB_sma3nz_stddevNorm")
+
+# Verificamos que no tengan muchos nulos
+datos[,var_predictoras] %>% 
+  map_int(~ sum(is.na(.x)))
+```
+
+
+```{r}
+df_resumen_resultados <- data.frame(NroPredictoras = c(), 
+                                    k = c(),
+                                    Predictoras = c(), 
+                                    AUROC = c())
+
+for(i in seq_along(var_predictoras)){
+  
+    # Obtenemos las primera i variables predictoras
+    x <- var_predictoras[1:i]
+    
+    # Creamos dos dfs para tratar individualmente a las vars predictoras y respuesta
+    df_x <- datos %>% select(all_of(x))
+    df_y <- datos %>% select(all_of(NOMBRE_VAR_RESPUESTA))
+    
+    # Primero normalizamos las vars numericas
+    df_x_normalizado <- df_x %>% 
+      preProcess(method = PRE_PROCESS_NORMALIZAR) %>% 
+      predict(df_x) %>% 
+      data.frame()
+    
+    # Segundo creamos las variables dummy
+    df_x_normalizado_dummy <- dummyVars(~., df_x_normalizado) %>% 
+      predict(df_x_normalizado) %>% 
+      data.frame()
+    
+    # Juntamos la respuesta con las predictoras tratadas en un df
+    df <- cbind(df_y, df_x_normalizado_dummy)
+    
+    # Realizamos la partición
+    set.seed(SEED)
+    
+    indices_train <- createDataPartition(df[[NOMBRE_VAR_RESPUESTA]], p = PORCENTAJE_TRAIN)[[1]]
+    
+    df_train <- df[indices_train,]
+    df_test <- df[-indices_train,]
+    
+    # Ajustamos el modelo
+    knn <- train(x = df_train %>% select(-NOMBRE_VAR_RESPUESTA),
+                 y = df_train %>% select(NOMBRE_VAR_RESPUESTA),
+                 method = METODO_KNN,
+                 trControl = train_control, 
+                 tuneGrid = grid)
+    
+        
+    # Calculamos el AUROC con los datos de test
+    auroc <- calcular_auroc(knn,
+                            df_test, 
+                            nivel_positivo = NOMBRE_NIVEL_POSITIVO_VAR_RESPUESTA, 
+                            var_respuesta = NOMBRE_VAR_RESPUESTA, 
+                            type_predict = TYPE_PREDICT_KNN)
+    
+    
+    
+    # Agregamos una fila al df con los resultados
+    df_resumen_resultados <- df_resumen_resultados %>% 
+      add_row(NroPredictoras = c(), k = knn$bestTune[[1]], Predictoras = c(), AUROC = c())
+}
 ```
 

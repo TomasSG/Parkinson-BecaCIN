@@ -44,6 +44,26 @@ graficar_curva_roc <- function(modelo, datos_test, nivel_positivo, var_respuesta
     ggtitle("Curva ROC", paste("AUROC:", round(auroc, 4)))
 }
 
+calcular_auroc <- function(modelo, datos_test, nivel_positivo, var_respuesta, type_predict = "prob") {
+  if(require(pROC) == FALSE || require(tidyverse) == FALSE){
+    print(MSJ_ERROR_BIBLIOTECAS)
+    return()
+  }
+  
+  # Primero obtenemos las probabilidades predichas
+  predicciones <- predict(modelo, datos_test, type = type_predict)[,nivel_positivo]
+  
+  # Calculamos la sensitivity y especificity para cada valor de corte posible
+  objeto_roc <- roc(datos_test[[var_respuesta]], predicciones)
+  
+  # Calculamos el AUROC
+  auroc <- auc(objeto_roc)
+  
+  return(auroc)
+}
+
+# Para evaluación de modelo como dijo Silvia
+
 crear_df_evaluacion <- function(modelo, datos, nombre_var_respuesta, nombre_var_ids, type_predict, nivel_positivo ) {
   
   if(require(tidyverse) == FALSE){

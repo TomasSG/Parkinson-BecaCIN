@@ -108,7 +108,7 @@ pw_grid <- seq(min(df_iris$Petal.Width), max(df_iris$Petal.Width), ESPACIADO_GRI
 grid <- expand.grid(Petal.Length = pl_grid,
                     Petal.Width = pw_grid)
 
-
+View(grid)
 # Hacemos las predicciones
 predicciones_grid_clases <- predict(knn_iris_simple, grid)
 
