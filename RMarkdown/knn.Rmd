@@ -20,7 +20,7 @@ source("../R/Utils.R")
 
 ```{r}
 # ARCHIVOS
-PATH_DATOS_IN <- "../data/bd_final.csv"
+PATH_DATOS_IN <- "../data/bd_final_refactor.csv"
 
 FILE_COLUMN_SEPARATOR <- ";"
 FILE_DECIMAL_SEPARATOR <- "."
@@ -377,8 +377,8 @@ for(i in seq_along(var_predictoras)){
     # Creamos un df con los resultado de esta iteración
     df_resultado_parcial <- data.frame(NroPredictoras = i,
                                       k = knn$bestTune[[1]], 
-                                      Predictoras = paste(x, collapse = ESPACIO_BlANCO), 
-                                      AUROC = auroc)
+                                      AUROC = auroc,
+                                      Predictoras = paste(x, collapse = ESPACIO_BlANCO))
     
     
     # Agregamos una fila al df con los resultados finales
@@ -399,16 +399,131 @@ g1 <- df_resumen_resultados %>%
   ggplot(aes(x = NroPredictoras)) +
   geom_point(aes(y = AUROC), size = 1.5, color = "red") +
   geom_line(aes(y = AUROC), linetype = 2, color = "red") +
+  ggtitle("Valor de AUROC en función de la cantidad de predictoras") +
   theme_classic()
 
 g2 <- df_resumen_resultados %>% 
   ggplot(aes(x = NroPredictoras)) +
   geom_point(aes(y = k), size = 1.5, color = "blue") +
   geom_line(aes(y = k), linetype = 2, color = "blue") +
+  ggtitle("Valor de K en función de la cantidad de predictoras") +
   theme_classic()
   
 g1
 g2
   
 ```
+Vemos en el segundo gráfico como ocurre un salto importante en el AUROC cuando pasamos de 5 a 6 predictoras. Veamos cuál es la nueva variable que se agrega
 
+```{r, collapse=TRUE}
+# Predictoras usados en el modelo con 5 variables 
+df_resumen_resultados %>% filter(NroPredictoras == 5) %>% select(Predictoras)
+# Predictoras usados en el modelo con 6 variables 
+df_resumen_resultados %>% filter(NroPredictoras == 6) %>% select(Predictoras)
+```
+
+La úniva variable que difiere es edad, qué tan bien ayuda a clasificar esta variable por si sola? (Puede darse que esta variable solo sea buena en conjunción con el resto de variables y no por si sola)
+
+```{r}
+datos %>% 
+  ggplot(aes(x = edad, color = diagnostico_pro)) +
+  geom_boxplot() +
+  theme_bw()
+
+```
+
+Probamos dos modelos:
+
+* Teniendo únicamente como predictora a edad.
+* Agarrar el modelo con mejor auc y sacar a edad de las predictoras.
+
+Para ambos casos vamos a usar los mismos valores de K y la misma forma de hallar el k
+
+```{r}
+grid_train <- expand.grid(k = seq(K_MIN, K_MAX, AVANCE_k))
+train_control <- trainControl(method = METODO_CROSS_VALIDATION, number = K_FOLD)
+```
+
+
+Vamos con el primero.
+
+```{r}
+df_knn_edad <- datos %>% select(all_of(c("diagnostico_pro", "edad"))) %>% drop_na()
+
+set.seed(SEED)
+indices_train <- createDataPartition(df_knn_edad$diagnostico_pro, p = PORCENTAJE_TRAIN)[[1]]
+df_knn_edad_train <- df_knn_edad[indices_train,]
+df_knn_edad_test <- df_knn_edad[-indices_train,]
+
+knn_edad <- train(diagnostico_pro ~ .,
+                  df_knn_edad_train,
+                  method = METODO_KNN,
+                  trControl = train_control,
+                  tuneGrid = grid_train)
+
+graficar_curva_roc(knn_edad,
+                   df_knn_edad_test, 
+                   nivel_positivo = NOMBRE_NIVEL_POSITIVO_VAR_RESPUESTA, 
+                   var_respuesta = NOMBRE_VAR_RESPUESTA, 
+                   type_predict = TYPE_PREDICT_KNN)
+
+```
+
+
+Vamos con el segundo modelo
+
+```{r}
+(df_resumen_resultados %>% arrange(desc(AUROC)))[1, "Predictoras"]
+```
+
+```{r}
+df_knn_sin_edad <- datos %>% select(all_of(c("diagnostico_pro", 
+                                         "d1",
+                                         "d2",
+                                         "d3",
+                                         "d4",
+                                         "d5",
+                                         "educ",
+                                         "empleo",
+                                         "genero",
+                                         "estado_marital",
+                                         "facilidad_celular",
+                                         "F0semitoneFrom27.5Hz_sma3nz_stddevNorm",
+                                         "F0semitoneFrom27.5Hz_sma3nz_amean",
+                                         "F0semitoneFrom27.5Hz_sma3nz_percentile20.0"))) %>% 
+  drop_na()
+
+df_y <- df_knn_sin_edad %>% select(diagnostico_pro)
+df_x <- df_knn_sin_edad %>% select(-diagnostico_pro)
+
+
+df_x_normalizado <- df_x %>% 
+  preProcess(method = PRE_PROCESS_NORMALIZAR) %>% 
+  predict(df_x) %>% 
+  data.frame()
+    
+
+df_x_normalizado_dummy <- dummyVars(~., df_x_normalizado) %>% 
+  predict(df_x_normalizado) %>% 
+  data.frame()
+
+df <- cbind(df_y, df_x)
+
+set.seed(SEED)
+indices_train <- createDataPartition(df$diagnostico_pro, p = PORCENTAJE_TRAIN)[[1]]
+df_train <- df[indices_train,]
+df_test <- df[-indices_train,]
+
+knn_sin_edad <- train(diagnostico_pro ~ .,
+                  df_train,
+                  method = METODO_KNN,
+                  trControl = train_control,
+                  tuneGrid = grid_train)
+
+graficar_curva_roc(knn_sin_edad,
+                   df_test, 
+                   nivel_positivo = NOMBRE_NIVEL_POSITIVO_VAR_RESPUESTA, 
+                   var_respuesta = NOMBRE_VAR_RESPUESTA, 
+                   type_predict = TYPE_PREDICT_KNN)
+
+```
