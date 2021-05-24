@@ -47,10 +47,13 @@ K_FOLD <- 10
 # Train
 METODO_KNN <- "knn"
 
-# Curva ROC
+# CURVA ROC
 NOMBRE_NIVEL_POSITIVO_VAR_RESPUESTA <-  "true"
 NOMBRE_VAR_RESPUESTA <-  "diagnostico_pro"
 TYPE_PREDICT_KNN <-  "prob"
+
+# GENERAL
+ESPACIO_BlANCO <- " "
 ```
 
 # Cargar datos
@@ -278,7 +281,7 @@ Vamos a probar como cambia el modelo a medida que agregamos más variables. Por 
 Siempre vamos a usar la misma forma de seleccionar el mismo caso así que defenimos un train_control y una grid para todos los casos.
 
 ```{r}
-train_control <- trainControl(method = METODO_CROSS_VALIDATION, numbers = K_FOLD)
+train_control <- trainControl(method = METODO_CROSS_VALIDATION,  number = K_FOLD)
 grid <- expand.grid(k = seq(K_MIN, K_MAX, AVANCE_k))
 ```
 
@@ -315,8 +318,13 @@ datos[,var_predictoras] %>%
 ```
 
 
-```{r}
+```{r, message=FALSE}
+
+# Preparamos el df con los resutlados
 df_resumen_resultados <- data.frame()
+
+# Tenemos que eliminar los NAs porque no funciona el algoritmo
+df_inicial <- datos %>% select(all_of(c(var_predictoras, NOMBRE_VAR_RESPUESTA))) %>%  drop_na()
 
 for(i in seq_along(var_predictoras)){
   
@@ -324,8 +332,8 @@ for(i in seq_along(var_predictoras)){
     x <- var_predictoras[1:i]
     
     # Creamos dos dfs para tratar individualmente a las vars predictoras y respuesta
-    df_x <- datos %>% select(all_of(x))
-    df_y <- datos %>% select(all_of(NOMBRE_VAR_RESPUESTA))
+    df_x <- df_inicial %>% select(all_of(x))
+    df_y <- df_inicial %>% select(all_of(NOMBRE_VAR_RESPUESTA))
     
     # Primero normalizamos las vars numericas
     df_x_normalizado <- df_x %>% 
@@ -365,22 +373,42 @@ for(i in seq_along(var_predictoras)){
                             var_respuesta = NOMBRE_VAR_RESPUESTA, 
                             type_predict = TYPE_PREDICT_KNN)
     
-    # Agregamos una fila al df con los resultados
-    if(nrow(df_resumen_resultados) == 0){
-      df_resumen_resultados <- data.frame("NroPredictoras" = length(x), 
-                                          "k" = knn$bestTune[[1]], 
-                                          "Predictoras" = paste(x, collapse = " "), 
-                                          "AUC" = auroc)
-    } else {
-      df_resumen_resultados <- rbind(df_resumen_resultados,
-                                     data.frame(NroPredictoras = length(x),
-                                                k = knn$bestTune[[1]], 
-                                                Predictoras = paste(x, collapse = " "), 
-                                                AUC = auroc))  
-    }
     
+    # Creamos un df con los resultado de esta iteración
+    df_resultado_parcial <- data.frame(NroPredictoras = i,
+                                      k = knn$bestTune[[1]], 
+                                      Predictoras = paste(x, collapse = ESPACIO_BlANCO), 
+                                      AUROC = auroc)
+    
+    
+    # Agregamos una fila al df con los resultados finales
+    if(nrow(df_resumen_resultados) == 0){
+      df_resumen_resultados <- df_resultado_parcial
+    } else {
+      df_resumen_resultados <- rbind(df_resumen_resultados, df_resultado_parcial)
+    }
 }
 
-df_resumen_resultados
+df_resumen_resultados %>% arrange(desc(AUROC))
+```
+
+Podemos hacer un par de gráficos para observar como es la evolución del AUROC y el k en función del nro de predictoras
+
+```{r}
+g1 <- df_resumen_resultados %>% 
+  ggplot(aes(x = NroPredictoras)) +
+  geom_point(aes(y = AUROC), size = 1.5, color = "red") +
+  geom_line(aes(y = AUROC), linetype = 2, color = "red") +
+  theme_classic()
+
+g2 <- df_resumen_resultados %>% 
+  ggplot(aes(x = NroPredictoras)) +
+  geom_point(aes(y = k), size = 1.5, color = "blue") +
+  geom_line(aes(y = k), linetype = 2, color = "blue") +
+  theme_classic()
+  
+g1
+g2
+  
 ```
 
