@@ -13,17 +13,221 @@ Aqui incluimos las bibliotecas que vamos a necesitar utilizar para el desarrollo
 library(tidyverse)
 library(caret)
 library(pROC)
-
-source("../R/Utils.R")
 ```
 
 # Constantes
 Aqui decralamos las cosntantes que vamos a utilizar para el desarrollo del trabajo
 
 ```{r}
+# Archivo
+PATH_DATOS_IN <- "../data/bd_final_refactor.csv"
+FILE_COLUMN_SEPARATOR <- ";"
+FILE_DECIMAL_SEPARATOR <- "."
+
+# Partición datos
 SEED <- 1206
+PORCENTAJE_TRAIN <- 0.7
+
+# Variable respuesta
+VAR_RESPUESTA <- "diagnostico_pro"
+
+# Variables predictoras
+VAR_PREDICTORA <- c("edad", "F0semitoneFrom27.5Hz_sma3nz_amean")
+
+# Preprocesamiento
+PRE_PROCESS_ESTANDARIZAR <- c("center", "scale")
+CONTROL_CV <- "cv"
+K_FOLD <- 10
+
+
+# Entrenar el modelo
+METODO_SVM_LINEAL <- "svmLinear"
+METODO_SVM_RADIAL <- "svmRadial"
+METODO_SVM_POLYNOMIAL <- "svmPoly"
+
+C_MIN <- 0.001
+C_MAX <- 2
 ```
 
+# Importación Datos
 
+```{r}
+# Importamos datos
+datos_crudos <- read.csv(PATH_DATOS_IN, sep = FILE_COLUMN_SEPARATOR, dec = FILE_DECIMAL_SEPARATOR, stringsAsFactors = TRUE)
+
+# Verificamos que los tipos sean los correctos
+glimpse(datos_crudos)
+```
+# SVM Simple
+
+## Análisis simple de datos
+Vamos a verificar que los datos a usar no tengan nullos
+
+```{r}
+# Variables a usar en el modelo
+variables <- c(VAR_PREDICTORA, VAR_RESPUESTA)
+
+# Creamos el df que vamos a usar
+# Como no vamos a hacer ningún tratamiento coinciden los dfs
+datos <- datos_crudos %>% select(all_of(variables))
+
+# Verificacion de la canitdad de nulos
+datos %>% 
+  map_int(~ sum(is.na(.x)))
+  
+```
+
+Observamos que no hay ningún valor nulo, 
+
+Por último, vemos las medidas descriptivas
+
+```{r}
+summary(datos)
+```
+
+Vamos a crear una función que realice el preprocesamiento de datos por nosotros. La idea es poder aplicar distintos procesamientos a un mismo df y probar los diferentes modelos.
+
+```{r}
+preprocesamiento <- function(df, var_target, lista_var_atribute, imputar_nulos = FALSE, imputar_outliers = FALSE, 
+                             metodo_escalar = NULL, metodo_dummies = NULL){
+  
+  # Primero dividimos los datos en dos dfs
+  df_y <- df %>% select(all_of(var_target))
+  df_x <- df %>% select(all_of(lista_var_atribute))
+  
+  if(imputar_nulos){
+    # Código para imputar nulos
+  }
+  
+  if(imputar_outliers){
+    # Código para imputar outliers
+  }
+  
+  if(!is.null(metodo_escalar)){
+    # Código para escalar continuas
+    df_x <- df_x %>% 
+      preProcess(method = metodo_escalar) %>% 
+      predict(df_x) %>% 
+      data.frame()
+  }
+  
+  if(!is.null(metodo_dummies)) {
+    # Código para generar dummies
+    df_x <- dummyVars(~., df_x) %>% 
+      predict(df_x) %>% 
+      data.frame()
+  }
+  
+  # Juntamos los df y devolvemos el resultado
+  return(cbind(df_y, df_x))
+}
+```
+
+Para nuestro caso solo vamos a escalar las variables numéricas, así que es el único parámetro a identificar
+
+```{r}
+# Aplicamos el preporcesamiento
+df_svm_simple <- preprocesamiento(datos, VAR_RESPUESTA, VAR_PREDICTORA, metodo_escalar = PRE_PROCESS_ESTANDARIZAR)
+
+# Observamos que esten centrados en 0 las numéricas
+summary(df_svm_simple)
+```
+
+Dividimos los datos en train y test
+
+```{r}
+# Creamos los indices para hacer la partición
+set.seed(SEED)
+indices_train <- createDataPartition(df_svm_simple$diagnostico_pro, p = PORCENTAJE_TRAIN, list = FALSE) %>% as.vector()
+
+# Dividimos los dfs
+x_train <- df_svm_simple[indices_train, VAR_PREDICTORA] 
+x_test <- df_svm_simple[-indices_train, VAR_PREDICTORA]
+
+y_train <- df_svm_simple[indices_train, VAR_RESPUESTA] 
+y_test <- df_svm_simple[-indices_train, VAR_RESPUESTA]
+```
+
+Ahora, creamos una función para entrenar a los modelos, teniendo la posibilidad de elegir el kernel
+
+```{r}
+entrenar_modelo <- function(y_train, x_train, method, tr_control = NULL, tune_grid = NULL){
+  
+  # Incialización de variables
+  modelo <- NULL
+  
+  # Ajustamos el modelo a los datos
+  if(is.null(tr_control) && is.null(tune_grid)){
+    modelo <- train(y = y_train, 
+                  x = x_train, 
+                  method = method)
+  } else {
+   modelo <- train(y = y_train, 
+                  x = x_train, 
+                  method = method,
+                  trControl = tr_control,
+                  tuneGrid = tune_grid) 
+  }
+  
+  # Imprimios por pantalla el modelo
+  print("----------------------------------------------")
+  print("RESUMEN MODELO:")
+  print(modelo)
+  print("----------------------------------------------")
+  
+  # Retornamos el modelo
+  return(modelo)
+}
+```
+
+Creamso el grid y el train control a usar en los modelos
+
+```{r}
+# Creamos el grid y el trControl
+tr_control <- trainControl(method = CONTROL_CV, number = K_FOLD)
+tune_grid <- expand.grid("C" = seq(C_MIN, C_MAX, 0.1))
+```
+
+Ahora creamos los modelos, con diferentes kernerls
+
+```{r}
+# Kernel lineal
+svm_lineal <- entrenar_modelo(y_train, x_train, METODO_SVM_LINEAL, tr_control, tune_grid)
+
+# Kerner radial
+svm_radial <- entrenar_modelo(y_train, x_train, METODO_SVM_RADIAL)
+
+# Kernel polynomial
+svm_poly <- entrenar_modelo(y_train, x_train, METODO_SVM_POLYNOMIAL)
+```
+
+Por últmo creamos una función para la evaluación del modelo con la curva ROC
+
+```{r}
+graficar_roc <- function(modelo, y_test, x_test, type_predict = "prob"){
+  # Predecimos lso valores
+  y_predict <- predict(svm_lineal, x_test, type = type_predict)[,1]
+  
+  # Generamos el objeto ROC
+  objeto_roc <- roc(y_test, y_predict)
+  
+  # Calculamos el AUROC
+  auroc <- auc(objeto_roc)
+  
+  # Graficamos la curva ROC
+  data.frame(Sensitivity = objeto_roc$sensitivities,
+             Specificity = objeto_roc$specificities)  %>% 
+    ggplot(aes(1 - Specificity, Sensitivity)) +
+    geom_line() + 
+    ggtitle("Curva ROC", paste("AUROC:", round(auroc, 4)))
+  
+}
+```
+
+Evaluamos los modelos mediante esta función
+
+```{r}
+graficar_roc(svm_lineal, y_test, x_test)
+```
 
 
