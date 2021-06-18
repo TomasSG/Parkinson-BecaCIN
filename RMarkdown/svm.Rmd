@@ -157,7 +157,7 @@ entrenar_modelo <- function(y_train, x_train, method, tr_control = NULL, tune_gr
   modelo <- NULL
   
   # Ajustamos el modelo a los datos
-  if(is.null(tr_control) && is.null(tune_grid)){
+  if(is.null(tr_control) || is.null(tune_grid)){
     modelo <- train(y = y_train, 
                   x = x_train, 
                   method = method)
@@ -172,7 +172,9 @@ entrenar_modelo <- function(y_train, x_train, method, tr_control = NULL, tune_gr
   # Imprimios por pantalla el modelo
   print("----------------------------------------------")
   print("RESUMEN MODELO:")
+  print("\n")
   print(modelo)
+  print("\n")
   print("----------------------------------------------")
   
   # Retornamos el modelo
@@ -180,54 +182,54 @@ entrenar_modelo <- function(y_train, x_train, method, tr_control = NULL, tune_gr
 }
 ```
 
-Creamso el grid y el train control a usar en los modelos
+Creamso el train control a usar en los modelos.
 
 ```{r}
-# Creamos el grid y el trControl
+# Creamos el trControl
 tr_control <- trainControl(method = CONTROL_CV, number = K_FOLD)
-tune_grid <- expand.grid("C" = seq(C_MIN, C_MAX, 0.1))
 ```
 
 Ahora creamos los modelos, con diferentes kernerls
 
 ```{r}
 # Kernel lineal
-svm_lineal <- entrenar_modelo(y_train, x_train, METODO_SVM_LINEAL, tr_control, tune_grid)
+tune_grid_lineal <- expand.grid("C" = seq(C_MIN, C_MAX, 0.1))
+svm_lineal <- entrenar_modelo(y_train, x_train, METODO_SVM_LINEAL, tr_control, tune_grid_lineal)
 
 # Kerner radial
-svm_radial <- entrenar_modelo(y_train, x_train, METODO_SVM_RADIAL)
+tune_grid_radial <- expand.grid("C" = seq(C_MIN, C_MAX, 0.1), "sigma" = seq(0, 2, 0.5))
+svm_radial <- entrenar_modelo(y_train, x_train, METODO_SVM_RADIAL, tr_control, tune_grid_radial)
 
 # Kernel polynomial
-svm_poly <- entrenar_modelo(y_train, x_train, METODO_SVM_POLYNOMIAL)
+#tune_grid_poly <- expand.grid("C" = seq(C_MIN, C_MAX, 0.1), "degree" = seq(0, 2, 0.5), "scale" = seq(0, 1, 0.05))
+#svm_poly <- entrenar_modelo(y_train, x_train, METODO_SVM_POLYNOMIAL, tr_control, tune_grid_poly)
 ```
-
-Por últmo creamos una función para la evaluación del modelo con la curva ROC
+Creamos una función para evaluar el modelo
 
 ```{r}
-graficar_roc <- function(modelo, y_test, x_test, type_predict = "prob"){
-  # Predecimos lso valores
-  y_predict <- predict(svm_lineal, x_test, type = type_predict)[,1]
+evaluar_nodelo <- function(modelo, y_test, x_test){
   
-  # Generamos el objeto ROC
-  objeto_roc <- roc(y_test, y_predict)
+  # Generamos las predicciones
+  y_pred <- predict(modelo, x_test)
   
-  # Calculamos el AUROC
-  auroc <- auc(objeto_roc)
-  
-  # Graficamos la curva ROC
-  data.frame(Sensitivity = objeto_roc$sensitivities,
-             Specificity = objeto_roc$specificities)  %>% 
-    ggplot(aes(1 - Specificity, Sensitivity)) +
-    geom_line() + 
-    ggtitle("Curva ROC", paste("AUROC:", round(auroc, 4)))
-  
+  # Obtenemos las métricas
+  print("----------------------------------------------")
+  print("RESULTADO DE EVALUACIÓN:")
+  print("\n")
+  print(confusionMatrix(y_pred, y_test, positive = "true"))
+  print("\n")
+  print("----------------------------------------------")
 }
 ```
 
-Evaluamos los modelos mediante esta función
+Evaluamos los modelos usando la función definida
+
+**NOTA**: no logre encontrar como hacer para que el predict devuelva la probabilidad en lugar de la clase predicha
 
 ```{r}
-graficar_roc(svm_lineal, y_test, x_test)
+evaluar_nodelo(svm_lineal, y_test, x_test)
+evaluar_nodelo(svm_radial, y_test, x_test)
+#evaluar_nodelo(svm_poly, y_test, x_test)
 ```
 
 
