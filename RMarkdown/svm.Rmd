@@ -118,6 +118,9 @@ preprocesamiento <- function(df, var_target, lista_var_atribute, imputar_nulos =
       data.frame()
   }
   
+  # Recodificamos la variable target
+  df_y <- df_y %>% mutate(diagnostico_pro = fct_recode(diagnostico_pro, "-1" = "false", "1" = "true"))
+  
   # Juntamos los df y devolvemos el resultado
   return(cbind(df_y, df_x))
 }
@@ -172,9 +175,7 @@ entrenar_modelo <- function(y_train, x_train, method, tr_control = NULL, tune_gr
   # Imprimios por pantalla el modelo
   print("----------------------------------------------")
   print("RESUMEN MODELO:")
-  print("\n")
   print(modelo)
-  print("\n")
   print("----------------------------------------------")
   
   # Retornamos el modelo
@@ -202,7 +203,7 @@ svm_radial <- entrenar_modelo(y_train, x_train, METODO_SVM_RADIAL, tr_control, t
 
 # Kernel polynomial
 #tune_grid_poly <- expand.grid("C" = seq(C_MIN, C_MAX, 0.1), "degree" = seq(0, 2, 0.5), "scale" = seq(0, 1, 0.05))
-#svm_poly <- entrenar_modelo(y_train, x_train, METODO_SVM_POLYNOMIAL, tr_control, tune_grid_poly)
+svm_poly <- entrenar_modelo(y_train, x_train, METODO_SVM_POLYNOMIAL)
 ```
 Creamos una función para evaluar el modelo
 
@@ -216,7 +217,7 @@ evaluar_nodelo <- function(modelo, y_test, x_test){
   print("----------------------------------------------")
   print("RESULTADO DE EVALUACIÓN:")
   print("\n")
-  print(confusionMatrix(y_pred, y_test, positive = "true"))
+  print(confusionMatrix(y_pred, y_test, positive = "1"))
   print("\n")
   print("----------------------------------------------")
 }
@@ -229,7 +230,10 @@ Evaluamos los modelos usando la función definida
 ```{r}
 evaluar_nodelo(svm_lineal, y_test, x_test)
 evaluar_nodelo(svm_radial, y_test, x_test)
-#evaluar_nodelo(svm_poly, y_test, x_test)
+evaluar_nodelo(svm_poly, y_test, x_test)
+```
+```{r}
+plot(svm_lineal)
 ```
 
 
