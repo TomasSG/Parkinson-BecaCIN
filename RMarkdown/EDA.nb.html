@@ -1810,25 +1810,30 @@ summary {
 <p>Encontramos la lista de bibliotecas a utilizar aqui, con el fin de por qué las incluimos. Además, cargamos el archivo que contiene funciones importantes a utilizar.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBQYXJhIGFuYcOhbGlzaXMgZGUgZGF0b3NcbmxpYnJhcnkodGlkeXZlcnNlKVxubGlicmFyeShsdWJyaWRhdGUpXG5gYGAifQ== -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBQYXJhIGFuYcOhbGlzaXMgZGUgZGF0b3NcbmxpYnJhcnkodGlkeXZlcnNlKVxuYGBgIn0= -->
 <pre class="r"><code># Para anaálisis de datos
-library(tidyverse)
-library(lubridate)</code></pre>
+library(tidyverse)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShsdWJyaWRhdGUpXG5gYGAifQ== -->
+<pre class="r"><code>library(lubridate)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBQYXJhIFJNYXJrZG93blxubGlicmFyeShrbml0cilcbmxpYnJhcnkoa2FibGVFeHRyYSlcbmBgYCJ9 -->
 <pre class="r"><code># Para RMarkdown
 library(knitr)
 library(kableExtra)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeSh0aW55dGV4KVxuXG4jIFBhcmEgY2FyZ2FyIGRhdG9zXG5saWJyYXJ5KHJlYWR4bClcblxuIyBQYXJhIGN1c3RvbWl6YXIgZ2dwbG90XG5saWJyYXJ5KGdncHVicilcbmxpYnJhcnkoZ2d0aGVtZXMpXG5saWJyYXJ5KGV4dHJhZm9udClcbmBgYCJ9 -->
-<pre class="r"><code>library(tinytex)
-
-# Para cargar datos
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeSh0aW55dGV4KVxuYGBgIn0= -->
+<pre class="r"><code>library(tinytex)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBQYXJhIGNhcmdhciBkYXRvc1xubGlicmFyeShyZWFkeGwpXG5cbiMgUGFyYSBjdXN0b21pemFyIGdncGxvdFxubGlicmFyeShnZ3B1YnIpXG5gYGAifQ== -->
+<pre class="r"><code># Para cargar datos
 library(readxl)
 
 # Para customizar ggplot
-library(ggpubr)
-library(ggthemes)
+library(ggpubr)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShnZ3RoZW1lcylcbmxpYnJhcnkoZXh0cmFmb250KVxuYGBgIn0= -->
+<pre class="r"><code>library(ggthemes)
 library(extrafont)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShzY2FsZXMpXG5gYGAifQ== -->
@@ -1873,10 +1878,10 @@ datos_it0 &lt;- datos_crudos %&gt;%
 # Lo hacemos un poco más complejo para que sea mas legible el output
 tibble(&quot;Nombre&quot; = names(datos_it0), &quot;Clase&quot; = map_chr(datos_it0, class))</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbInRibF9kZiIsInRibCIsImRhdGEuZnJhbWUiXSwibnJvdyI6MTksIm5jb2wiOjJ9LCJyZGYiOiJINHNJQUFBQUFBQUFCdTFVeTA3RE1CQjAwNUtxS1U4aDhSa1ZGUEVGY0VhSUU3ZG82MnlESlQrQzdRRGl4QS96QzVSTmFpZWhjT2JFd2NsNk5tUHZ6SzV5Zi9Od21UMWtqTEV4bTlBYTcxSEkwdXU3aStYVmtyRkpRcnNSWldiTis1VytPcVdnQVk5cG5ZWkVJb29RVGJDQUdNL1I1YndXQkJnYm9IR3hjaUU4QmkxTVhnZ290WEZlY05PZlVQTVFwNmdxaVRHVGxxalJ4dDNjaThya0NvdWVlb2pPMDJXNUFpczh5SUNldEJkeG93VHF0NVlSRW1mZkUwNW9ieFIwOVZYd1ZLTW5EWld4VFozeHVEVndJUnRWT1VkWlM0amFKdXRheFVxbVhOaTY3RGo3ejZKQUl5VW9LQ0tXTmJlN2ZFQTZHcGlSVnlTVUpVT1RwMVFmbG1oLzM4NzRJMWpnL2gvNEFYd2Y0ajBOQ3QzL0FQL0pBTFBQcmZ2SkpoaWVSQ3R1alZwWmpEMjVsdUJ3cDFFemExNFdzVmtIRGZlZEhwdk41bU8zbzV6WXNhTVJ6QXJ3c0ZoYjR2ZGxkTm1wcWJ3d21raEo4ejlMRzBLYjNxN2hRU083QTh6b1pOSXQvUG1BeFVLTm8zYW8rampaMFo5MlE4SWZ1N0ZBWFFyZGVTRmhoYkgxaCtSQmE4R2lzdFRkcUkxUXQvQ21INUdNR3htUlZpMzcvQUtCNERkVzJRVUFBQT09In0= -->
+<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbInRibF9kZiIsInRibCIsImRhdGEuZnJhbWUiXSwibnJvdyI6MTksIm5jb2wiOjJ9LCJyZGYiOiJINHNJQUFBQUFBQUFCdTFVMjA3ak1CQjEwNUtxWVplTGtQaU1Db3IyQzlqbjFZb24zcUtwTTAwdCtSSnNCeEJQL1BEK0F0MUphaWVoQWlTUTRJa0h0K016UGVNelowYTkrbjE5a1YxbmpMRXhtOUFaNzFISTBzdS81NHRmQzhZbUNkMUdsSmsxMy9mMHF4TUtHdkNJemtsSUpLSUkwUVFMaVBFK3VwelhnZ0JqQXpRdWxpNkVSNkNGeVFzQnBUYk9DMjc2Q2pVUGNZcXFraGd6YVlrYWJienRlMUdaWEdIUlV3L1FlWG9zVjJDRkJ4blE0L1loYnBSQS9kQXlRdUwwZWNJSjdZMkNUbDhGTnpWNjZxRXl0dEVaeTYyQUM5bDBsWE9VdFlUWTIyUlZxNmhreW9XdHk0N3o0MVlVYUtRRUJVWEVzdVoxbHc5SWh3TXo4b29hWmNuUTVDbnB3eEx0eTljWlg0TUY3bDhIM2szNEFQQzJ4azlROEhySjU2dTdwMEdoKzE3YkwxbGI5clIxUDlrRXc1Tm94UitqbGhialRDNGxPTndaMU15YXUza2MxcytHKzBnZm04M20zKzVFT2JIalJDT1lGZUJodnJMRTcyVjAyYW1wdkRDYVNFbnpMNVkyaERhOVBjTkNJN3NEektneTlTMzgyWURGZ3NaUnUxUjluT3owbjNaTHd0ZmRXcUF1aGU2OGtMREVPUG9EOHFDMVlGNVptbTdzalZBMzk2WmZrWXdiR1pHMlcvYjBINElYeEFMUEJRQUEifQ== -->
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":["Nombre"],"name":[1],"type":["chr"],"align":["left"]},{"label":["Clase"],"name":[2],"type":["chr"],"align":["left"]}],"data":[{"1":"id","2":"integer","_row":"id"},{"1":"edad","2":"integer","_row":"edad"},{"1":"es_cuidador","2":"character","_row":"es_cuidador"},{"1":"dbs","2":"character","_row":"dbs"},{"1":"anio_diagnostico","2":"character","_row":"anio_diagnostico"},{"1":"educ","2":"character","_row":"educ"},{"1":"empleo","2":"character","_row":"empleo"},{"1":"genero","2":"character","_row":"genero"},{"1":"tipo_medico","2":"character","_row":"tipo_medico"},{"1":"estado_marital","2":"character","_row":"estado_marital"},{"1":"anio_comienzo_med","2":"character","_row":"anio_comienzo_med"},{"1":"anio_comienzo_sintomas","2":"character","_row":"anio_comienzo_sintomas"},{"1":"paquetes_por_dia","2":"character","_row":"paquetes_por_dia"},{"1":"facilidad_celular","2":"character","_row":"facilidad_celular"},{"1":"fumo","2":"character","_row":"fumo"},{"1":"cirugia","2":"character","_row":"cirugia"},{"1":"videollamada","2":"character","_row":"videollamada"},{"1":"anios_fumo","2":"character","_row":"anios_fumo"},{"1":"diagnostico_pro","2":"character","_row":"diagnostico_pro"}],"options":{"columns":{"min":{},"max":[10],"total":[2]},"rows":{"min":[10],"max":[10],"total":[19]},"pages":{}}}
+{"columns":[{"label":["Nombre"],"name":[1],"type":["chr"],"align":["left"]},{"label":["Clase"],"name":[2],"type":["chr"],"align":["left"]}],"data":[{"1":"id","2":"integer","_row":"id"},{"1":"edad","2":"integer","_row":"edad"},{"1":"es_cuidador","2":"character","_row":"es_cuidador"},{"1":"dbs","2":"character","_row":"dbs"},{"1":"anio_diagnostico","2":"integer","_row":"anio_diagnostico"},{"1":"educ","2":"character","_row":"educ"},{"1":"empleo","2":"character","_row":"empleo"},{"1":"genero","2":"character","_row":"genero"},{"1":"tipo_medico","2":"character","_row":"tipo_medico"},{"1":"estado_marital","2":"character","_row":"estado_marital"},{"1":"anio_comienzo_med","2":"integer","_row":"anio_comienzo_med"},{"1":"anio_comienzo_sintomas","2":"integer","_row":"anio_comienzo_sintomas"},{"1":"paquetes_por_dia","2":"integer","_row":"paquetes_por_dia"},{"1":"facilidad_celular","2":"character","_row":"facilidad_celular"},{"1":"fumo","2":"character","_row":"fumo"},{"1":"cirugia","2":"character","_row":"cirugia"},{"1":"videollamada","2":"character","_row":"videollamada"},{"1":"anios_fumo","2":"integer","_row":"anios_fumo"},{"1":"diagnostico_pro","2":"character","_row":"diagnostico_pro"}],"options":{"columns":{"min":{},"max":[10],"total":[2]},"rows":{"min":[10],"max":[10],"total":[19]},"pages":{}}}
   </script>
 </div>
 <!-- rnb-frame-end -->
@@ -1884,6 +1889,9 @@ tibble(&quot;Nombre&quot; = names(datos_it0), &quot;Clase&quot; = map_chr(datos_
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-output-begin eyJkYXRhIjoib2JqZXRvICdkYXRvc19penEnIG5vIGVuY29udHJhZG9vYmpldG8gJ2RhdG9zX2Rlcicgbm8gZW5jb250cmFkb29iamV0byAncm93X2lkX2R1cGxpY2Fkbycgbm8gZW5jb250cmFkb1xuIn0= -->
+<pre><code>objeto &#39;datos_izq&#39; no encontradoobjeto &#39;datos_der&#39; no encontradoobjeto &#39;row_id_duplicado&#39; no encontrado</code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Aqui encontramos que se trata a muchas variables como character en lugar de factor o numérico.</p>
@@ -2244,19 +2252,13 @@ ggplot(datos_casados, aes(diagnostico_pro, stat(prop), group = 1)) +
 <pre class="r"><code>table(datos_it2$genero, datos_it2$estado_marital) %&gt;% 
   addmargins(c(1, 2))</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiICAgICAgICAgICAgICAgICAgICAgIFxuICAgICAgICAgICAgICAgICAgICAgICBEaXZvcmNlZCBNYXJyaWVkIG9yIGRvbWVzdGljIHBhcnRuZXJzaGlwIE90aGVyIFNlcGFyYXRlZFxuICBGZW1hbGUgICAgICAgICAgICAgICAgICAgICA2MSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgNDI3ICAgICA0ICAgICAgICAgN1xuICBNYWxlICAgICAgICAgICAgICAgICAgICAgIDEyMSAgICAgICAgICAgICAgICAgICAgICAgICAgICAxMzA1ICAgICA3ICAgICAgICAyMFxuICBQcmVmZXIgbm90IHRvIGFuc3dlciAgICAgICAgMCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAxICAgICAwICAgICAgICAgMFxuICBTdW0gICAgICAgICAgICAgICAgICAgICAgIDE4MiAgICAgICAgICAgICAgICAgICAgICAgICAgICAxNzMzICAgIDExICAgICAgICAyN1xuICAgICAgICAgICAgICAgICAgICAgIFxuICAgICAgICAgICAgICAgICAgICAgICBTaW5nbGUgbmV2ZXIgbWFycmllZCBXaWRvd2VkICBTdW1cbiAgRmVtYWxlICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgNDQgICAgICAzMSAgNTc0XG4gIE1hbGUgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgMTY1ICAgICAgMTkgMTYzN1xuICBQcmVmZXIgbm90IHRvIGFuc3dlciAgICAgICAgICAgICAgICAgICAgMCAgICAgICAwICAgIDFcbiAgU3VtICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAyMDkgICAgICA1MCAyMjEyXG4ifQ== -->
+<!-- rnb-output-begin eyJkYXRhIjoiICAgICAgICAgICAgICAgICAgICAgIFxuICAgICAgICAgICAgICAgICAgICAgICBEaXZvcmNlZCBNYXJyaWVkIG9yIGRvbWVzdGljIHBhcnRuZXJzaGlwIE90aGVyIFNlcGFyYXRlZCBTaW5nbGUgbmV2ZXIgbWFycmllZCBXaWRvd2VkICBTdW1cbiAgRmVtYWxlICAgICAgICAgICAgICAgICAgICAgNjEgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDQyNyAgICAgNCAgICAgICAgIDcgICAgICAgICAgICAgICAgICAgNDQgICAgICAzMSAgNTc0XG4gIE1hbGUgICAgICAgICAgICAgICAgICAgICAgMTIxICAgICAgICAgICAgICAgICAgICAgICAgICAgIDEzMDUgICAgIDcgICAgICAgIDIwICAgICAgICAgICAgICAgICAgMTY1ICAgICAgMTkgMTYzN1xuICBQcmVmZXIgbm90IHRvIGFuc3dlciAgICAgICAgMCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAxICAgICAwICAgICAgICAgMCAgICAgICAgICAgICAgICAgICAgMCAgICAgICAwICAgIDFcbiAgU3VtICAgICAgICAgICAgICAgICAgICAgICAxODIgICAgICAgICAgICAgICAgICAgICAgICAgICAgMTczMyAgICAxMSAgICAgICAgMjcgICAgICAgICAgICAgICAgICAyMDkgICAgICA1MCAyMjEyXG4ifQ== -->
 <pre><code>                      
-                       Divorced Married or domestic partnership Other Separated
-  Female                     61                             427     4         7
-  Male                      121                            1305     7        20
-  Prefer not to answer        0                               1     0         0
-  Sum                       182                            1733    11        27
-                      
-                       Single never married Widowed  Sum
-  Female                                 44      31  574
-  Male                                  165      19 1637
-  Prefer not to answer                    0       0    1
-  Sum                                   209      50 2212</code></pre>
+                       Divorced Married or domestic partnership Other Separated Single never married Widowed  Sum
+  Female                     61                             427     4         7                   44      31  574
+  Male                      121                            1305     7        20                  165      19 1637
+  Prefer not to answer        0                               1     0         0                    0       0    1
+  Sum                       182                            1733    11        27                  209      50 2212</code></pre>
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->

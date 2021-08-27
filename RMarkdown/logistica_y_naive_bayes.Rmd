@@ -1,7 +1,7 @@
 ---
 title: "Regresión Logística y Naive Bayes"
-output: 
-  html_notebook: 
+output:
+  html_notebook:
     toc: yes
 ---
 
@@ -136,7 +136,7 @@ Vamos a tratar de mejorar el AUC identificando observaciones influyentes para el
 
 
 ```{r}
-data.frame(d_cook = cooks.distance(modelo_log$finalModel)) %>% arrange(- d_cook)
+data.frame(d_cook = cooks.distance(modelo_log$finalModel)) %>% arrange(- d_cook) %>% top_n(10)
 ```
 
 Observamos que la observación 302 es la que se encuentra más alejada del resto, por lo que vamos a probar entrenando otro modelo sin esa observación. 
